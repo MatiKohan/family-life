@@ -25,7 +25,7 @@ export default defineConfig({
   // Start both servers before tests
   webServer: [
     {
-      command: 'pnpm --filter @my-app/api dev',
+      command: 'pnpm --filter @template-repository/api dev',
       url: 'http://localhost:3000/api/health',
       reuseExistingServer: !process.env.CI,
       timeout: 30_000,
@@ -34,7 +34,7 @@ export default defineConfig({
       },
     },
     {
-      command: 'pnpm --filter @my-app/web dev',
+      command: 'pnpm --filter @template-repository/web dev',
       url: 'http://localhost:5173',
       reuseExistingServer: !process.env.CI,
       timeout: 30_000,

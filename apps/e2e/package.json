@@ -1,5 +1,5 @@
 {
-  "name": "@my-app/e2e",
+  "name": "@template-repository/e2e",
   "version": "1.0.0",
   "private": true,
   "scripts": {

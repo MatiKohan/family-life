@@ -11,7 +11,7 @@ const config: Config = {
   coverageDirectory: './coverage',
   testEnvironment: 'node',
   moduleNameMapper: {
-    '^@my-app/types$': '<rootDir>/../../packages/types/src/index.ts',
+    '^@template-repository/types$': '<rootDir>/../../packages/types/src/index.ts',
   },
   globalSetup: './test/setup.ts',
 };

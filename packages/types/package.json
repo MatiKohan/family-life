@@ -1,5 +1,5 @@
 {
-  "name": "@my-app/types",
+  "name": "@template-repository/types",
   "version": "1.0.0",
   "private": true,
   "main": "./dist/index.js",
@@ -9,7 +9,7 @@
     "dev": "tsc -p tsconfig.build.json --watch"
   },
   "devDependencies": {
-    "@my-app/tsconfig": "workspace:*",
+    "@template-repository/tsconfig": "workspace:*",
     "typescript": "^5.7.2"
   }
 }

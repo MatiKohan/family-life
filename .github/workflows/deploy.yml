@@ -20,19 +20,24 @@ jobs:
         with:
           context: .
           file: apps/api/Dockerfile
+          # TODO: set push: true and add `registry` + login step to publish to a container registry
           push: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          tags: my-app-api:${{ github.sha }}
+          # TODO: replace "template-repository" with your project name
+          tags: template-repository-api:${{ github.sha }}
 
       - name: Build Web image
         uses: docker/build-push-action@v6
         with:
           context: .
           file: apps/web/Dockerfile
+          # TODO: set push: true and add `registry` + login step to publish to a container registry
           push: false
           build-args: |
+            # TODO: replace with your actual API URL (e.g. https://api.yourdomain.com or your Railway URL)
             VITE_API_URL=https://placeholder.railway.app
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          tags: my-app-web:${{ github.sha }}
+          # TODO: replace "template-repository" with your project name
+          tags: template-repository-web:${{ github.sha }}

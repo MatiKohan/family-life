@@ -1,10 +1,10 @@
 {
-  "extends": "@my-app/tsconfig/nestjs.json",
+  "extends": "@template-repository/tsconfig/nestjs.json",
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",
     "paths": {
-      "@my-app/types": ["../../packages/types/dist/index.d.ts"]
+      "@template-repository/types": ["../../packages/types/dist/index.d.ts"]
     }
   },
   "include": ["src", "test"],

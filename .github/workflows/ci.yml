@@ -17,7 +17,7 @@ jobs:
         env:
           POSTGRES_USER: ci
           POSTGRES_PASSWORD: ci
-          POSTGRES_DB: my_app_test
+          POSTGRES_DB: template_repository_test
         ports:
           - 5432:5432
         options: >-
@@ -37,8 +37,8 @@ jobs:
           --health-retries 5
 
     env:
-      DATABASE_URL: postgresql://ci:ci@localhost:5432/my_app_test
-      DATABASE_URL_TEST: postgresql://ci:ci@localhost:5432/my_app_test
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/template_repository_test
+      DATABASE_URL_TEST: postgresql://ci:ci@localhost:5432/template_repository_test
       REDIS_URL: redis://localhost:6379
       JWT_SECRET: ci-jwt-secret
       JWT_REFRESH_SECRET: ci-refresh-secret
@@ -66,10 +66,10 @@ jobs:
         run: pnpm lint
 
       - name: Generate Prisma client
-        run: pnpm --filter @my-app/api exec prisma generate
+        run: pnpm --filter @template-repository/api exec prisma generate
 
       - name: Run migrations
-        run: pnpm --filter @my-app/api exec prisma migrate deploy
+        run: pnpm --filter @template-repository/api exec prisma migrate deploy
 
       - name: Test
         run: pnpm test:ci

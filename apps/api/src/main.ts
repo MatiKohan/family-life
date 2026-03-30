@@ -28,8 +28,8 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('My App API')
-    .setDescription('My App API')
+    .setTitle('Template Repository API')
+    .setDescription('Template Repository API')
     .setVersion('1.0')
     .addBearerAuth()
     .build();

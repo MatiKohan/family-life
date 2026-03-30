@@ -55,7 +55,7 @@ export function Layout() {
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-6">
             <Link to="/" className="text-xl font-bold text-brand-600">
-              My App
+              Template Repository
             </Link>
 
             {/* Desktop nav — hidden on mobile */}

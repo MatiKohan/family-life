@@ -1,6 +1,60 @@
-# My App
+# Template Repository
 
 A full-stack monorepo template with auth, API, web, and E2E testing ready to go.
+
+## Using this as a template
+
+### 1. Clone and rename
+
+```bash
+# Clone or copy this repo, then rename the project
+# Replace "template-repository" with your project name across the codebase:
+grep -r "template-repository" --include="*.json" --include="*.ts" --include="*.tsx" --include="*.yml" -l
+# Then run: find . -not -path '*/node_modules/*' -not -path '*/.git/*' | xargs sed -i '' 's/template-repository/your-project-name/g'
+```
+
+Key files to update:
+- `package.json` — `name` field
+- `apps/api/package.json` — `name: @template-repository/api`
+- `apps/web/package.json` — `name: @template-repository/web`
+- `apps/e2e/package.json` — `name: @template-repository/e2e`
+- `packages/types/package.json` — `name: @template-repository/types`
+- `packages/tsconfig/package.json` — `name: @template-repository/tsconfig`
+- `.github/workflows/*.yml` — Docker image tags
+
+### 2. Configure environment
+
+```bash
+cp .env.example .env
+```
+
+Required values to fill:
+- `JWT_SECRET` / `JWT_REFRESH_SECRET` — generate strong random strings
+- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — from Google Cloud Console (OAuth2 credentials)
+- `GOOGLE_CALLBACK_URL` — update to your production domain when deploying
+
+### 3. Set up the database
+
+```bash
+docker compose up -d
+pnpm install
+pnpm --filter @template-repository/api exec prisma migrate dev --name init
+```
+
+### 4. Configure CI/CD secrets
+
+In your GitHub repository settings → Secrets, add:
+- `DATABASE_URL` — production DB connection string
+- `JWT_SECRET` / `JWT_REFRESH_SECRET`
+- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`
+- (For deploy.yml) registry credentials if pushing Docker images
+
+### 5. Configure deployment
+
+- **API**: Deploy `apps/api/Dockerfile` to Railway/Fly.io/Render; set all env vars
+- **Web**: Deploy `apps/web` to Vercel; set `VITE_API_URL` to your API's public URL
+- Update `VITE_API_URL` in `.github/workflows/deploy.yml` (currently a placeholder)
+- Update `GOOGLE_CALLBACK_URL` in production env to `https://your-api-domain/api/auth/google/callback`
 
 ## Stack
 
@@ -25,7 +79,7 @@ pnpm install
 cp .env.example .env
 
 # 4. Run first migration
-pnpm --filter @my-app/api exec prisma migrate dev --name init
+pnpm --filter @template-repository/api exec prisma migrate dev --name init
 
 # 5. Start dev servers
 pnpm dev
@@ -49,10 +103,10 @@ pnpm test:e2e     # Playwright E2E tests
 ### Prisma
 
 ```bash
-pnpm --filter @my-app/api exec prisma migrate dev    # New migration
-pnpm --filter @my-app/api exec prisma migrate reset  # Reset DB
-pnpm --filter @my-app/api exec prisma generate       # Regenerate client
-pnpm --filter @my-app/api exec prisma studio         # Visual browser
+pnpm --filter @template-repository/api exec prisma migrate dev    # New migration
+pnpm --filter @template-repository/api exec prisma migrate reset  # Reset DB
+pnpm --filter @template-repository/api exec prisma generate       # Regenerate client
+pnpm --filter @template-repository/api exec prisma studio         # Visual browser
 ```
 
 ## Project structure

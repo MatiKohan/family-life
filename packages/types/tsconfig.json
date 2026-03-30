@@ -1,5 +1,5 @@
 {
-  "extends": "@my-app/tsconfig/base.json",
+  "extends": "@template-repository/tsconfig/base.json",
   "compilerOptions": {
     "module": "ESNext",
     "moduleResolution": "bundler",

@@ -1,11 +1,11 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: my-app-db
+    container_name: template-repository-db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: my_app
+      POSTGRES_DB: template_repository
     ports:
       - "5432:5432"
     volumes:
@@ -18,7 +18,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: my-app-redis
+    container_name: template-repository-redis
     ports:
       - "6379:6379"
     healthcheck:

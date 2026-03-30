@@ -1,5 +1,5 @@
 import { http, HttpResponse } from 'msw';
-import type { AuthUser } from '@my-app/types';
+import type { AuthUser } from '@template-repository/types';
 
 export const mockUser: AuthUser = {
   id: 'user-1',

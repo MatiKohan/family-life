@@ -1,12 +1,12 @@
 ---
-description: Run, write, and debug Playwright E2E browser tests for the my-app project
+description: Run, write, and debug Playwright E2E browser tests for the template-repository project
 ---
 
-You are helping with Playwright end-to-end browser tests for the my-app monorepo.
+You are helping with Playwright end-to-end browser tests for the template-repository monorepo.
 
 ## Project context
 
-- Monorepo root: `my-app/`
+- Monorepo root: `template-repository/`
 - E2E tests live in `apps/e2e/tests/`
 - Playwright config: `apps/e2e/playwright.config.ts`
 - App runs on `http://localhost:5173` (web) and `http://localhost:3000` (API)
@@ -16,25 +16,25 @@ You are helping with Playwright end-to-end browser tests for the my-app monorepo
 
 ```bash
 # Install Playwright browsers (first time)
-pnpm --filter @my-app/e2e exec playwright install
+pnpm --filter @template-repository/e2e exec playwright install
 
 # Run all E2E tests (headless)
 pnpm test:e2e
 
 # Run a specific test file
-pnpm --filter @my-app/e2e exec playwright test tests/01-auth.spec.ts
+pnpm --filter @template-repository/e2e exec playwright test tests/01-auth.spec.ts
 
 # Run with headed browser (visible)
-pnpm --filter @my-app/e2e exec playwright test --headed
+pnpm --filter @template-repository/e2e exec playwright test --headed
 
 # Debug a specific test interactively
-pnpm --filter @my-app/e2e exec playwright test --debug tests/01-auth.spec.ts
+pnpm --filter @template-repository/e2e exec playwright test --debug tests/01-auth.spec.ts
 
 # Show HTML report after a run
-pnpm --filter @my-app/e2e report
+pnpm --filter @template-repository/e2e report
 
 # Generate test code by recording browser actions
-pnpm --filter @my-app/e2e exec playwright codegen http://localhost:5173
+pnpm --filter @template-repository/e2e exec playwright codegen http://localhost:5173
 ```
 
 ## Test structure conventions

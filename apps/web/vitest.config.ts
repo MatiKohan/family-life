@@ -15,7 +15,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@my-app/types': path.resolve(__dirname, '../../packages/types/src/index.ts'),
+      '@template-repository/types': path.resolve(__dirname, '../../packages/types/src/index.ts'),
     },
   },
 });

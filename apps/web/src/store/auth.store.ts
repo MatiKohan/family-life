@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { AuthUser } from '@my-app/types';
+import { AuthUser } from '@template-repository/types';
 
 interface AuthState {
   user: AuthUser | null;

@@ -8,7 +8,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@my-app/types': typesDir,
+      '@template-repository/types': typesDir,
     },
     extensions: ['.ts', '.tsx', '.mts', '.js', '.jsx', '.mjs', '.json'],
   },

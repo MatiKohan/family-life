@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/auth.store';
 import { apiRequest } from '../../lib/api-client';
-import { AuthUser } from '@my-app/types';
+import { AuthUser } from '@template-repository/types';
 
 type Mode = 'login' | 'register';
 
@@ -65,7 +65,7 @@ export function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="max-w-sm w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">My App</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">Template Repository</h1>
           <p className="text-gray-500 text-sm">Sign in to continue.</p>
         </div>
 
