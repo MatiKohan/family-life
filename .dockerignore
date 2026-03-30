@@ -1,0 +1,8 @@
+node_modules
+**/node_modules
+**/.git
+**/dist
+**/*.log
+apps/web/.env*
+apps/api/.env*
+!apps/api/.env.example

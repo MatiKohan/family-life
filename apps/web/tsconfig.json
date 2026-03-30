@@ -1,0 +1,11 @@
+{
+  "extends": "@my-app/tsconfig/react.json",
+  "compilerOptions": {
+    "paths": {
+      "@my-app/types": ["../../packages/types/src/index.ts"]
+    }
+  },
+  "include": ["src"],
+  "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx", "src/**/*.spec.ts", "src/**/*.spec.tsx"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}
