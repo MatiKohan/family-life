@@ -1,10 +1,10 @@
 {
-  "extends": "@template-repository/tsconfig/nestjs.json",
+  "extends": "@family-life/tsconfig/nestjs.json",
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",
     "paths": {
-      "@template-repository/types": ["../../packages/types/dist/index.d.ts"]
+      "@family-life/types": ["../../packages/types/dist/index.d.ts"]
     }
   },
   "include": ["src", "test"],

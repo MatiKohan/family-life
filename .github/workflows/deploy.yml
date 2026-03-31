@@ -24,8 +24,8 @@ jobs:
           push: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          # TODO: replace "template-repository" with your project name
-          tags: template-repository-api:${{ github.sha }}
+          # TODO: replace "family-life" with your project name
+          tags: family-life-api:${{ github.sha }}
 
       - name: Build Web image
         uses: docker/build-push-action@v6
@@ -39,5 +39,5 @@ jobs:
             VITE_API_URL=https://placeholder.railway.app
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          # TODO: replace "template-repository" with your project name
-          tags: template-repository-web:${{ github.sha }}
+          # TODO: replace "family-life" with your project name
+          tags: family-life-web:${{ github.sha }}

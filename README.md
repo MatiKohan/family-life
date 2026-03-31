@@ -1,87 +1,56 @@
-# Template Repository
+# 🏠 Family Life
 
-A full-stack monorepo template with auth, API, web, and E2E testing ready to go.
+A mobile-first family management app. Create a family group, invite members, manage shared lists, a calendar, and tasks — all in one place.
 
-## Using this as a template
+## Features
 
-### 1. Clone and rename
-
-```bash
-# Clone or copy this repo, then rename the project
-# Replace "template-repository" with your project name across the codebase:
-grep -r "template-repository" --include="*.json" --include="*.ts" --include="*.tsx" --include="*.yml" -l
-# Then run: find . -not -path '*/node_modules/*' -not -path '*/.git/*' | xargs sed -i '' 's/template-repository/your-project-name/g'
-```
-
-Key files to update:
-- `package.json` — `name` field
-- `apps/api/package.json` — `name: @template-repository/api`
-- `apps/web/package.json` — `name: @template-repository/web`
-- `apps/e2e/package.json` — `name: @template-repository/e2e`
-- `packages/types/package.json` — `name: @template-repository/types`
-- `packages/tsconfig/package.json` — `name: @template-repository/tsconfig`
-- `.github/workflows/*.yml` — Docker image tags
-
-### 2. Configure environment
-
-```bash
-cp .env.example .env
-```
-
-Required values to fill:
-- `JWT_SECRET` / `JWT_REFRESH_SECRET` — generate strong random strings
-- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — from Google Cloud Console (OAuth2 credentials)
-- `GOOGLE_CALLBACK_URL` — update to your production domain when deploying
-
-### 3. Set up the database
-
-```bash
-docker compose up -d
-pnpm install
-pnpm --filter @template-repository/api exec prisma migrate dev --name init
-```
-
-### 4. Configure CI/CD secrets
-
-In your GitHub repository settings → Secrets, add:
-- `DATABASE_URL` — production DB connection string
-- `JWT_SECRET` / `JWT_REFRESH_SECRET`
-- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`
-- (For deploy.yml) registry credentials if pushing Docker images
-
-### 5. Configure deployment
-
-- **API**: Deploy `apps/api/Dockerfile` to Railway/Fly.io/Render; set all env vars
-- **Web**: Deploy `apps/web` to Vercel; set `VITE_API_URL` to your API's public URL
-- Update `VITE_API_URL` in `.github/workflows/deploy.yml` (currently a placeholder)
-- Update `GOOGLE_CALLBACK_URL` in production env to `https://your-api-domain/api/auth/google/callback`
+- **Family groups** — create a family, invite members via link or email/phone, manage roles
+- **Typed pages** — list pages (grocery, shopping, tasks) and event pages, with more types coming
+- **Shared calendar** — family calendar with event reminders
+- **WhatsApp notifications** — configurable per family: invites, assignments, event reminders
+- **Multi-family** — belong to multiple families, switch between them
 
 ## Stack
 
 | Layer | Tech |
-|-------|------|
-| API | NestJS + Prisma + PostgreSQL + Redis |
-| Web | React + Vite + TanStack Query + Tailwind |
+|---|---|
+| API | NestJS + Prisma + PostgreSQL + MongoDB + Redis |
+| Web | React + Vite + TanStack Query + Zustand + Tailwind |
 | Auth | JWT + Google OAuth2 |
+| Notifications | Twilio WhatsApp API |
 | Tests | Jest (API) · Vitest (Web) · Playwright (E2E) |
-| Infra | Docker Compose · Turborepo · pnpm workspaces |
+| Infra | Turborepo · pnpm workspaces |
 
 ## Getting started
 
-```bash
-# 1. Start infrastructure
-docker compose up -d
+### Prerequisites (macOS via Homebrew)
 
-# 2. Install dependencies
+```bash
+brew install postgresql@16 redis
+brew tap mongodb/brew && brew install mongodb-community@7.0
+
+brew services start postgresql@16
+brew services start redis
+brew services start mongodb/brew/mongodb-community@7.0
+
+createdb family_life
+createdb family_life_test
+```
+
+### Setup
+
+```bash
+# Install dependencies
 pnpm install
 
-# 3. Copy and fill env
+# Copy and fill env
 cp .env.example .env
+# Edit .env: set DATABASE_URL user to your local postgres user (e.g. your mac username, no password)
 
-# 4. Run first migration
-pnpm --filter @template-repository/api exec prisma migrate dev --name init
+# Run migrations
+pnpm --filter @family-life/api exec prisma migrate dev
 
-# 5. Start dev servers
+# Start dev servers
 pnpm dev
 ```
 
@@ -89,13 +58,39 @@ pnpm dev
 - API: http://localhost:3000
 - API docs: http://localhost:3000/api/docs
 
+## Project structure
+
+```
+apps/
+  api/      NestJS backend (Prisma + MongoDB)
+  web/      React + Vite frontend
+  e2e/      Playwright E2E tests
+packages/
+  types/    Shared TypeScript types
+  tsconfig/ Shared TypeScript configs
+```
+
+## Environment variables
+
+See `.env.example` for all variables. Key ones:
+
+```
+DATABASE_URL          PostgreSQL connection string
+MONGO_URL             MongoDB connection string
+JWT_SECRET            Strong random string
+JWT_REFRESH_SECRET    Strong random string (different from above)
+GOOGLE_CLIENT_ID      Google OAuth2 (optional)
+GOOGLE_CLIENT_SECRET  Google OAuth2 (optional)
+TWILIO_ACCOUNT_SID    Twilio for WhatsApp (Phase 4)
+TWILIO_AUTH_TOKEN     Twilio for WhatsApp (Phase 4)
+```
+
 ## Commands
 
 ```bash
 pnpm dev          # Start all services
 pnpm build        # Build all packages
 pnpm test         # Run all unit tests
-pnpm test:ci      # Tests with coverage
 pnpm lint         # Lint all workspaces
 pnpm test:e2e     # Playwright E2E tests
 ```
@@ -103,34 +98,14 @@ pnpm test:e2e     # Playwright E2E tests
 ### Prisma
 
 ```bash
-pnpm --filter @template-repository/api exec prisma migrate dev    # New migration
-pnpm --filter @template-repository/api exec prisma migrate reset  # Reset DB
-pnpm --filter @template-repository/api exec prisma generate       # Regenerate client
-pnpm --filter @template-repository/api exec prisma studio         # Visual browser
+pnpm --filter @family-life/api exec prisma migrate dev    # New migration
+pnpm --filter @family-life/api exec prisma studio         # Visual DB browser
+pnpm --filter @family-life/api exec prisma generate       # Regenerate client
 ```
-
-## Project structure
-
-```
-apps/
-  api/      NestJS backend
-  web/      React + Vite frontend
-  e2e/      Playwright tests
-packages/
-  types/    Shared TypeScript types
-  tsconfig/ Shared TypeScript configs
-```
-
-## Auth
-
-- Email/password registration and login
-- Google OAuth2
-- JWT access tokens (15 min) + HTTP-only refresh cookie (7 days)
-- Protected routes on the frontend via `<ProtectedRoute />`
 
 ## Deployment
 
-- **API + DB + Redis**: Railway (Dockerfile at `apps/api/Dockerfile`)
-- **Web**: Vercel (root directory: `apps/web`, set `VITE_API_URL`)
-
-See `.env.example` for all required environment variables.
+- **API**: Deploy `apps/api/Dockerfile` to Railway/Fly.io/Render
+- **Web**: Deploy `apps/web` to Vercel — set `VITE_API_URL` to your API's public URL
+- **MongoDB**: MongoDB Atlas free tier
+- **Redis**: Upstash free tier

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
-import { AuthUser } from '@template-repository/types';
+import { AuthUser } from '@family-life/types';
 
 interface GoogleProfile {
   googleId: string;

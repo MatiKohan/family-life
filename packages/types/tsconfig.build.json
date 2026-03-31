@@ -1,5 +1,5 @@
 {
-  "extends": "@template-repository/tsconfig/base.json",
+  "extends": "@family-life/tsconfig/base.json",
   "compilerOptions": {
     "module": "commonjs",
     "target": "ES2021",

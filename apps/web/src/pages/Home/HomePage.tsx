@@ -16,7 +16,7 @@ export function HomePage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center">
       <h1 className="text-3xl font-bold text-gray-900 mb-2">
-        Welcome to Template Repository
+        Welcome to Family Life
       </h1>
       {user && (
         <p className="text-gray-500 mb-8">

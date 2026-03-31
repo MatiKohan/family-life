@@ -28,6 +28,10 @@ packages/types/src/**/*.d.ts.map
 .env.local
 .env.*.local
 
+# Environment files
+.env.*.env
+*.env.local
+
 
 # Coverage
 coverage/
@@ -35,6 +39,9 @@ coverage/
 # OS
 .DS_Store
 Thumbs.db
+
+# Claude local settings (contains secrets)
+.claude/settings.local.json
 
 # IDE
 .vscode/

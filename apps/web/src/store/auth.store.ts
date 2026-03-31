@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { AuthUser } from '@template-repository/types';
+import { AuthUser } from '@family-life/types';
 
 interface AuthState {
   user: AuthUser | null;

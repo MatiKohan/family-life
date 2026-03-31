@@ -6,6 +6,8 @@ import { HealthModule } from './modules/health/health.module';
 import { PrismaModule } from './database/prisma.module';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { FamilyModule } from './modules/family/family.module';
+import { InvitesModule } from './modules/invites/invites.module';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { AuthModule } from './modules/auth/auth.module';
     HealthModule,
     UsersModule,
     AuthModule,
+    FamilyModule,
+    InvitesModule,
   ],
   providers: [
     {

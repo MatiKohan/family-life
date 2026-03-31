@@ -8,7 +8,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@template-repository/types': typesDir,
+      '@family-life/types': typesDir,
     },
     extensions: ['.ts', '.tsx', '.mts', '.js', '.jsx', '.mjs', '.json'],
   },

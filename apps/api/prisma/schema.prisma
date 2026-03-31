@@ -8,13 +8,63 @@ datasource db {
 }
 
 model User {
-  id               String   @id @default(cuid())
-  googleId         String?  @unique
-  email            String   @unique
+  id               String         @id @default(cuid())
+  googleId         String?        @unique
+  email            String         @unique
   name             String
   avatarUrl        String?
   password         String?
   refreshTokenHash String?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  families         FamilyMember[]
+}
+
+model Family {
+  id        String         @id @default(cuid())
+  name      String
+  emoji     String         @default("🏠")
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  members   FamilyMember[]
+  invites   FamilyInvite[]
+}
+
+model FamilyMember {
+  id                   String     @id @default(cuid())
+  familyId             String
+  userId               String
+  role                 FamilyRole @default(MEMBER)
+  whatsappPhone        String?
+  notificationSettings Json       @default("{}")
+  joinedAt             DateTime   @default(now())
+  family               Family     @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  user                 User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([familyId, userId])
+}
+
+model FamilyInvite {
+  id        String       @id @default(cuid())
+  familyId  String
+  token     String       @unique @default(cuid())
+  email     String?
+  phone     String?
+  status    InviteStatus @default(PENDING)
+  expiresAt DateTime
+  createdBy String
+  createdAt DateTime     @default(now())
+  family    Family       @relation(fields: [familyId], references: [id], onDelete: Cascade)
+}
+
+enum FamilyRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
 }

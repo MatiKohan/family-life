@@ -10,7 +10,7 @@ describe('LoginPage', () => {
 
   it('renders the app name', () => {
     render(<MemoryRouter><LoginPage /></MemoryRouter>);
-    expect(screen.getByText('Template Repository')).toBeInTheDocument();
+    expect(screen.getByText('Family Life')).toBeInTheDocument();
   });
 
   it('renders email and password fields', () => {

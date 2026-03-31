@@ -1,5 +1,5 @@
 {
-  "name": "@template-repository/types",
+  "name": "@family-life/types",
   "version": "1.0.0",
   "private": true,
   "main": "./dist/index.js",
@@ -9,7 +9,7 @@
     "dev": "tsc -p tsconfig.build.json --watch"
   },
   "devDependencies": {
-    "@template-repository/tsconfig": "workspace:*",
+    "@family-life/tsconfig": "workspace:*",
     "typescript": "^5.7.2"
   }
 }

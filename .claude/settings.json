@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "input=$(cat); cmd=$(echo \"$input\" | jq -r '.tool_input.command // \"\"'); if echo \"$cmd\" | grep -qE 'git commit'; then (cd /Users/matias.kohan/MineProjects/template-repository && pnpm lint) || echo '{\"continue\":false,\"stopReason\":\"pnpm lint failed — fix errors before committing\"}'; fi",
+            "command": "input=$(cat); cmd=$(echo \"$input\" | jq -r '.tool_input.command // \"\"'); if echo \"$cmd\" | grep -qE 'git commit'; then (cd /Users/matias.kohan/MineProjects/family-life && pnpm lint) || echo '{\"continue\":false,\"stopReason\":\"pnpm lint failed — fix errors before committing\"}'; fi",
             "timeout": 60,
             "statusMessage": "Running pnpm lint before commit..."
           }

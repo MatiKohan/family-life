@@ -18,7 +18,7 @@ import { AuthService } from './auth.service';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { AuthUser } from '@template-repository/types';
+import { AuthUser } from '@family-life/types';
 
 class LoginDto {
   @IsEmail()

@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '../../store/auth.store';
 import { apiRequest } from '../../lib/api-client';
-import { AuthUser } from '@template-repository/types';
+import { AuthUser } from '@family-life/types';
 
 export function AuthCallbackPage() {
   const [searchParams] = useSearchParams();

@@ -1,8 +1,8 @@
 {
-  "extends": "@template-repository/tsconfig/react.json",
+  "extends": "@family-life/tsconfig/react.json",
   "compilerOptions": {
     "paths": {
-      "@template-repository/types": ["../../packages/types/src/index.ts"]
+      "@family-life/types": ["../../packages/types/src/index.ts"]
     }
   },
   "include": ["src"],
