@@ -1,6 +1,7 @@
 import { http, HttpResponse } from 'msw';
 import type { AuthUser } from '@family-life/types';
 import { PageSummary, Page } from '../types/page';
+import { CalendarEvent } from '../types/calendar';
 
 export const mockUser: AuthUser = {
   id: 'user-1',
@@ -10,12 +11,12 @@ export const mockUser: AuthUser = {
 };
 
 export const mockPageSummaries: PageSummary[] = [
-  { _id: 'page-1', title: 'Groceries', emoji: '🛒', type: 'list' },
-  { _id: 'page-2', title: 'Tasks', emoji: '✅', type: 'list' },
+  { id: 'page-1', title: 'Groceries', emoji: '🛒', type: 'list' },
+  { id: 'page-2', title: 'Tasks', emoji: '✅', type: 'list' },
 ];
 
 export const mockPage: Page = {
-  _id: 'page-1',
+  id: 'page-1',
   familyId: 'family-1',
   title: 'Groceries',
   emoji: '🛒',
@@ -46,7 +47,7 @@ export const mockPage: Page = {
 };
 
 export const mockTaskPage: Page = {
-  _id: 'page-tasks',
+  id: 'page-tasks',
   familyId: 'family-1',
   title: 'Sprint Tasks',
   emoji: '✅',
@@ -84,6 +85,33 @@ export const mockTaskPage: Page = {
   updatedAt: '2026-03-01T00:00:00.000Z',
 };
 
+export const mockCalendarEvents: CalendarEvent[] = [
+  {
+    id: 'event-1',
+    familyId: 'family-1',
+    title: 'Birthday Party',
+    description: null,
+    startAt: '2026-04-05T18:00:00.000Z',
+    endAt: '2026-04-05T21:00:00.000Z',
+    isAllDay: false,
+    createdBy: 'user-1',
+    createdAt: '2026-03-01T00:00:00.000Z',
+    updatedAt: '2026-03-01T00:00:00.000Z',
+  },
+  {
+    id: 'event-2',
+    familyId: 'family-1',
+    title: 'School Meeting',
+    description: 'Parent-teacher conference',
+    startAt: '2026-04-12T00:00:00.000Z',
+    endAt: '2026-04-12T23:59:59.000Z',
+    isAllDay: true,
+    createdBy: 'user-1',
+    createdAt: '2026-03-01T00:00:00.000Z',
+    updatedAt: '2026-03-01T00:00:00.000Z',
+  },
+];
+
 export const handlers = [
   http.get('/api/health', () => HttpResponse.json({ status: 'ok' })),
   http.get('/api/auth/me', () => HttpResponse.json(mockUser)),
@@ -99,7 +127,7 @@ export const handlers = [
   http.post('/api/families/:familyId/pages', async ({ request }) => {
     const body = (await request.json()) as { title: string; emoji: string; type: string };
     const newPage: PageSummary = {
-      _id: 'page-new',
+      id: 'page-new',
       title: body.title,
       emoji: body.emoji,
       type: body.type as PageSummary['type'],
@@ -132,6 +160,46 @@ export const handlers = [
   http.delete('/api/families/:familyId/pages/:pageId/items/:itemId', () =>
     new HttpResponse(null, { status: 204 }),
   ),
+
+  // Calendar events
+  http.get('/api/families/:familyId/calendar', () =>
+    HttpResponse.json(mockCalendarEvents),
+  ),
+  http.post('/api/families/:familyId/calendar', async ({ request }) => {
+    const body = (await request.json()) as {
+      title: string;
+      description?: string;
+      startAt: string;
+      endAt: string;
+      isAllDay?: boolean;
+    };
+    const newEvent: CalendarEvent = {
+      id: 'event-new',
+      familyId: 'family-1',
+      title: body.title,
+      description: body.description ?? null,
+      startAt: body.startAt,
+      endAt: body.endAt,
+      isAllDay: body.isAllDay ?? false,
+      createdBy: 'user-1',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    return HttpResponse.json(newEvent, { status: 201 });
+  }),
+  http.patch('/api/families/:familyId/calendar/:eventId', async ({ request }) => {
+    const body = await request.json();
+    return HttpResponse.json(body);
+  }),
+  http.delete('/api/families/:familyId/calendar/:eventId', () =>
+    new HttpResponse(null, { status: 204 }),
+  ),
+
+  // Page event-refs
+  http.post('/api/families/:familyId/pages/:pageId/event-refs', async ({ request }) => {
+    const body = await request.json();
+    return HttpResponse.json(body, { status: 201 });
+  }),
 
   // Task items
   http.post('/api/families/:familyId/pages/:pageId/task-items', async ({ request }) => {

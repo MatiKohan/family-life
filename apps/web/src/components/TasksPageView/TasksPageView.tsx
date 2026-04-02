@@ -377,7 +377,7 @@ export function TasksPageView({ page, familyId }: Props) {
   const [titleValue, setTitleValue] = useState(page.title);
   const addInputRef = useRef<HTMLInputElement>(null);
 
-  const cacheKey = ['pages', familyId, page._id];
+  const cacheKey = ['pages', familyId, page.id];
   const taskItems = page.taskItems ?? [];
 
   const todoTasks = taskItems.filter((t) => t.status === 'todo');
@@ -392,7 +392,7 @@ export function TasksPageView({ page, familyId }: Props) {
   // Add task
   const addMutation = useMutation({
     mutationFn: (text: string) =>
-      apiRequest<TaskItem>(`/families/${familyId}/pages/${page._id}/task-items`, {
+      apiRequest<TaskItem>(`/families/${familyId}/pages/${page.id}/task-items`, {
         method: 'POST',
         body: JSON.stringify({ text, status: 'todo' }),
       }),
@@ -425,7 +425,7 @@ export function TasksPageView({ page, familyId }: Props) {
   // Patch task (status, assignee, dueDate)
   const patchTaskMutation = useMutation({
     mutationFn: ({ taskId, patch }: { taskId: string; patch: Partial<TaskItem> }) =>
-      apiRequest(`/families/${familyId}/pages/${page._id}/task-items/${taskId}`, {
+      apiRequest(`/families/${familyId}/pages/${page.id}/task-items/${taskId}`, {
         method: 'PATCH',
         body: JSON.stringify(patch),
       }),
@@ -454,7 +454,7 @@ export function TasksPageView({ page, familyId }: Props) {
   // Delete task
   const deleteTaskMutation = useMutation({
     mutationFn: (taskId: string) =>
-      apiRequest(`/families/${familyId}/pages/${page._id}/task-items/${taskId}`, {
+      apiRequest(`/families/${familyId}/pages/${page.id}/task-items/${taskId}`, {
         method: 'DELETE',
       }),
     onMutate: async (taskId) => {
@@ -477,7 +477,7 @@ export function TasksPageView({ page, familyId }: Props) {
   // Update page title
   const updateTitleMutation = useMutation({
     mutationFn: (newTitle: string) =>
-      apiRequest(`/families/${familyId}/pages/${page._id}`, {
+      apiRequest(`/families/${familyId}/pages/${page.id}`, {
         method: 'PATCH',
         body: JSON.stringify({ title: newTitle }),
       }),

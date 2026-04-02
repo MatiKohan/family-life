@@ -9,6 +9,7 @@ import { FamilyCreatePage } from './pages/FamilyCreate/FamilyCreatePage';
 import { JoinFamilyPage } from './pages/JoinFamily/JoinFamilyPage';
 import { FamilyHomePage } from './pages/FamilyHome/FamilyHomePage';
 import { PageViewPage } from './pages/PageView/PageViewPage';
+import { CalendarPage } from './pages/Calendar/CalendarPage';
 
 function HomeRedirect() {
   // Read persisted family-storage directly to avoid a Zustand import cycle
@@ -70,6 +71,15 @@ function App() {
             element={
               <ErrorBoundary>
                 <PageViewPage />
+              </ErrorBoundary>
+            }
+          />
+          {/* calendar = /family/:id/calendar */}
+          <Route
+            path="calendar"
+            element={
+              <ErrorBoundary>
+                <CalendarPage />
               </ErrorBoundary>
             }
           />

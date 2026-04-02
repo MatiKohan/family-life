@@ -12,7 +12,7 @@ export function FamilyHomePage() {
 
   function handlePageCreated(page: PageSummary) {
     setShowCreateModal(false);
-    navigate(`/family/${id}/pages/${page._id}`);
+    navigate(`/family/${id}/pages/${page.id}`);
   }
 
   return (

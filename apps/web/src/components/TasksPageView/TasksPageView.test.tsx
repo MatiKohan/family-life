@@ -16,7 +16,7 @@ afterEach(() => {
 afterAll(() => server.close());
 
 const basePage: Page = {
-  _id: 'page-tasks',
+  id: 'page-tasks',
   familyId: 'family-1',
   title: 'Sprint Tasks',
   emoji: '✅',

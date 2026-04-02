@@ -10,7 +10,13 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
+import { IsString } from 'class-validator';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+
+class EventRefDto {
+  @IsString()
+  eventId!: string;
+}
 import { PagesService } from './pages.service';
 import { CreatePageDto } from './dto/create-page.dto';
 import { UpdatePageDto } from './dto/update-page.dto';
@@ -134,5 +140,26 @@ export class PagesController {
     @Param('itemId') itemId: string,
   ) {
     await this.pagesService.deleteTaskItem(familyId, pageId, itemId, user.id);
+  }
+
+  @Post(':pageId/event-refs')
+  addEventRef(
+    @CurrentUser() user: AuthUser,
+    @Param('id') familyId: string,
+    @Param('pageId') pageId: string,
+    @Body() dto: EventRefDto,
+  ) {
+    return this.pagesService.addEventRef(familyId, pageId, user.id, dto.eventId);
+  }
+
+  @Delete(':pageId/event-refs/:eventId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async removeEventRef(
+    @CurrentUser() user: AuthUser,
+    @Param('id') familyId: string,
+    @Param('pageId') pageId: string,
+    @Param('eventId') eventId: string,
+  ) {
+    await this.pagesService.removeEventRef(familyId, pageId, user.id, eventId);
   }
 }

@@ -4,10 +4,6 @@ import {
   ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { randomUUID } from 'crypto';
-import { Page, PageDocument } from './schemas/page.schema';
 import { PrismaService } from '../../database/prisma.service';
 import { CreatePageDto } from './dto/create-page.dto';
 import { UpdatePageDto } from './dto/update-page.dto';
@@ -16,228 +12,148 @@ import { UpdateItemDto } from './dto/update-item.dto';
 import { CreateTaskItemDto } from './dto/create-task-item.dto';
 import { UpdateTaskItemDto } from './dto/update-task-item.dto';
 
+// Types for internal use
+type ListItemData = { id: string; text: string; checked: boolean; assigneeId: string | null; dueDate: string | null; createdAt: string };
+type TaskItemData = { id: string; text: string; assigneeId: string | null; status: string; dueDate: string | null; createdAt: string };
+
 @Injectable()
 export class PagesService {
-  constructor(
-    @InjectModel(Page.name) private readonly pageModel: Model<PageDocument>,
-    private readonly prisma: PrismaService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  private async requireMember(userId: string, familyId: string): Promise<void> {
-    const member = await this.prisma.familyMember.findUnique({
-      where: { familyId_userId: { familyId, userId } },
+  private async requireMember(familyId: string, userId: string) {
+    const member = await this.prisma.familyMember.findUnique({ where: { familyId_userId: { familyId, userId } } });
+    if (!member) throw new ForbiddenException('Not a family member');
+    return member;
+  }
+
+  async listPages(familyId: string, userId: string) {
+    await this.requireMember(familyId, userId);
+    return this.prisma.page.findMany({
+      where: { familyId },
+      select: { id: true, title: true, emoji: true, type: true },
+      orderBy: { createdAt: 'asc' },
     });
-    if (!member) throw new ForbiddenException('Not a member of this family');
   }
 
-  async listPages(
-    familyId: string,
-    userId: string,
-  ): Promise<{ _id: unknown; title: string; emoji: string; type: string }[]> {
-    await this.requireMember(userId, familyId);
-    return this.pageModel
-      .find({ familyId }, { title: 1, emoji: 1, type: 1 })
-      .lean()
-      .exec() as unknown as { _id: unknown; title: string; emoji: string; type: string }[];
-  }
-
-  async createPage(
-    familyId: string,
-    userId: string,
-    dto: CreatePageDto,
-  ): Promise<PageDocument> {
-    await this.requireMember(userId, familyId);
-    const page = new this.pageModel({
-      familyId,
-      title: dto.title,
-      emoji: dto.emoji ?? '📄',
-      type: dto.type,
-      createdBy: userId,
+  async createPage(familyId: string, userId: string, dto: CreatePageDto) {
+    await this.requireMember(familyId, userId);
+    return this.prisma.page.create({
+      data: { familyId, title: dto.title, emoji: dto.emoji ?? '📄', type: dto.type, createdBy: userId },
     });
-    return page.save();
   }
 
-  async getPage(
-    familyId: string,
-    pageId: string,
-    userId: string,
-  ): Promise<PageDocument> {
-    await this.requireMember(userId, familyId);
-    const page = await this.pageModel.findById(pageId).exec();
+  async getPage(familyId: string, pageId: string, userId: string) {
+    await this.requireMember(familyId, userId);
+    const page = await this.prisma.page.findFirst({ where: { id: pageId, familyId } });
     if (!page) throw new NotFoundException('Page not found');
-    if (page.familyId !== familyId)
-      throw new ForbiddenException('Page does not belong to this family');
+    // For events type, attach calendar events
+    if (page.type === 'events') {
+      const eventIds = (page.eventIds as string[]) || [];
+      const events = eventIds.length > 0
+        ? await this.prisma.calendarEvent.findMany({ where: { id: { in: eventIds } } })
+        : [];
+      return { ...page, events };
+    }
     return page;
   }
 
-  async updatePage(
-    familyId: string,
-    pageId: string,
-    userId: string,
-    dto: UpdatePageDto,
-  ): Promise<PageDocument> {
-    await this.requireMember(userId, familyId);
-    const page = await this.pageModel.findById(pageId).exec();
+  async updatePage(familyId: string, pageId: string, userId: string, dto: UpdatePageDto) {
+    await this.requireMember(familyId, userId);
+    const page = await this.prisma.page.findFirst({ where: { id: pageId, familyId } });
     if (!page) throw new NotFoundException('Page not found');
-    if (page.familyId !== familyId)
-      throw new ForbiddenException('Page does not belong to this family');
-
-    if (dto.title !== undefined) page.title = dto.title;
-    if (dto.emoji !== undefined) page.emoji = dto.emoji;
-
-    return page.save();
+    return this.prisma.page.update({ where: { id: pageId }, data: { title: dto.title, emoji: dto.emoji } });
   }
 
-  async deletePage(
-    familyId: string,
-    pageId: string,
-    userId: string,
-  ): Promise<void> {
-    await this.requireMember(userId, familyId);
-    const page = await this.pageModel.findById(pageId).exec();
+  async deletePage(familyId: string, pageId: string, userId: string) {
+    await this.requireMember(familyId, userId);
+    const page = await this.prisma.page.findFirst({ where: { id: pageId, familyId } });
     if (!page) throw new NotFoundException('Page not found');
-    if (page.familyId !== familyId)
-      throw new ForbiddenException('Page does not belong to this family');
-    await page.deleteOne();
+    await this.prisma.page.delete({ where: { id: pageId } });
   }
 
-  async addItem(
-    familyId: string,
-    pageId: string,
-    userId: string,
-    dto: CreateItemDto,
-  ): Promise<PageDocument> {
-    await this.requireMember(userId, familyId);
-    const page = await this.pageModel.findById(pageId).exec();
+  // List items
+  async addItem(familyId: string, pageId: string, userId: string, dto: CreateItemDto) {
+    await this.requireMember(familyId, userId);
+    const page = await this.prisma.page.findFirst({ where: { id: pageId, familyId } });
     if (!page) throw new NotFoundException('Page not found');
-    if (page.familyId !== familyId)
-      throw new ForbiddenException('Page does not belong to this family');
-    if (page.type !== 'list')
-      throw new BadRequestException('Items can only be added to list pages');
-
-    page.items.push({
-      id: randomUUID(),
-      text: dto.text,
-      checked: false,
-      assigneeId: dto.assigneeId ?? null,
-      dueDate: dto.dueDate ? new Date(dto.dueDate) : null,
-      createdAt: new Date(),
-    });
-
-    return page.save();
+    if (page.type !== 'list') throw new BadRequestException('Not a list page');
+    const items = (page.items as ListItemData[]) || [];
+    const newItem: ListItemData = {
+      id: crypto.randomUUID(), text: dto.text, checked: false,
+      assigneeId: dto.assigneeId ?? null, dueDate: dto.dueDate ?? null,
+      createdAt: new Date().toISOString(),
+    };
+    return this.prisma.page.update({ where: { id: pageId }, data: { items: [...items, newItem] } });
   }
 
-  async updateItem(
-    familyId: string,
-    pageId: string,
-    itemId: string,
-    userId: string,
-    dto: UpdateItemDto,
-  ): Promise<PageDocument> {
-    await this.requireMember(userId, familyId);
-    const page = await this.pageModel.findById(pageId).exec();
+  async updateItem(familyId: string, pageId: string, itemId: string, userId: string, dto: UpdateItemDto) {
+    await this.requireMember(familyId, userId);
+    const page = await this.prisma.page.findFirst({ where: { id: pageId, familyId } });
     if (!page) throw new NotFoundException('Page not found');
-    if (page.familyId !== familyId)
-      throw new ForbiddenException('Page does not belong to this family');
-
-    const item = page.items.find((i) => i.id === itemId);
-    if (!item) throw new NotFoundException('Item not found');
-
-    if (dto.text !== undefined) item.text = dto.text;
-    if (dto.checked !== undefined) item.checked = dto.checked;
-    if ('assigneeId' in dto) item.assigneeId = dto.assigneeId ?? null;
-    if ('dueDate' in dto)
-      item.dueDate = dto.dueDate ? new Date(dto.dueDate) : null;
-
-    return page.save();
+    const items = (page.items as ListItemData[]).map(item =>
+      item.id === itemId ? { ...item, ...Object.fromEntries(Object.entries(dto).filter(([, v]) => v !== undefined)) } : item
+    );
+    return this.prisma.page.update({ where: { id: pageId }, data: { items } });
   }
 
-  async deleteItem(
-    familyId: string,
-    pageId: string,
-    itemId: string,
-    userId: string,
-  ): Promise<PageDocument> {
-    await this.requireMember(userId, familyId);
-    const page = await this.pageModel.findById(pageId).exec();
+  async deleteItem(familyId: string, pageId: string, itemId: string, userId: string) {
+    await this.requireMember(familyId, userId);
+    const page = await this.prisma.page.findFirst({ where: { id: pageId, familyId } });
     if (!page) throw new NotFoundException('Page not found');
-    if (page.familyId !== familyId)
-      throw new ForbiddenException('Page does not belong to this family');
-
-    const index = page.items.findIndex((i) => i.id === itemId);
-    if (index === -1) throw new NotFoundException('Item not found');
-
-    page.items.splice(index, 1);
-    return page.save();
+    const items = (page.items as ListItemData[]).filter(item => item.id !== itemId);
+    return this.prisma.page.update({ where: { id: pageId }, data: { items } });
   }
 
-  async addTaskItem(
-    familyId: string,
-    pageId: string,
-    userId: string,
-    dto: CreateTaskItemDto,
-  ): Promise<PageDocument> {
-    await this.requireMember(userId, familyId);
-    const page = await this.pageModel.findById(pageId).exec();
+  // Task items
+  async addTaskItem(familyId: string, pageId: string, userId: string, dto: CreateTaskItemDto) {
+    await this.requireMember(familyId, userId);
+    const page = await this.prisma.page.findFirst({ where: { id: pageId, familyId } });
     if (!page) throw new NotFoundException('Page not found');
-    if (page.familyId !== familyId)
-      throw new ForbiddenException('Page does not belong to this family');
-    if (page.type !== 'tasks')
-      throw new BadRequestException('Task items can only be added to tasks pages');
-
-    page.taskItems.push({
-      id: randomUUID(),
-      text: dto.text,
-      assigneeId: dto.assigneeId ?? null,
-      status: (dto.status as 'todo' | 'in-progress' | 'done') ?? 'todo',
-      dueDate: dto.dueDate ? new Date(dto.dueDate) : null,
-      createdAt: new Date(),
-    });
-
-    return page.save();
+    if (page.type !== 'tasks') throw new BadRequestException('Not a tasks page');
+    const taskItems = (page.taskItems as TaskItemData[]) || [];
+    const newItem: TaskItemData = {
+      id: crypto.randomUUID(), text: dto.text, assigneeId: dto.assigneeId ?? null,
+      status: dto.status ?? 'todo', dueDate: dto.dueDate ?? null,
+      createdAt: new Date().toISOString(),
+    };
+    return this.prisma.page.update({ where: { id: pageId }, data: { taskItems: [...taskItems, newItem] } });
   }
 
-  async updateTaskItem(
-    familyId: string,
-    pageId: string,
-    itemId: string,
-    userId: string,
-    dto: UpdateTaskItemDto,
-  ): Promise<PageDocument> {
-    await this.requireMember(userId, familyId);
-    const page = await this.pageModel.findById(pageId).exec();
+  async updateTaskItem(familyId: string, pageId: string, itemId: string, userId: string, dto: UpdateTaskItemDto) {
+    await this.requireMember(familyId, userId);
+    const page = await this.prisma.page.findFirst({ where: { id: pageId, familyId } });
     if (!page) throw new NotFoundException('Page not found');
-    if (page.familyId !== familyId)
-      throw new ForbiddenException('Page does not belong to this family');
-
-    const item = page.taskItems.find((i) => i.id === itemId);
-    if (!item) throw new NotFoundException('Task item not found');
-
-    if (dto.text !== undefined) item.text = dto.text;
-    if (dto.status !== undefined) item.status = dto.status as 'todo' | 'in-progress' | 'done';
-    if ('assigneeId' in dto) item.assigneeId = dto.assigneeId ?? null;
-    if ('dueDate' in dto)
-      item.dueDate = dto.dueDate ? new Date(dto.dueDate) : null;
-
-    return page.save();
+    const taskItems = (page.taskItems as TaskItemData[]).map(item =>
+      item.id === itemId ? { ...item, ...Object.fromEntries(Object.entries(dto).filter(([, v]) => v !== undefined)) } : item
+    );
+    return this.prisma.page.update({ where: { id: pageId }, data: { taskItems } });
   }
 
-  async deleteTaskItem(
-    familyId: string,
-    pageId: string,
-    itemId: string,
-    userId: string,
-  ): Promise<PageDocument> {
-    await this.requireMember(userId, familyId);
-    const page = await this.pageModel.findById(pageId).exec();
+  async deleteTaskItem(familyId: string, pageId: string, itemId: string, userId: string) {
+    await this.requireMember(familyId, userId);
+    const page = await this.prisma.page.findFirst({ where: { id: pageId, familyId } });
     if (!page) throw new NotFoundException('Page not found');
-    if (page.familyId !== familyId)
-      throw new ForbiddenException('Page does not belong to this family');
+    const taskItems = (page.taskItems as TaskItemData[]).filter(item => item.id !== itemId);
+    return this.prisma.page.update({ where: { id: pageId }, data: { taskItems } });
+  }
 
-    const index = page.taskItems.findIndex((i) => i.id === itemId);
-    if (index === -1) throw new NotFoundException('Task item not found');
+  // Event refs
+  async addEventRef(familyId: string, pageId: string, userId: string, eventId: string) {
+    await this.requireMember(familyId, userId);
+    const page = await this.prisma.page.findFirst({ where: { id: pageId, familyId } });
+    if (!page) throw new NotFoundException('Page not found');
+    const eventIds = (page.eventIds as string[]) || [];
+    if (!eventIds.includes(eventId)) {
+      return this.prisma.page.update({ where: { id: pageId }, data: { eventIds: [...eventIds, eventId] } });
+    }
+    return page;
+  }
 
-    page.taskItems.splice(index, 1);
-    return page.save();
+  async removeEventRef(familyId: string, pageId: string, userId: string, eventId: string) {
+    await this.requireMember(familyId, userId);
+    const page = await this.prisma.page.findFirst({ where: { id: pageId, familyId } });
+    if (!page) throw new NotFoundException('Page not found');
+    const eventIds = (page.eventIds as string[]).filter(id => id !== eventId);
+    return this.prisma.page.update({ where: { id: pageId }, data: { eventIds } });
   }
 }

@@ -200,12 +200,12 @@ export function ListPageView({ page, familyId }: Props) {
   const [titleValue, setTitleValue] = useState(page.title);
   const addInputRef = useRef<HTMLInputElement>(null);
 
-  const cacheKey = ['pages', familyId, page._id];
+  const cacheKey = ['pages', familyId, page.id];
 
   // Toggle checked (optimistic)
   const toggleMutation = useMutation({
     mutationFn: ({ itemId, checked }: { itemId: string; checked: boolean }) =>
-      apiRequest(`/families/${familyId}/pages/${page._id}/items/${itemId}`, {
+      apiRequest(`/families/${familyId}/pages/${page.id}/items/${itemId}`, {
         method: 'PATCH',
         body: JSON.stringify({ checked }),
       }),
@@ -234,7 +234,7 @@ export function ListPageView({ page, familyId }: Props) {
   // Add item
   const addMutation = useMutation({
     mutationFn: (text: string) =>
-      apiRequest<ListItem>(`/families/${familyId}/pages/${page._id}/items`, {
+      apiRequest<ListItem>(`/families/${familyId}/pages/${page.id}/items`, {
         method: 'POST',
         body: JSON.stringify({ text }),
       }),
@@ -247,7 +247,7 @@ export function ListPageView({ page, familyId }: Props) {
   // Delete item (optimistic)
   const deleteMutation = useMutation({
     mutationFn: (itemId: string) =>
-      apiRequest(`/families/${familyId}/pages/${page._id}/items/${itemId}`, {
+      apiRequest(`/families/${familyId}/pages/${page.id}/items/${itemId}`, {
         method: 'DELETE',
       }),
     onMutate: async (itemId) => {
@@ -270,7 +270,7 @@ export function ListPageView({ page, familyId }: Props) {
   // Patch item (assignee, due date) — optimistic
   const patchItemMutation = useMutation({
     mutationFn: ({ itemId, patch }: { itemId: string; patch: Partial<ListItem> }) =>
-      apiRequest(`/families/${familyId}/pages/${page._id}/items/${itemId}`, {
+      apiRequest(`/families/${familyId}/pages/${page.id}/items/${itemId}`, {
         method: 'PATCH',
         body: JSON.stringify(patch),
       }),
@@ -299,7 +299,7 @@ export function ListPageView({ page, familyId }: Props) {
   // Update page title
   const updateTitleMutation = useMutation({
     mutationFn: (newTitle: string) =>
-      apiRequest(`/families/${familyId}/pages/${page._id}`, {
+      apiRequest(`/families/${familyId}/pages/${page.id}`, {
         method: 'PATCH',
         body: JSON.stringify({ title: newTitle }),
       }),

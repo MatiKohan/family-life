@@ -16,7 +16,7 @@ afterEach(() => {
 afterAll(() => server.close());
 
 const basePage: Page = {
-  _id: 'page-1',
+  id: 'page-1',
   familyId: 'family-1',
   title: 'Groceries',
   emoji: '🛒',

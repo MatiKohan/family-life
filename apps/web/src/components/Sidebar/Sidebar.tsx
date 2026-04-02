@@ -51,7 +51,7 @@ export function Sidebar({ familyId, onClose }: SidebarProps) {
 
   function handlePageCreated(page: PageSummary) {
     setShowCreateModal(false);
-    navigate(`/family/${familyId}/pages/${page._id}`);
+    navigate(`/family/${familyId}/pages/${page.id}`);
     onClose?.();
   }
 
@@ -81,12 +81,12 @@ export function Sidebar({ familyId, onClose }: SidebarProps) {
           <nav aria-label="Pages">
             <ul className="space-y-0.5">
               {pages.map((page) => (
-                <li key={page._id}>
+                <li key={page.id}>
                   <NavLink
-                    to={`/family/${familyId}/pages/${page._id}`}
+                    to={`/family/${familyId}/pages/${page.id}`}
                     onClick={() => onClose?.()}
                     className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors w-full ${
-                      activePageId === page._id
+                      activePageId === page.id
                         ? 'bg-brand-50 text-brand-700 font-medium'
                         : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                     }`}
@@ -103,14 +103,21 @@ export function Sidebar({ familyId, onClose }: SidebarProps) {
 
       {/* Bottom nav */}
       <div className="p-4 border-t border-gray-100 space-y-1">
-        {/* Calendar — disabled */}
-        <span
-          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-400 cursor-not-allowed select-none"
-          aria-disabled="true"
+        {/* Calendar */}
+        <NavLink
+          to={`/family/${familyId}/calendar`}
+          onClick={() => onClose?.()}
+          className={({ isActive }) =>
+            `flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+              isActive
+                ? 'bg-brand-50 text-brand-700 font-medium'
+                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+            }`
+          }
         >
           <CalendarIcon />
           {t('pages.calendar')}
-        </span>
+        </NavLink>
 
         <NavLink
           to={`/family/${familyId}/settings`}

@@ -21,7 +21,7 @@ export interface ListItem {
 }
 
 export interface Page {
-  _id: string;
+  id: string;
   familyId: string;
   title: string;
   emoji: string;
@@ -35,7 +35,7 @@ export interface Page {
 }
 
 export interface PageSummary {
-  _id: string;
+  id: string;
   title: string;
   emoji: string;
   type: PageType;

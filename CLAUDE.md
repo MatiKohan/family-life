@@ -25,9 +25,9 @@ The API runs on `:3000`, web on `:5173`. Swagger docs at `http://localhost:3000/
 
 ## Local setup (macOS, no Docker)
 
-Requires PostgreSQL 16, Redis, and MongoDB 7 running via Homebrew:
+Requires PostgreSQL 16 and Redis running via Homebrew:
 ```bash
-brew services start postgresql@16 redis mongodb/brew/mongodb-community@7.0
+brew services start postgresql@16 redis
 ```
 
 The `.env` `DATABASE_URL` must use your local macOS username (not `postgres`) since Homebrew Postgres creates a superuser matching your system user.
@@ -44,10 +44,9 @@ A copy of `.env` must also exist at `apps/api/.env` — Prisma CLI reads it from
 - `packages/tsconfig` — Shared TS configs (`@family-life/tsconfig`)
 
 ### Database split
-- **PostgreSQL (Prisma)** — structured/relational data: `User`, `Family`, `FamilyMember`, `FamilyInvite`, `CalendarEvent`, `NotificationLog`
-- **MongoDB (Mongoose)** — flexible document data: `Page` (with embedded `ListItem[]` subdocuments)
+- **PostgreSQL (Prisma)** — all data: `User`, `Family`, `FamilyMember`, `FamilyInvite`, `CalendarEvent`, `NotificationLog`, and `Page` (flexible content stored as JSONB `Json` columns for `items`, `taskItems`, and `eventIds`)
 
-Every MongoDB service method first verifies the requesting user is a `FamilyMember` via Prisma before touching MongoDB.
+Every service method verifies the requesting user is a `FamilyMember` via Prisma before accessing page data.
 
 ### Backend (NestJS)
 Modules live at `apps/api/src/modules/[name]/` and follow this structure:

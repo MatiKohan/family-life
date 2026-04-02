@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { usePage } from '../../hooks/usePage';
 import { ListPageView } from '../../components/ListPageView/ListPageView';
 import { TasksPageView } from '../../components/TasksPageView/TasksPageView';
+import { EventsPageView } from '../../components/EventsPageView/EventsPageView';
 
 export function PageViewPage() {
   const { t } = useTranslation();
@@ -60,16 +61,9 @@ export function PageViewPage() {
     return <TasksPageView page={page} familyId={familyId!} />;
   }
 
-  // events — Phase 3 placeholder
-  return (
-    <div className="flex-1 flex items-center justify-center p-8">
-      <div className="text-center max-w-sm">
-        <div className="text-4xl mb-4">📅</div>
-        <h2 className="text-xl font-semibold text-gray-800 mb-2">
-          {page.emoji} {page.title}
-        </h2>
-        <p className="text-gray-500 text-sm">{t('pages.eventsComingSoon')}</p>
-      </div>
-    </div>
-  );
+  if (page.type === 'events') {
+    return <EventsPageView page={page} familyId={familyId!} />;
+  }
+
+  return null;
 }

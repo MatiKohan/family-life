@@ -21,13 +21,44 @@ model User {
 }
 
 model Family {
-  id        String         @id @default(cuid())
+  id        String          @id @default(cuid())
   name      String
-  emoji     String         @default("🏠")
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  emoji     String          @default("🏠")
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
   members   FamilyMember[]
   invites   FamilyInvite[]
+  events    CalendarEvent[]
+  pages     Page[]
+}
+
+model Page {
+  id        String   @id @default(cuid())
+  familyId  String
+  title     String
+  emoji     String   @default("📄")
+  type      String
+  items     Json     @default("[]")
+  taskItems Json     @default("[]")
+  eventIds  Json     @default("[]")
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  family    Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+}
+
+model CalendarEvent {
+  id          String   @id @default(cuid())
+  familyId    String
+  title       String
+  description String?
+  startAt     DateTime
+  endAt       DateTime
+  isAllDay    Boolean  @default(false)
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  family      Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
 }
 
 model FamilyMember {
