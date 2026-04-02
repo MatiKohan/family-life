@@ -1,3 +1,4 @@
+import './i18n/index';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -14,6 +15,11 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+const savedLang = localStorage.getItem('language') || navigator.language.split('-')[0];
+const initialLang = ['en', 'he'].includes(savedLang) ? savedLang : 'en';
+document.documentElement.lang = initialLang;
+document.documentElement.dir = initialLang === 'he' ? 'rtl' : 'ltr';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

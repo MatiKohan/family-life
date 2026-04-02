@@ -2,11 +2,13 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from './components/ProtectedRoute/ProtectedRoute';
 import { ErrorBoundary } from './components/ErrorBoundary/ErrorBoundary';
 import { Layout } from './components/Layout/Layout';
+import { FamilyShell } from './components/FamilyShell/FamilyShell';
 import { LoginPage } from './pages/Login/LoginPage';
 import { AuthCallbackPage } from './pages/AuthCallback/AuthCallbackPage';
 import { FamilyCreatePage } from './pages/FamilyCreate/FamilyCreatePage';
 import { JoinFamilyPage } from './pages/JoinFamily/JoinFamilyPage';
 import { FamilyHomePage } from './pages/FamilyHome/FamilyHomePage';
+import { PageViewPage } from './pages/PageView/PageViewPage';
 
 function HomeRedirect() {
   // Read persisted family-storage directly to avoid a Zustand import cycle
@@ -41,7 +43,7 @@ function App() {
       />
 
       <Route element={<ProtectedRoute />}>
-        {/* Family routes — no top Layout (FamilyHomePage has its own shell) */}
+        {/* Family create — no sidebar shell */}
         <Route
           path="/family/create"
           element={
@@ -50,14 +52,28 @@ function App() {
             </ErrorBoundary>
           }
         />
+
+        {/* Family shell — provides sidebar for all family child routes */}
         <Route
           path="/family/:id"
           element={
             <ErrorBoundary>
-              <FamilyHomePage />
+              <FamilyShell />
             </ErrorBoundary>
           }
-        />
+        >
+          {/* index = /family/:id */}
+          <Route index element={<FamilyHomePage />} />
+          {/* page view = /family/:id/pages/:pageId */}
+          <Route
+            path="pages/:pageId"
+            element={
+              <ErrorBoundary>
+                <PageViewPage />
+              </ErrorBoundary>
+            }
+          />
+        </Route>
 
         {/* Legacy Layout wrapper for any future simple pages */}
         <Route element={<Layout />}>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { apiRequest } from '../../lib/api-client';
 import { useFamilyStore } from '../../store/family.store';
 
@@ -11,6 +12,7 @@ interface JoinResponse {
 }
 
 export function JoinFamilyPage() {
+  const { t } = useTranslation();
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const setActiveFamily = useFamilyStore((s) => s.setActiveFamily);
@@ -83,7 +85,7 @@ export function JoinFamilyPage() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-500 text-sm">Joining family...</p>
+          <p className="text-gray-500 text-sm">{t('invite.joining')}</p>
         </div>
       </div>
     );
@@ -94,13 +96,13 @@ export function JoinFamilyPage() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="max-w-sm w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
           <div className="text-4xl mb-4">😕</div>
-          <h1 className="text-xl font-bold text-gray-900 mb-2">Invite not valid</h1>
+          <h1 className="text-xl font-bold text-gray-900 mb-2">{t('invite.invalidToken')}</h1>
           <p className="text-gray-500 text-sm mb-6">{errorMessage}</p>
           <Link
             to="/"
             className="inline-block bg-brand-600 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-brand-700 transition-colors"
           >
-            Go Home
+            {t('invite.goHome')}
           </Link>
         </div>
       </div>

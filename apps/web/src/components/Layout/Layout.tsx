@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/auth.store';
 import { apiRequest } from '../../lib/api-client';
 
@@ -36,6 +37,7 @@ function CloseIcon() {
 }
 
 export function Layout() {
+  const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const clearSession = useAuthStore((s) => s.clearSession);
   const navigate = useNavigate();
@@ -61,7 +63,7 @@ export function Layout() {
             {/* Desktop nav — hidden on mobile */}
             <nav className="hidden md:flex items-center gap-4 text-sm">
               <Link to="/" className="text-gray-600 hover:text-gray-900 transition-colors">
-                Home
+                {t('nav.home')}
               </Link>
             </nav>
           </div>
@@ -77,7 +79,7 @@ export function Layout() {
                   onClick={() => void handleLogout()}
                   className="text-sm text-gray-500 hover:text-gray-800 transition-colors hidden md:block"
                 >
-                  Sign out
+                  {t('auth.signOut')}
                 </button>
               </>
             )}
@@ -85,7 +87,7 @@ export function Layout() {
             {/* Hamburger — visible on mobile only */}
             <button
               onClick={() => setMenuOpen((prev) => !prev)}
-              aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+              aria-label={menuOpen ? t('nav.closeMenu') : t('nav.openMenu')}
               aria-expanded={menuOpen}
               className="md:hidden p-1.5 text-gray-600 hover:text-gray-900 transition-colors"
             >
@@ -113,7 +115,7 @@ export function Layout() {
                   }}
                   className="px-2 py-2 text-left text-gray-500 hover:text-gray-800 hover:bg-gray-50 rounded-lg transition-colors"
                 >
-                  Sign out
+                  {t('auth.signOut')}
                 </button>
               )}
             </nav>

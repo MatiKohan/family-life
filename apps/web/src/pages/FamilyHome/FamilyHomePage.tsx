@@ -1,87 +1,43 @@
 import { useState } from 'react';
-import { Navigate, useParams } from 'react-router-dom';
-import { useAuthStore } from '../../store/auth.store';
-import { useFamily } from '../../hooks/useFamily';
-import { Sidebar } from '../../components/Sidebar/Sidebar';
-
-function HamburgerIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      className="h-5 w-5"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth={2}
-      aria-hidden="true"
-    >
-      <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-    </svg>
-  );
-}
+import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { CreatePageModal } from '../../components/CreatePageModal/CreatePageModal';
+import { PageSummary } from '../../types/page';
 
 export function FamilyHomePage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
-  const user = useAuthStore((s) => s.user);
-  const { data: family, isLoading, isError } = useFamily(id);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const navigate = useNavigate();
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
-  if (!id) return <Navigate to="/" replace />;
-
-  // After load, if the user doesn't belong to this family the API returns an error
-  if (isError) return <Navigate to="/" replace />;
+  function handlePageCreated(page: PageSummary) {
+    setShowCreateModal(false);
+    navigate(`/family/${id}/pages/${page._id}`);
+  }
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      {/* Sidebar */}
-      <Sidebar
-        familyId={id}
-        open={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-      />
-
-      {/* Main area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-auto">
-        {/* Top bar (mobile only — shows hamburger + family name) */}
-        <header className="md:hidden flex items-center gap-3 px-4 py-3 border-b border-gray-200 bg-white sticky top-0 z-30">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            aria-label="Open sidebar"
-            className="p-1.5 text-gray-600 hover:text-gray-900 transition-colors"
-          >
-            <HamburgerIcon />
-          </button>
-          {isLoading ? (
-            <div className="h-5 w-32 bg-gray-100 rounded animate-pulse" />
-          ) : (
-            <span className="text-sm font-semibold text-gray-900 truncate">
-              {family?.emoji} {family?.name}
-            </span>
-          )}
-          {user?.avatarUrl && (
-            <img
-              src={user.avatarUrl}
-              alt={user.name}
-              className="w-7 h-7 rounded-full ml-auto"
-            />
-          )}
-        </header>
-
-        {/* Page content */}
-        <main className="flex-1 flex items-center justify-center p-8">
-          {isLoading ? (
-            <div className="text-gray-400 text-sm">Loading...</div>
-          ) : (
-            <div className="text-center max-w-sm">
-              <div className="text-5xl mb-4">📄</div>
-              <h2 className="text-xl font-semibold text-gray-800 mb-2">No pages yet</h2>
-              <p className="text-gray-500 text-sm">
-                Create your first page to get started — coming in Phase 2.
-              </p>
-            </div>
-          )}
-        </main>
+    <main className="flex-1 flex items-center justify-center p-8">
+      <div className="text-center max-w-sm">
+        <div className="text-5xl mb-4">📄</div>
+        <h2 className="text-xl font-semibold text-gray-800 mb-2">{t('family.noPages')}</h2>
+        <p className="text-gray-500 text-sm mb-6">
+          {t('family.createFirstPage')}
+        </p>
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors"
+        >
+          + {t('pages.newPage')}
+        </button>
       </div>
-    </div>
+
+      {showCreateModal && id && (
+        <CreatePageModal
+          familyId={id}
+          onClose={() => setShowCreateModal(false)}
+          onCreated={handlePageCreated}
+        />
+      )}
+    </main>
   );
 }

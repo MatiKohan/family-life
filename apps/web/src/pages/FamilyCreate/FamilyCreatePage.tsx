@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { apiRequest } from '../../lib/api-client';
 import { useFamilyStore } from '../../store/family.store';
 import { useMyFamilies } from '../../hooks/useMyFamilies';
 import { Family } from '../../types/family';
 
 export function FamilyCreatePage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const setActiveFamily = useFamilyStore((s) => s.setActiveFamily);
   const { data: families } = useMyFamilies();
@@ -43,14 +45,14 @@ export function FamilyCreatePage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="max-w-sm w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">Create a Family</h1>
-          <p className="text-gray-500 text-sm">Set up your family space to get started.</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">{t('family.createTitle')}</h1>
+          <p className="text-gray-500 text-sm">{t('family.createSubtitle')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="text-xs font-medium text-gray-500 uppercase tracking-wide block mb-2">
-              Icon
+              {t('family.icon')}
             </label>
             <div className="flex flex-wrap gap-2">
               {EMOJIS.map((e) => (
@@ -72,7 +74,7 @@ export function FamilyCreatePage() {
 
           <div>
             <label className="text-xs font-medium text-gray-500 uppercase tracking-wide block mb-1">
-              Family Name
+              {t('family.familyName')}
             </label>
             <input
               type="text"
@@ -80,7 +82,7 @@ export function FamilyCreatePage() {
               onChange={(e) => setName(e.target.value)}
               required
               minLength={2}
-              placeholder="The Smiths"
+              placeholder={t('family.familyNamePlaceholder')}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
@@ -92,7 +94,7 @@ export function FamilyCreatePage() {
             disabled={loading}
             className="w-full bg-brand-600 text-white rounded-lg px-4 py-3 text-sm font-medium hover:bg-brand-700 transition-colors disabled:opacity-50"
           >
-            {loading ? 'Creating...' : 'Create Family'}
+            {loading ? t('family.creating') : t('family.createButton')}
           </button>
         </form>
 
@@ -102,7 +104,7 @@ export function FamilyCreatePage() {
               to={`/family/${families[0].id}`}
               className="text-sm text-brand-600 hover:text-brand-700 transition-colors"
             >
-              Back to my families
+              {t('family.backToFamilies')}
             </Link>
           </div>
         )}

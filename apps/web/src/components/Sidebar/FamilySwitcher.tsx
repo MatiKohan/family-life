@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useMyFamilies } from '../../hooks/useMyFamilies';
 import { useFamilyStore } from '../../store/family.store';
 import { Family } from '../../types/family';
@@ -9,6 +10,7 @@ interface FamilySwitcherProps {
 }
 
 export function FamilySwitcher({ currentFamily }: FamilySwitcherProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const setActiveFamily = useFamilyStore((s) => s.setActiveFamily);
   const { data: families } = useMyFamilies();
@@ -91,7 +93,7 @@ export function FamilySwitcher({ currentFamily }: FamilySwitcherProps) {
               className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors text-left"
             >
               <span className="text-lg leading-none">+</span>
-              <span>New Family</span>
+              <span>{t('family.newFamily')}</span>
             </button>
           </div>
         </div>
