@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useFamily } from '../../hooks/useFamily';
 import { useAuthStore } from '../../store/auth.store';
+import { InviteModal } from '../../components/InviteModal/InviteModal';
 
 const ROLE_BADGE: Record<string, string> = {
   OWNER: 'bg-purple-100 text-purple-700',
@@ -14,6 +16,10 @@ export function FamilySettingsPage() {
   const { t } = useTranslation();
   const currentUser = useAuthStore((s) => s.user);
   const { data: family, isLoading } = useFamily(id);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+
+  const currentMember = family?.members.find((m) => m.user.id === currentUser?.id);
+  const canInvite = currentMember?.role === 'OWNER' || currentMember?.role === 'ADMIN';
 
   if (isLoading) {
     return (
@@ -44,6 +50,16 @@ export function FamilySettingsPage() {
               </p>
             </div>
           </div>
+
+          {canInvite && (
+            <button
+              type="button"
+              onClick={() => setShowInviteModal(true)}
+              className="w-full px-4 py-2 text-sm font-medium text-white bg-brand-600 rounded-lg hover:bg-brand-700 transition-colors"
+            >
+              {t('invite.inviteMember')}
+            </button>
+          )}
         </div>
 
         {/* Members list */}
@@ -82,6 +98,10 @@ export function FamilySettingsPage() {
           </ul>
         </div>
       </div>
+
+      {showInviteModal && id && (
+        <InviteModal familyId={id} onClose={() => setShowInviteModal(false)} />
+      )}
     </main>
   );
 }

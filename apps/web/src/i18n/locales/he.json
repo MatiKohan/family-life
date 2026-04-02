@@ -54,7 +54,15 @@
     "loginRequired": "אנא התחבר כדי להצטרף למשפחה.",
     "mustBeLoggedIn": "עליך להיות מחובר כדי להצטרף למשפחה.",
     "expiredOrInvalid": "ההזמנה פגה תוקף או לא תקינה.",
-    "tryAgain": "משהו השתבש. אנא נסה שוב."
+    "tryAgain": "משהו השתבש. אנא נסה שוב.",
+    "inviteMember": "הזמן חבר",
+    "generateLink": "יצירת קישור הזמנה",
+    "copyLink": "העתק קישור",
+    "copied": "הועתק!",
+    "expiresOn": "תוקף עד {{date}}",
+    "revokeInvite": "בטל",
+    "activeInvites": "הזמנות פעילות",
+    "noActiveInvites": "אין הזמנות פעילות"
   },
   "pages": {
     "newPage": "+ דף חדש",

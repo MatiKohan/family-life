@@ -54,7 +54,15 @@
     "loginRequired": "Please sign in to join this family.",
     "mustBeLoggedIn": "You must be logged in to join this family.",
     "expiredOrInvalid": "This invite is expired or invalid.",
-    "tryAgain": "Something went wrong. Please try again."
+    "tryAgain": "Something went wrong. Please try again.",
+    "inviteMember": "Invite member",
+    "generateLink": "Generate invite link",
+    "copyLink": "Copy link",
+    "copied": "Copied!",
+    "expiresOn": "Expires {{date}}",
+    "revokeInvite": "Revoke",
+    "activeInvites": "Active invites",
+    "noActiveInvites": "No active invites"
   },
   "pages": {
     "newPage": "+ New Page",
