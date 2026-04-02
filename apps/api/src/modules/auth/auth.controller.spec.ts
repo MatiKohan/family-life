@@ -6,6 +6,7 @@ import { AuthModule } from './auth.module';
 import { PrismaModule } from '../../database/prisma.module';
 import { PrismaService } from '../../database/prisma.service';
 import { ConfigModule } from '@nestjs/config';
+import { GoogleStrategy } from './strategies/google.strategy';
 
 const mockPrismaService = {
   user: {
@@ -37,6 +38,8 @@ describe('AuthController (integration)', () => {
     })
       .overrideProvider(PrismaService)
       .useValue(mockPrismaService)
+      .overrideProvider(GoogleStrategy)
+      .useValue({})
       .compile();
 
     app = module.createNestApplication();
