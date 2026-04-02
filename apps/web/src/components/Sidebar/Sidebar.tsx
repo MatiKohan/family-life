@@ -156,34 +156,15 @@ export function Sidebar({ familyId, onClose }: SidebarProps) {
   );
 }
 
-// Keep legacy open/onClose interface for FamilyHomePage compatibility
-interface SidebarWithDrawerProps extends SidebarProps {
-  open: boolean;
+interface SidebarWithDrawerProps {
+  familyId: string;
 }
 
-export function SidebarWithDrawer({ familyId, open, onClose }: SidebarWithDrawerProps) {
+export function SidebarWithDrawer({ familyId }: SidebarWithDrawerProps) {
   return (
-    <>
-      {/* Desktop: static sidebar */}
-      <div className="hidden md:block h-full">
-        <Sidebar familyId={familyId} onClose={onClose} />
-      </div>
-
-      {/* Mobile: drawer overlay */}
-      {open && (
-        <div className="md:hidden fixed inset-0 z-40 flex">
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-black/40"
-            aria-hidden="true"
-            onClick={onClose}
-          />
-          {/* Drawer */}
-          <div className="relative z-50 flex-shrink-0">
-            <Sidebar familyId={familyId} onClose={onClose} />
-          </div>
-        </div>
-      )}
-    </>
+    /* Desktop only — mobile uses the BottomNav instead */
+    <div className="hidden md:block h-full">
+      <Sidebar familyId={familyId} />
+    </div>
   );
 }

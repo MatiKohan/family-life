@@ -5,7 +5,9 @@ import path from 'path';
 const typesDir = path.resolve(__dirname, '../../packages/types/src');
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+  ],
   resolve: {
     alias: {
       '@family-life/types': typesDir,
