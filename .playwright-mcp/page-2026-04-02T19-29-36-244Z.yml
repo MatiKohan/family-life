@@ -1,0 +1,39 @@
+- generic [ref=e2]:
+  - generic [ref=e157]:
+    - complementary [ref=e159]:
+      - button "🏠 Kohans" [ref=e162] [cursor=pointer]:
+        - generic [ref=e163]: 🏠
+        - generic [ref=e164]: Kohans
+        - img [ref=e165]
+      - generic [ref=e167]:
+        - paragraph [ref=e168]: Pages
+        - navigation "Pages" [ref=e243]:
+          - list [ref=e244]:
+            - listitem [ref=e245]:
+              - link "🛒 Grocery" [ref=e246] [cursor=pointer]:
+                - /url: /family/cmnhvb1gz0003c306g8g6yjm3/pages/undefined
+                - generic [ref=e247]: 🛒
+                - generic [ref=e248]: Grocery
+      - generic [ref=e169]:
+        - link "Calendar" [ref=e170] [cursor=pointer]:
+          - /url: /family/cmnhvb1gz0003c306g8g6yjm3/calendar
+          - img [ref=e171]
+          - text: Calendar
+        - link "Settings" [ref=e173] [cursor=pointer]:
+          - /url: /family/cmnhvb1gz0003c306g8g6yjm3/settings
+          - img [ref=e174]
+          - text: Settings
+        - button "+ New Page" [ref=e177] [cursor=pointer]
+      - generic [ref=e179]:
+        - button "EN" [ref=e180] [cursor=pointer]
+        - button "עב" [ref=e181] [cursor=pointer]
+    - generic [ref=e250]:
+      - generic [ref=e251]: 🔍
+      - heading "Page not found" [level=2] [ref=e252]
+      - paragraph [ref=e253]: Failed to load page
+      - link "Back to family home" [ref=e254] [cursor=pointer]:
+        - /url: /family/cmnhvb1gz0003c306g8g6yjm3
+  - generic [ref=e20]:
+    - img [ref=e22]
+    - button "Open Tanstack query devtools" [ref=e70] [cursor=pointer]:
+      - img [ref=e71]

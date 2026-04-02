@@ -1,0 +1,84 @@
+- generic [ref=e2]:
+  - generic [ref=e157]:
+    - generic [ref=e158]:
+      - complementary [ref=e159]:
+        - button "🏠 Kohans" [ref=e162] [cursor=pointer]:
+          - generic [ref=e163]: 🏠
+          - generic [ref=e164]: Kohans
+          - img [ref=e165]
+        - paragraph [ref=e168]: Pages
+        - generic [ref=e169]:
+          - link "Calendar" [ref=e170] [cursor=pointer]:
+            - /url: /family/cmnhvb1gz0003c306g8g6yjm3/calendar
+            - img [ref=e171]
+            - text: Calendar
+          - link "Settings" [ref=e173] [cursor=pointer]:
+            - /url: /family/cmnhvb1gz0003c306g8g6yjm3/settings
+            - img [ref=e174]
+            - text: Settings
+          - button "+ New Page" [ref=e177] [cursor=pointer]
+        - generic [ref=e179]:
+          - button "EN" [ref=e180] [cursor=pointer]
+          - button "עב" [ref=e181] [cursor=pointer]
+      - generic [ref=e191]:
+        - heading "New page" [level=2] [ref=e193]
+        - generic [ref=e194]:
+          - generic [ref=e195]:
+            - generic [ref=e196]: Icon
+            - generic [ref=e197]:
+              - button "Select emoji 📝" [pressed] [ref=e198] [cursor=pointer]: 📝
+              - button "Select emoji 📋" [ref=e199] [cursor=pointer]: 📋
+              - button "Select emoji 🛒" [ref=e200] [cursor=pointer]: 🛒
+              - button "Select emoji 🎁" [ref=e201] [cursor=pointer]: 🎁
+              - button "Select emoji 🏠" [ref=e202] [cursor=pointer]: 🏠
+              - button "Select emoji 🍕" [ref=e203] [cursor=pointer]: 🍕
+              - button "Select emoji 📅" [ref=e204] [cursor=pointer]: 📅
+              - button "Select emoji ✅" [ref=e205] [cursor=pointer]: ✅
+              - button "Select emoji 🎯" [ref=e206] [cursor=pointer]: 🎯
+              - button "Select emoji 🎨" [ref=e207] [cursor=pointer]: 🎨
+              - button "Select emoji 🌟" [ref=e208] [cursor=pointer]: 🌟
+              - button "Select emoji 🏖️" [ref=e209] [cursor=pointer]: 🏖️
+              - button "Select emoji 🎵" [ref=e210] [cursor=pointer]: 🎵
+              - button "Select emoji 📚" [ref=e211] [cursor=pointer]: 📚
+              - button "Select emoji 💪" [ref=e212] [cursor=pointer]: 💪
+              - button "Select emoji 🧹" [ref=e213] [cursor=pointer]: 🧹
+              - button "Select emoji 🌿" [ref=e214] [cursor=pointer]: 🌿
+              - button "Select emoji 💊" [ref=e215] [cursor=pointer]: 💊
+              - button "Select emoji 🐾" [ref=e216] [cursor=pointer]: 🐾
+              - button "Select emoji 🎉" [ref=e217] [cursor=pointer]: 🎉
+          - generic [ref=e218]:
+            - generic [ref=e219]: Title
+            - textbox "Title" [active] [ref=e220]:
+              - /placeholder: My new page
+          - generic [ref=e221]:
+            - generic [ref=e222]: Type
+            - generic [ref=e223]:
+              - button "📋 List Checklist, grocery, tasks" [pressed] [ref=e224] [cursor=pointer]:
+                - generic [ref=e225]: 📋
+                - generic [ref=e226]:
+                  - generic [ref=e227]: List
+                  - generic [ref=e228]: Checklist, grocery, tasks
+              - button "✅ Tasks Assignable tasks with status" [ref=e229] [cursor=pointer]:
+                - generic [ref=e230]: ✅
+                - generic [ref=e231]:
+                  - generic [ref=e232]: Tasks
+                  - generic [ref=e233]: Assignable tasks with status
+              - button "📅 Events Upcoming events Coming soon" [disabled] [ref=e234]:
+                - generic [ref=e235]: 📅
+                - generic [ref=e236]:
+                  - generic [ref=e237]: Events
+                  - generic [ref=e238]: Upcoming events
+                - generic [ref=e239]: Coming soon
+        - generic [ref=e240]:
+          - button "Cancel" [ref=e241] [cursor=pointer]
+          - button "Create" [disabled] [ref=e242]
+    - main [ref=e183]:
+      - generic [ref=e184]:
+        - generic [ref=e185]: 📄
+        - heading "No pages yet" [level=2] [ref=e186]
+        - paragraph [ref=e187]: Create your first page to organize your family.
+        - button "+ New Page" [ref=e188] [cursor=pointer]
+  - generic [ref=e20]:
+    - img [ref=e22]
+    - button "Open Tanstack query devtools" [ref=e70] [cursor=pointer]:
+      - img [ref=e71]

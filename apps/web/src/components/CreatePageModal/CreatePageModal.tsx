@@ -98,7 +98,7 @@ export function CreatePageModal({ familyId, onClose, onCreated }: Props) {
             {/* Title input */}
             <div>
               <label htmlFor="page-title" className="block text-sm font-medium text-gray-700 mb-1">
-                Title
+                {t('pages.titleLabel')}
               </label>
               <input
                 id="page-title"
@@ -113,7 +113,7 @@ export function CreatePageModal({ familyId, onClose, onCreated }: Props) {
 
             {/* Page type selector */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t('pages.typeLabel')}</label>
               <div className="grid grid-cols-3 gap-3">
                 {/* List type */}
                 <button

@@ -60,10 +60,12 @@ i18n.use(initReactI18next).init({
           loginRequired: 'You must be logged in to join this family.',
         },
         pages: {
-          newPage: 'New Page',
+          newPage: '+ New Page',
           calendar: 'Calendar',
           createTitle: 'New page',
+          titleLabel: 'Title',
           titlePlaceholder: 'My new page',
+          typeLabel: 'Type',
           listType: 'List',
           listTypeDesc: 'Checklist, grocery, tasks',
           eventsType: 'Events',
@@ -74,6 +76,7 @@ i18n.use(initReactI18next).init({
           notFoundBack: 'Back to family home',
           eventsComingSoon: 'Events page — coming in Phase 3.',
           loadError: 'This page may have been deleted or you may not have access.',
+          pages: 'Pages',
         },
         tasks: {
           todo: 'To do',

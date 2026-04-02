@@ -68,7 +68,7 @@ export function Sidebar({ familyId, onClose }: SidebarProps) {
 
       {/* Pages section */}
       <div className="flex-1 overflow-y-auto p-4">
-        <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Pages</p>
+        <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">{t('pages.pages')}</p>
 
         {pagesLoading ? (
           // Loading skeleton
@@ -139,7 +139,7 @@ export function Sidebar({ familyId, onClose }: SidebarProps) {
           onClick={() => setShowCreateModal(true)}
           className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-brand-600 hover:bg-brand-50 hover:text-brand-700 transition-colors font-medium"
         >
-          + {t('pages.newPage')}
+          {t('pages.newPage')}
         </button>
       </div>
 

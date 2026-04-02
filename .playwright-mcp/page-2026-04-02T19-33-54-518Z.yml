@@ -1,0 +1,31 @@
+- generic [ref=e2]:
+  - generic [ref=e119]:
+    - complementary [ref=e121]:
+      - button "🏠 Kohans" [ref=e124] [cursor=pointer]:
+        - generic [ref=e125]: 🏠
+        - generic [ref=e126]: Kohans
+        - img [ref=e127]
+      - paragraph [ref=e130]: Pages
+      - generic [ref=e131]:
+        - link "Calendar" [ref=e132] [cursor=pointer]:
+          - /url: /family/cmnhvb1gz0003c306g8g6yjm3/calendar
+          - img [ref=e133]
+          - text: Calendar
+        - link "Settings" [ref=e135] [cursor=pointer]:
+          - /url: /family/cmnhvb1gz0003c306g8g6yjm3/settings
+          - img [ref=e136]
+          - text: Settings
+        - button "+ New Page" [ref=e139] [cursor=pointer]
+      - generic [ref=e141]:
+        - button "EN" [ref=e142] [cursor=pointer]
+        - button "עב" [ref=e143] [cursor=pointer]
+    - main [ref=e145]:
+      - generic [ref=e146]:
+        - generic [ref=e147]: 📄
+        - heading "No pages yet" [level=2] [ref=e148]
+        - paragraph [ref=e149]: Create your first page to organize your family.
+        - button "+ New Page" [ref=e150] [cursor=pointer]
+  - generic [ref=e20]:
+    - img [ref=e22]
+    - button "Open Tanstack query devtools" [ref=e70] [cursor=pointer]:
+      - img [ref=e71]

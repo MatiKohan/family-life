@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Navigate, useParams, Outlet } from 'react-router-dom';
 import { useAuthStore } from '../../store/auth.store';
+import { useFamilyStore } from '../../store/family.store';
 import { useFamily } from '../../hooks/useFamily';
 import { SidebarWithDrawer } from '../Sidebar/Sidebar';
 
@@ -30,8 +31,13 @@ export function FamilyShell() {
   const { data: family, isLoading, isError } = useFamily(id);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  const clearActiveFamily = useFamilyStore((s) => s.clearActiveFamily);
+
   if (!id) return <Navigate to="/" replace />;
-  if (isError) return <Navigate to="/" replace />;
+  if (isError) {
+    clearActiveFamily();
+    return <Navigate to="/family/create" replace />;
+  }
 
   return (
     <div className="flex h-screen overflow-hidden">

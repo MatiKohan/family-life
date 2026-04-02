@@ -1,0 +1,37 @@
+- generic [ref=e2]:
+  - generic [ref=e125]:
+    - generic [ref=e126]:
+      - heading "Create a Family" [level=1] [ref=e127]
+      - paragraph [ref=e128]: Set up your family space to get started.
+    - generic [ref=e129]:
+      - generic [ref=e130]:
+        - generic [ref=e131]: Icon
+        - generic [ref=e132]:
+          - button "🏠" [ref=e133] [cursor=pointer]
+          - button "👨‍👩‍👧‍👦" [ref=e134] [cursor=pointer]
+          - button "👨‍👩‍👦" [ref=e135] [cursor=pointer]
+          - button "👨‍👩‍👧" [ref=e136] [cursor=pointer]
+          - button "🏡" [ref=e137] [cursor=pointer]
+          - button "🌻" [ref=e138] [cursor=pointer]
+          - button "⭐" [ref=e139] [cursor=pointer]
+          - button "🎉" [ref=e140] [cursor=pointer]
+          - button "🌈" [ref=e141] [cursor=pointer]
+          - button "🦁" [ref=e142] [cursor=pointer]
+          - button "🐻" [ref=e143] [cursor=pointer]
+          - button "🐼" [ref=e144] [cursor=pointer]
+          - button "🌺" [ref=e145] [cursor=pointer]
+          - button "🍀" [ref=e146] [cursor=pointer]
+          - button "🏖️" [ref=e147] [cursor=pointer]
+          - button "🎨" [ref=e148] [cursor=pointer]
+          - button "🎵" [ref=e149] [cursor=pointer]
+          - button "🚀" [ref=e150] [cursor=pointer]
+          - button "❤️" [ref=e151] [cursor=pointer]
+          - button "🌙" [ref=e152] [cursor=pointer]
+      - generic [ref=e153]:
+        - generic [ref=e154]: Family Name
+        - textbox "The Smiths" [ref=e155]
+      - button "Create Family" [ref=e156] [cursor=pointer]
+  - generic [ref=e20]:
+    - img [ref=e22]
+    - button "Open Tanstack query devtools" [ref=e70] [cursor=pointer]:
+      - img [ref=e71]

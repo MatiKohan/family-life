@@ -6,6 +6,6 @@ export function usePage(familyId: string | undefined, pageId: string | undefined
   return useQuery<Page>({
     queryKey: ['pages', familyId, pageId],
     queryFn: () => apiRequest<Page>(`/families/${familyId}/pages/${pageId}`),
-    enabled: !!familyId && !!pageId,
+    enabled: !!familyId && !!pageId && pageId !== 'undefined',
   });
 }
