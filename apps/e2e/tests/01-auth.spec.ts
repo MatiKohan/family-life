@@ -2,7 +2,7 @@
  * Journey: Registration and Login
  *
  * Covers:
- * - New user registers with email + password → lands on home page
+ * - New user registers with email + password → lands on /family/create (no family yet)
  * - Returning user can log in via form
  * - Invalid credentials show an error
  * - Unauthenticated user redirected to /login
@@ -23,8 +23,8 @@ test.describe('Registration', () => {
     await page.getByPlaceholder('••••••').fill(PASSWORD);
     await page.getByRole('button', { name: /create account/i }).click();
 
-    await expect(page).toHaveURL('/');
-    await expect(page.getByRole('heading', { name: /welcome/i })).toBeVisible();
+    // New user with no family lands on /family/create
+    await expect(page).toHaveURL('/family/create');
   });
 });
 
@@ -42,7 +42,8 @@ test.describe('Login', () => {
     await page.getByPlaceholder('••••••').fill(PASSWORD);
     await page.getByRole('button', { name: /sign in/i }).click();
 
-    await expect(page).toHaveURL('/');
+    // User with no family lands on /family/create
+    await expect(page).toHaveURL('/family/create');
   });
 
   test('wrong password shows error message', async ({ page }) => {
