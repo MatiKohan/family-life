@@ -1,11 +1,11 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
-import request from 'supertest';
+import { ConfigModule } from '@nestjs/config';
+import { Test, TestingModule } from '@nestjs/testing';
 import cookieParser from 'cookie-parser';
-import { AuthModule } from './auth.module';
+import request from 'supertest';
 import { PrismaModule } from '../../database/prisma.module';
 import { PrismaService } from '../../database/prisma.service';
-import { ConfigModule } from '@nestjs/config';
+import { AuthModule } from './auth.module';
 import { GoogleStrategy } from './strategies/google.strategy';
 
 const mockPrismaService = {
@@ -36,7 +36,8 @@ describe('AuthController (integration)', () => {
               JWT_REFRESH_EXPIRES_IN: '7d',
               GOOGLE_CLIENT_ID: 'test-google-client-id',
               GOOGLE_CLIENT_SECRET: 'test-google-client-secret',
-              GOOGLE_CALLBACK_URL: 'http://localhost:3000/api/auth/google/callback',
+              GOOGLE_CALLBACK_URL:
+                'http://localhost:3000/api/auth/google/callback',
             }),
           ],
         }),
