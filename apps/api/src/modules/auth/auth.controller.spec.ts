@@ -27,9 +27,17 @@ describe('AuthController (integration)', () => {
       imports: [
         ConfigModule.forRoot({
           isGlobal: true,
-          envFilePath: [
-            `.env.${process.env.NODE_ENV ?? 'development'}`,
-            '.env',
+          ignoreEnvFile: true,
+          load: [
+            () => ({
+              JWT_SECRET: 'test-secret',
+              JWT_EXPIRES_IN: '15m',
+              JWT_REFRESH_SECRET: 'test-refresh-secret',
+              JWT_REFRESH_EXPIRES_IN: '7d',
+              GOOGLE_CLIENT_ID: 'test-google-client-id',
+              GOOGLE_CLIENT_SECRET: 'test-google-client-secret',
+              GOOGLE_CALLBACK_URL: 'http://localhost:3000/api/auth/google/callback',
+            }),
           ],
         }),
         PrismaModule,
