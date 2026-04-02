@@ -16,6 +16,8 @@
     "register": "הרשמה",
     "createAccount": "יצירת חשבון",
     "noAccount": "אין חשבון?",
+    "noAccountFound": "לא נמצא חשבון עם כתובת מייל זו.",
+    "createOne": "צור חשבון",
     "hasAccount": "כבר יש לך חשבון?",
     "email": "אימייל",
     "password": "סיסמה",

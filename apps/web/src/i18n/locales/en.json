@@ -16,6 +16,8 @@
     "register": "Register",
     "createAccount": "Create account",
     "noAccount": "No account?",
+    "noAccountFound": "No account found with this email.",
+    "createOne": "Create one",
     "hasAccount": "Already have an account?",
     "email": "Email",
     "password": "Password",

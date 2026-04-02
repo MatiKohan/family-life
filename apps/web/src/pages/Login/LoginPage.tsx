@@ -59,7 +59,12 @@ export function LoginPage() {
       setSession(res.user, res.accessToken);
       navigate(redirectTo, { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong');
+      const message = err instanceof Error ? err.message : 'Something went wrong';
+      if (mode === 'login' && message.toLowerCase().includes('invalid credentials')) {
+        setError('__no_account__');
+      } else {
+        setError(message);
+      }
     } finally {
       setLoading(false);
     }
@@ -114,8 +119,20 @@ export function LoginPage() {
             />
           </div>
 
-          {error && (
+          {error && error !== '__no_account__' && (
             <p className="text-sm text-red-600">{error}</p>
+          )}
+          {error === '__no_account__' && (
+            <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
+              {t('auth.noAccountFound')}{' '}
+              <button
+                type="button"
+                onClick={() => { setMode('register'); setError(''); }}
+                className="font-medium underline hover:text-amber-900"
+              >
+                {t('auth.createOne')}
+              </button>
+            </div>
           )}
 
           <button
