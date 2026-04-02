@@ -10,10 +10,12 @@ import { JoinFamilyPage } from './pages/JoinFamily/JoinFamilyPage';
 import { FamilyHomePage } from './pages/FamilyHome/FamilyHomePage';
 import { PageViewPage } from './pages/PageView/PageViewPage';
 import { CalendarPage } from './pages/Calendar/CalendarPage';
+import { FamilySettingsPage } from './pages/FamilySettings/FamilySettingsPage';
+import { useMyFamilies } from './hooks/useMyFamilies';
+import { useFamilyStore } from './store/family.store';
 
 function HomeRedirect() {
-  // Read persisted family-storage directly to avoid a Zustand import cycle
-  // and to keep this component dependency-free.
+  // Fast path: check localStorage first
   try {
     const raw = localStorage.getItem('family-storage');
     if (raw) {
@@ -24,6 +26,22 @@ function HomeRedirect() {
   } catch {
     // ignore parse errors
   }
+
+  // Slow path: fetch families from API
+  return <FamiliesRedirect />;
+}
+
+function FamiliesRedirect() {
+  const { data: families, isLoading } = useMyFamilies();
+  const setActiveFamily = useFamilyStore((s) => s.setActiveFamily);
+
+  if (isLoading) return null;
+
+  if (families && families.length > 0) {
+    setActiveFamily(families[0].id);
+    return <Navigate to={`/family/${families[0].id}`} replace />;
+  }
+
   return <Navigate to="/family/create" replace />;
 }
 
@@ -80,6 +98,15 @@ function App() {
             element={
               <ErrorBoundary>
                 <CalendarPage />
+              </ErrorBoundary>
+            }
+          />
+          {/* settings = /family/:id/settings */}
+          <Route
+            path="settings"
+            element={
+              <ErrorBoundary>
+                <FamilySettingsPage />
               </ErrorBoundary>
             }
           />
