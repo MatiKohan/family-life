@@ -1,4 +1,11 @@
-import { IsEmail, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import {
+  IsEmail,
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
@@ -13,7 +20,10 @@ export class CreateTargetedInviteDto {
   @IsString()
   phone?: string;
 
-  @ApiPropertyOptional({ example: 7, description: 'Days until the invite expires' })
+  @ApiPropertyOptional({
+    example: 7,
+    description: 'Days until the invite expires',
+  })
   @IsOptional()
   @Type(() => Number)
   @IsInt()

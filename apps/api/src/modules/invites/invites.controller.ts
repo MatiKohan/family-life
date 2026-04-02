@@ -49,10 +49,7 @@ export class InvitesController {
   @Get('families/:id/invites')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
-  listInvites(
-    @CurrentUser() user: AuthUser,
-    @Param('id') familyId: string,
-  ) {
+  listInvites(@CurrentUser() user: AuthUser, @Param('id') familyId: string) {
     return this.invitesService.listInvites(user.id, familyId);
   }
 

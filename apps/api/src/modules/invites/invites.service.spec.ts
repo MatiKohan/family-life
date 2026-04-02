@@ -70,10 +70,14 @@ describe('InvitesService', () => {
       const result = await service.createLinkInvite(USER_ID, FAMILY_ID, {});
 
       expect(mockFamilyService.requireRole).toHaveBeenCalledWith(
-        USER_ID, FAMILY_ID, [FamilyRole.ADMIN, FamilyRole.OWNER],
+        USER_ID,
+        FAMILY_ID,
+        [FamilyRole.ADMIN, FamilyRole.OWNER],
       );
       expect(result.token).toBe(INVITE_TOKEN);
-      expect(result.inviteUrl).toBe(`http://localhost:5173/join/${INVITE_TOKEN}`);
+      expect(result.inviteUrl).toBe(
+        `http://localhost:5173/join/${INVITE_TOKEN}`,
+      );
     });
 
     it('uses default 7 days expiry when not specified', async () => {
@@ -85,7 +89,9 @@ describe('InvitesService', () => {
       const createCall = mockPrisma.familyInvite.create.mock.calls[0][0];
       const expiresAt: Date = createCall.data.expiresAt;
       const expectedMs = 7 * 24 * 60 * 60 * 1000;
-      expect(expiresAt.getTime() - Date.now()).toBeGreaterThan(expectedMs - 5000);
+      expect(expiresAt.getTime() - Date.now()).toBeGreaterThan(
+        expectedMs - 5000,
+      );
       expect(expiresAt.getTime() - Date.now()).toBeLessThan(expectedMs + 5000);
     });
   });
@@ -93,7 +99,11 @@ describe('InvitesService', () => {
   describe('createTargetedInvite', () => {
     it('creates invite with email and phone', async () => {
       mockFamilyService.requireRole.mockResolvedValue(undefined);
-      const inviteWithContact = { ...pendingInvite, email: 'a@b.com', phone: '+1234' };
+      const inviteWithContact = {
+        ...pendingInvite,
+        email: 'a@b.com',
+        phone: '+1234',
+      };
       mockPrisma.familyInvite.create.mockResolvedValue(inviteWithContact);
 
       const result = await service.createTargetedInvite(USER_ID, FAMILY_ID, {
@@ -129,7 +139,9 @@ describe('InvitesService', () => {
       mockFamilyService.requireRole.mockResolvedValue(undefined);
       mockPrisma.familyInvite.findFirst.mockResolvedValue(null);
 
-      await expect(service.revokeInvite(USER_ID, FAMILY_ID, INVITE_ID)).rejects.toThrow(NotFoundException);
+      await expect(
+        service.revokeInvite(USER_ID, FAMILY_ID, INVITE_ID),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('deletes invite when found', async () => {
@@ -138,7 +150,9 @@ describe('InvitesService', () => {
       mockPrisma.familyInvite.delete.mockResolvedValue(pendingInvite);
 
       await service.revokeInvite(USER_ID, FAMILY_ID, INVITE_ID);
-      expect(mockPrisma.familyInvite.delete).toHaveBeenCalledWith({ where: { id: INVITE_ID } });
+      expect(mockPrisma.familyInvite.delete).toHaveBeenCalledWith({
+        where: { id: INVITE_ID },
+      });
     });
   });
 
@@ -150,7 +164,9 @@ describe('InvitesService', () => {
 
     it('throws NotFoundException when token not found', async () => {
       mockPrisma.familyInvite.findUnique.mockResolvedValue(null);
-      await expect(service.redeemInvite(INVITE_TOKEN, USER_ID)).rejects.toThrow(NotFoundException);
+      await expect(service.redeemInvite(INVITE_TOKEN, USER_ID)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('throws GoneException when invite is already accepted', async () => {
@@ -158,7 +174,9 @@ describe('InvitesService', () => {
         ...pendingInvite,
         status: InviteStatus.ACCEPTED,
       });
-      await expect(service.redeemInvite(INVITE_TOKEN, USER_ID)).rejects.toThrow(GoneException);
+      await expect(service.redeemInvite(INVITE_TOKEN, USER_ID)).rejects.toThrow(
+        GoneException,
+      );
     });
 
     it('throws GoneException when invite is expired', async () => {
@@ -168,7 +186,9 @@ describe('InvitesService', () => {
       });
       mockPrisma.familyInvite.update.mockResolvedValue({});
 
-      await expect(service.redeemInvite(INVITE_TOKEN, USER_ID)).rejects.toThrow(GoneException);
+      await expect(service.redeemInvite(INVITE_TOKEN, USER_ID)).rejects.toThrow(
+        GoneException,
+      );
     });
 
     it('adds user as member and marks invite ACCEPTED on success', async () => {
@@ -178,12 +198,18 @@ describe('InvitesService', () => {
 
       const result = await service.redeemInvite(INVITE_TOKEN, USER_ID);
 
-      expect(mockFamilyService.addMemberByInvite).toHaveBeenCalledWith(USER_ID, FAMILY_ID);
+      expect(mockFamilyService.addMemberByInvite).toHaveBeenCalledWith(
+        USER_ID,
+        FAMILY_ID,
+      );
       expect(mockPrisma.familyInvite.update).toHaveBeenCalledWith({
         where: { id: INVITE_ID },
         data: { status: InviteStatus.ACCEPTED },
       });
-      expect(result).toEqual({ familyId: FAMILY_ID, familyName: 'Test Family' });
+      expect(result).toEqual({
+        familyId: FAMILY_ID,
+        familyName: 'Test Family',
+      });
     });
   });
 });

@@ -73,7 +73,10 @@ export class FamilyService {
   }
 
   async updateFamily(userId: string, familyId: string, dto: UpdateFamilyDto) {
-    await this.requireRole(userId, familyId, [FamilyRole.ADMIN, FamilyRole.OWNER]);
+    await this.requireRole(userId, familyId, [
+      FamilyRole.ADMIN,
+      FamilyRole.OWNER,
+    ]);
     return this.prisma.family.update({
       where: { id: familyId },
       data: {
@@ -175,11 +178,7 @@ export class FamilyService {
     return member;
   }
 
-  async requireRole(
-    userId: string,
-    familyId: string,
-    roles: FamilyRole[],
-  ) {
+  async requireRole(userId: string, familyId: string, roles: FamilyRole[]) {
     const member = await this.requireMember(userId, familyId);
     if (!roles.includes(member.role)) {
       throw new ForbiddenException('Insufficient role');
@@ -191,7 +190,8 @@ export class FamilyService {
     const existing = await this.prisma.familyMember.findUnique({
       where: { familyId_userId: { familyId, userId } },
     });
-    if (existing) throw new ConflictException('Already a member of this family');
+    if (existing)
+      throw new ConflictException('Already a member of this family');
 
     await this.prisma.familyMember.create({
       data: { familyId, userId, role: FamilyRole.MEMBER },

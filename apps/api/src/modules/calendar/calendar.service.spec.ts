@@ -7,7 +7,12 @@ const FAMILY_ID = 'family-1';
 const USER_ID = 'user-1';
 const EVENT_ID = 'event-1';
 
-const mockMember = { id: 'member-1', familyId: FAMILY_ID, userId: USER_ID, role: 'MEMBER' };
+const mockMember = {
+  id: 'member-1',
+  familyId: FAMILY_ID,
+  userId: USER_ID,
+  role: 'MEMBER',
+};
 const mockEvent = {
   id: EVENT_ID,
   familyId: FAMILY_ID,

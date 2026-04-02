@@ -21,8 +21,22 @@ function makeListPage(overrides: Record<string, unknown> = {}) {
     title: 'My List',
     emoji: '📄',
     type: 'list',
-    items: [] as { id: string; text: string; checked: boolean; assigneeId: string | null; dueDate: string | null; createdAt: string }[],
-    taskItems: [] as { id: string; text: string; assigneeId: string | null; status: string; dueDate: string | null; createdAt: string }[],
+    items: [] as {
+      id: string;
+      text: string;
+      checked: boolean;
+      assigneeId: string | null;
+      dueDate: string | null;
+      createdAt: string;
+    }[],
+    taskItems: [] as {
+      id: string;
+      text: string;
+      assigneeId: string | null;
+      status: string;
+      dueDate: string | null;
+      createdAt: string;
+    }[],
     eventIds: [] as string[],
     createdBy: USER_ID,
     createdAt: new Date(),
@@ -67,7 +81,9 @@ describe('PagesService', () => {
   describe('listPages', () => {
     it('returns pages for a family member', async () => {
       mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
-      const pages = [{ id: PAGE_ID, title: 'My List', emoji: '📄', type: 'list' }];
+      const pages = [
+        { id: PAGE_ID, title: 'My List', emoji: '📄', type: 'list' },
+      ];
       mockPrisma.page.findMany.mockResolvedValue(pages);
 
       const result = await service.listPages(FAMILY_ID, USER_ID);
@@ -86,7 +102,9 @@ describe('PagesService', () => {
     it('throws ForbiddenException if user is not a member', async () => {
       mockPrisma.familyMember.findUnique.mockResolvedValue(null);
 
-      await expect(service.listPages(FAMILY_ID, USER_ID)).rejects.toThrow(ForbiddenException);
+      await expect(service.listPages(FAMILY_ID, USER_ID)).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 
@@ -119,7 +137,10 @@ describe('PagesService', () => {
       mockPrisma.familyMember.findUnique.mockResolvedValue(null);
 
       await expect(
-        service.createPage(FAMILY_ID, USER_ID, { title: 'Shopping', type: 'list' }),
+        service.createPage(FAMILY_ID, USER_ID, {
+          title: 'Shopping',
+          type: 'list',
+        }),
       ).rejects.toThrow(ForbiddenException);
     });
   });
@@ -140,17 +161,26 @@ describe('PagesService', () => {
       mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
       mockPrisma.page.findFirst.mockResolvedValue(null);
 
-      await expect(service.getPage(FAMILY_ID, PAGE_ID, USER_ID)).rejects.toThrow(NotFoundException);
+      await expect(
+        service.getPage(FAMILY_ID, PAGE_ID, USER_ID),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('attaches events for an events-type page', async () => {
       mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
-      const eventsPage = makeListPage({ type: 'events', eventIds: ['event-1'] });
+      const eventsPage = makeListPage({
+        type: 'events',
+        eventIds: ['event-1'],
+      });
       mockPrisma.page.findFirst.mockResolvedValue(eventsPage);
       const events = [{ id: 'event-1', title: 'Birthday' }];
       mockPrisma.calendarEvent.findMany.mockResolvedValue(events);
 
-      const result = await service.getPage(FAMILY_ID, PAGE_ID, USER_ID) as typeof eventsPage & { events: unknown[] };
+      const result = (await service.getPage(
+        FAMILY_ID,
+        PAGE_ID,
+        USER_ID,
+      )) as typeof eventsPage & { events: unknown[] };
       expect(result.events).toEqual(events);
     });
   });
@@ -197,14 +227,18 @@ describe('PagesService', () => {
       mockPrisma.page.delete.mockResolvedValue(page);
 
       await service.deletePage(FAMILY_ID, PAGE_ID, USER_ID);
-      expect(mockPrisma.page.delete).toHaveBeenCalledWith({ where: { id: PAGE_ID } });
+      expect(mockPrisma.page.delete).toHaveBeenCalledWith({
+        where: { id: PAGE_ID },
+      });
     });
 
     it('throws NotFoundException when page does not exist', async () => {
       mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
       mockPrisma.page.findFirst.mockResolvedValue(null);
 
-      await expect(service.deletePage(FAMILY_ID, PAGE_ID, USER_ID)).rejects.toThrow(NotFoundException);
+      await expect(
+        service.deletePage(FAMILY_ID, PAGE_ID, USER_ID),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -215,10 +249,24 @@ describe('PagesService', () => {
       mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
       const page = makeListPage();
       mockPrisma.page.findFirst.mockResolvedValue(page);
-      const updatedPage = { ...page, items: [{ id: 'uuid', text: 'Buy milk', checked: false, assigneeId: null, dueDate: null, createdAt: '' }] };
+      const updatedPage = {
+        ...page,
+        items: [
+          {
+            id: 'uuid',
+            text: 'Buy milk',
+            checked: false,
+            assigneeId: null,
+            dueDate: null,
+            createdAt: '',
+          },
+        ],
+      };
       mockPrisma.page.update.mockResolvedValue(updatedPage);
 
-      const result = await service.addItem(FAMILY_ID, PAGE_ID, USER_ID, { text: 'Buy milk' });
+      const result = await service.addItem(FAMILY_ID, PAGE_ID, USER_ID, {
+        text: 'Buy milk',
+      });
 
       expect(mockPrisma.page.update).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -266,23 +314,43 @@ describe('PagesService', () => {
   describe('updateItem', () => {
     it('updates matching item', async () => {
       mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
-      const item = { id: ITEM_ID, text: 'Old text', checked: false, assigneeId: null, dueDate: null, createdAt: '' };
+      const item = {
+        id: ITEM_ID,
+        text: 'Old text',
+        checked: false,
+        assigneeId: null,
+        dueDate: null,
+        createdAt: '',
+      };
       const page = makeListPage({ items: [item] });
       mockPrisma.page.findFirst.mockResolvedValue(page);
-      const updatedPage = { ...page, items: [{ ...item, text: 'New text', checked: true }] };
+      const updatedPage = {
+        ...page,
+        items: [{ ...item, text: 'New text', checked: true }],
+      };
       mockPrisma.page.update.mockResolvedValue(updatedPage);
 
-      const result = await service.updateItem(FAMILY_ID, PAGE_ID, ITEM_ID, USER_ID, {
-        text: 'New text',
-        checked: true,
-      });
+      const result = await service.updateItem(
+        FAMILY_ID,
+        PAGE_ID,
+        ITEM_ID,
+        USER_ID,
+        {
+          text: 'New text',
+          checked: true,
+        },
+      );
 
       expect(mockPrisma.page.update).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { id: PAGE_ID },
           data: expect.objectContaining({
             items: expect.arrayContaining([
-              expect.objectContaining({ id: ITEM_ID, text: 'New text', checked: true }),
+              expect.objectContaining({
+                id: ITEM_ID,
+                text: 'New text',
+                checked: true,
+              }),
             ]),
           }),
         }),
@@ -294,7 +362,9 @@ describe('PagesService', () => {
       mockPrisma.familyMember.findUnique.mockResolvedValue(null);
 
       await expect(
-        service.updateItem(FAMILY_ID, PAGE_ID, ITEM_ID, USER_ID, { checked: true }),
+        service.updateItem(FAMILY_ID, PAGE_ID, ITEM_ID, USER_ID, {
+          checked: true,
+        }),
       ).rejects.toThrow(ForbiddenException);
     });
   });
@@ -304,7 +374,14 @@ describe('PagesService', () => {
   describe('deleteItem', () => {
     it('removes item from the page', async () => {
       mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
-      const item = { id: ITEM_ID, text: 'Buy milk', checked: false, assigneeId: null, dueDate: null, createdAt: '' };
+      const item = {
+        id: ITEM_ID,
+        text: 'Buy milk',
+        checked: false,
+        assigneeId: null,
+        dueDate: null,
+        createdAt: '',
+      };
       const page = makeListPage({ items: [item] });
       mockPrisma.page.findFirst.mockResolvedValue(page);
       const updatedPage = { ...page, items: [] };
@@ -335,17 +412,35 @@ describe('PagesService', () => {
       mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
       const page = makeListPage({ type: 'tasks' });
       mockPrisma.page.findFirst.mockResolvedValue(page);
-      const updatedPage = { ...page, taskItems: [{ id: 'uuid', text: 'Fix the roof', assigneeId: null, status: 'todo', dueDate: null, createdAt: '' }] };
+      const updatedPage = {
+        ...page,
+        taskItems: [
+          {
+            id: 'uuid',
+            text: 'Fix the roof',
+            assigneeId: null,
+            status: 'todo',
+            dueDate: null,
+            createdAt: '',
+          },
+        ],
+      };
       mockPrisma.page.update.mockResolvedValue(updatedPage);
 
-      const result = await service.addTaskItem(FAMILY_ID, PAGE_ID, USER_ID, { text: 'Fix the roof' });
+      const result = await service.addTaskItem(FAMILY_ID, PAGE_ID, USER_ID, {
+        text: 'Fix the roof',
+      });
 
       expect(mockPrisma.page.update).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { id: PAGE_ID },
           data: expect.objectContaining({
             taskItems: expect.arrayContaining([
-              expect.objectContaining({ text: 'Fix the roof', status: 'todo', assigneeId: null }),
+              expect.objectContaining({
+                text: 'Fix the roof',
+                status: 'todo',
+                assigneeId: null,
+              }),
             ]),
           }),
         }),
@@ -359,7 +454,9 @@ describe('PagesService', () => {
       mockPrisma.page.findFirst.mockResolvedValue(listPage);
 
       await expect(
-        service.addTaskItem(FAMILY_ID, PAGE_ID, USER_ID, { text: 'Fix the roof' }),
+        service.addTaskItem(FAMILY_ID, PAGE_ID, USER_ID, {
+          text: 'Fix the roof',
+        }),
       ).rejects.toThrow(BadRequestException);
     });
   });
@@ -369,15 +466,31 @@ describe('PagesService', () => {
   describe('updateTaskItem', () => {
     it('updates status on an existing task item', async () => {
       mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
-      const taskItem = { id: ITEM_ID, text: 'Fix the roof', assigneeId: null, status: 'todo', dueDate: null, createdAt: '' };
+      const taskItem = {
+        id: ITEM_ID,
+        text: 'Fix the roof',
+        assigneeId: null,
+        status: 'todo',
+        dueDate: null,
+        createdAt: '',
+      };
       const page = makeListPage({ type: 'tasks', taskItems: [taskItem] });
       mockPrisma.page.findFirst.mockResolvedValue(page);
-      const updatedPage = { ...page, taskItems: [{ ...taskItem, status: 'in-progress' }] };
+      const updatedPage = {
+        ...page,
+        taskItems: [{ ...taskItem, status: 'in-progress' }],
+      };
       mockPrisma.page.update.mockResolvedValue(updatedPage);
 
-      const result = await service.updateTaskItem(FAMILY_ID, PAGE_ID, ITEM_ID, USER_ID, {
-        status: 'in-progress',
-      });
+      const result = await service.updateTaskItem(
+        FAMILY_ID,
+        PAGE_ID,
+        ITEM_ID,
+        USER_ID,
+        {
+          status: 'in-progress',
+        },
+      );
 
       expect(mockPrisma.page.update).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -398,7 +511,14 @@ describe('PagesService', () => {
   describe('deleteTaskItem', () => {
     it('removes the task item from the page', async () => {
       mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
-      const taskItem = { id: ITEM_ID, text: 'Fix the roof', assigneeId: null, status: 'todo', dueDate: null, createdAt: '' };
+      const taskItem = {
+        id: ITEM_ID,
+        text: 'Fix the roof',
+        assigneeId: null,
+        status: 'todo',
+        dueDate: null,
+        createdAt: '',
+      };
       const page = makeListPage({ type: 'tasks', taskItems: [taskItem] });
       mockPrisma.page.findFirst.mockResolvedValue(page);
       const updatedPage = { ...page, taskItems: [] };
@@ -423,7 +543,12 @@ describe('PagesService', () => {
       const updatedPage = { ...page, eventIds: ['event-1'] };
       mockPrisma.page.update.mockResolvedValue(updatedPage);
 
-      const result = await service.addEventRef(FAMILY_ID, PAGE_ID, USER_ID, 'event-1');
+      const result = await service.addEventRef(
+        FAMILY_ID,
+        PAGE_ID,
+        USER_ID,
+        'event-1',
+      );
 
       expect(mockPrisma.page.update).toHaveBeenCalledWith({
         where: { id: PAGE_ID },
@@ -437,7 +562,12 @@ describe('PagesService', () => {
       const page = makeListPage({ type: 'events', eventIds: ['event-1'] });
       mockPrisma.page.findFirst.mockResolvedValue(page);
 
-      const result = await service.addEventRef(FAMILY_ID, PAGE_ID, USER_ID, 'event-1');
+      const result = await service.addEventRef(
+        FAMILY_ID,
+        PAGE_ID,
+        USER_ID,
+        'event-1',
+      );
 
       expect(mockPrisma.page.update).not.toHaveBeenCalled();
       expect(result).toEqual(page);
@@ -449,7 +579,10 @@ describe('PagesService', () => {
   describe('removeEventRef', () => {
     it('removes an eventId from the page', async () => {
       mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
-      const page = makeListPage({ type: 'events', eventIds: ['event-1', 'event-2'] });
+      const page = makeListPage({
+        type: 'events',
+        eventIds: ['event-1', 'event-2'],
+      });
       mockPrisma.page.findFirst.mockResolvedValue(page);
       const updatedPage = { ...page, eventIds: ['event-2'] };
       mockPrisma.page.update.mockResolvedValue(updatedPage);

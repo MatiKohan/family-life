@@ -3,7 +3,10 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
 export class CreateLinkInviteDto {
-  @ApiPropertyOptional({ example: 7, description: 'Days until the invite expires' })
+  @ApiPropertyOptional({
+    example: 7,
+    description: 'Days until the invite expires',
+  })
   @IsOptional()
   @Type(() => Number)
   @IsInt()

@@ -30,15 +30,6 @@ function SettingsIcon() {
   );
 }
 
-// Sidebar is also rendered standalone so we need params optionally
-function useActivePageId() {
-  try {
-    const params = useParams<{ pageId?: string }>();
-    return params.pageId;
-  } catch {
-    return undefined;
-  }
-}
 
 export function Sidebar({ familyId, onClose }: SidebarProps) {
   const { t } = useTranslation();

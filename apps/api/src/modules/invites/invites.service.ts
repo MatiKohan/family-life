@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  GoneException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, GoneException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InviteStatus, FamilyRole } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';

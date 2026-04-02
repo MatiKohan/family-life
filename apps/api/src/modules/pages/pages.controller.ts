@@ -128,7 +128,13 @@ export class PagesController {
     @Param('itemId') itemId: string,
     @Body() dto: UpdateTaskItemDto,
   ) {
-    return this.pagesService.updateTaskItem(familyId, pageId, itemId, user.id, dto);
+    return this.pagesService.updateTaskItem(
+      familyId,
+      pageId,
+      itemId,
+      user.id,
+      dto,
+    );
   }
 
   @Delete(':pageId/task-items/:itemId')
@@ -149,7 +155,12 @@ export class PagesController {
     @Param('pageId') pageId: string,
     @Body() dto: EventRefDto,
   ) {
-    return this.pagesService.addEventRef(familyId, pageId, user.id, dto.eventId);
+    return this.pagesService.addEventRef(
+      familyId,
+      pageId,
+      user.id,
+      dto.eventId,
+    );
   }
 
   @Delete(':pageId/event-refs/:eventId')
