@@ -17,14 +17,14 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 
 # Build shared types package
-RUN pnpm --filter @my-app/types build
+RUN pnpm --filter @family-life/types build
 
 # Bake in the API URL at build time
 ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
 
 # Build the web app
-RUN pnpm --filter @my-app/web build
+RUN pnpm --filter @family-life/web build
 
 # Stage 2: runner
 FROM nginx:alpine AS runner

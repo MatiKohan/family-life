@@ -20,13 +20,13 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 
 # Build shared types package
-RUN pnpm --filter @my-app/types build
+RUN pnpm --filter @family-life/types build
 
 # Generate Prisma client
-RUN pnpm --filter @my-app/api exec prisma generate
+RUN pnpm --filter @family-life/api exec prisma generate
 
 # Build API
-RUN pnpm --filter @my-app/api build
+RUN pnpm --filter @family-life/api build
 
 # Stage 3: runner
 FROM node:20-alpine AS runner
