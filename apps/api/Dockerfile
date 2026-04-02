@@ -12,7 +12,10 @@ COPY apps/api/package.json ./apps/api/
 COPY apps/web/package.json ./apps/web/
 COPY apps/e2e/package.json ./apps/e2e/
 COPY packages/types/package.json ./packages/types/
-COPY packages/tsconfig/package.json ./packages/tsconfig/
+# tsconfig package has no JS deps — create stub so pnpm can resolve the workspace reference
+RUN mkdir -p packages/tsconfig && \
+    echo '{"name":"@family-life/tsconfig","version":"1.0.0","private":true}' \
+    > packages/tsconfig/package.json
 
 # Install all dependencies
 RUN pnpm install --frozen-lockfile
