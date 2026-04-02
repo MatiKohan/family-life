@@ -42,7 +42,7 @@ export class FamilyService {
     return family;
   }
 
-  async listFamilies(userId: string) {
+  listFamilies(userId: string) {
     return this.prisma.family.findMany({
       where: {
         members: { some: { userId } },
