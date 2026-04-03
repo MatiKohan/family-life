@@ -296,6 +296,57 @@ export function ListPageView({ page, familyId }: Props) {
     },
   });
 
+  // Check all (optimistic)
+  const checkAllMutation = useMutation({
+    mutationFn: (checked: boolean) =>
+      Promise.all(
+        page.items
+          .filter((i) => i.checked !== checked)
+          .map((i) =>
+            apiRequest(`/families/${familyId}/pages/${page.id}/items/${i.id}`, {
+              method: 'PATCH',
+              body: JSON.stringify({ checked }),
+            }),
+          ),
+      ),
+    onMutate: async (checked) => {
+      await queryClient.cancelQueries({ queryKey: cacheKey });
+      const previous = queryClient.getQueryData<Page>(cacheKey);
+      queryClient.setQueryData<Page>(cacheKey, (old) =>
+        old ? { ...old, items: old.items.map((i) => ({ ...i, checked })) } : old,
+      );
+      return { previous };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.previous) queryClient.setQueryData(cacheKey, ctx.previous);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: cacheKey }),
+  });
+
+  // Clear all items (optimistic)
+  const clearAllMutation = useMutation({
+    mutationFn: () =>
+      Promise.all(
+        page.items.map((i) =>
+          apiRequest(`/families/${familyId}/pages/${page.id}/items/${i.id}`, {
+            method: 'DELETE',
+          }),
+        ),
+      ),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: cacheKey });
+      const previous = queryClient.getQueryData<Page>(cacheKey);
+      queryClient.setQueryData<Page>(cacheKey, (old) =>
+        old ? { ...old, items: [] } : old,
+      );
+      return { previous };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.previous) queryClient.setQueryData(cacheKey, ctx.previous);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: cacheKey }),
+  });
+
   // Update page title
   const updateTitleMutation = useMutation({
     mutationFn: (newTitle: string) =>
@@ -366,6 +417,37 @@ export function ListPageView({ page, familyId }: Props) {
           </h1>
         )}
       </div>
+
+      {/* Bulk actions — only shown when there are items */}
+      {page.items.length > 0 && (
+        <div className="flex items-center gap-2 mb-4 -mt-4">
+          <button
+            type="button"
+            onClick={() => checkAllMutation.mutate(page.items.some((i) => !i.checked))}
+            disabled={checkAllMutation.isPending}
+            className="text-xs text-gray-500 hover:text-brand-600 font-medium px-2 py-1 rounded hover:bg-brand-50 transition-colors"
+          >
+            {page.items.every((i) => i.checked)
+              ? t('list.uncheckAll')
+              : t('list.checkAll')}
+          </button>
+
+          <span className="text-gray-200 select-none">|</span>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (window.confirm(t('list.clearConfirm'))) {
+                clearAllMutation.mutate();
+              }
+            }}
+            disabled={clearAllMutation.isPending}
+            className="text-xs text-gray-500 hover:text-red-600 font-medium px-2 py-1 rounded hover:bg-red-50 transition-colors"
+          >
+            {t('list.clearAll')}
+          </button>
+        </div>
+      )}
 
       {/* Items list */}
       <div className="divide-y divide-gray-100">

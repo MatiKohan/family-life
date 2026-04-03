@@ -104,7 +104,11 @@
     "unassigned": "Unassigned — click to assign",
     "clickToEdit": "Click to edit title",
     "pageTitle": "Page title",
-    "dueDate": "date"
+    "dueDate": "date",
+    "checkAll": "Check all",
+    "uncheckAll": "Uncheck all",
+    "clearAll": "Clear all",
+    "clearConfirm": "Remove all items?"
   },
   "tasks": {
     "todo": "To do",

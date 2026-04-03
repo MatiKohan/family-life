@@ -104,7 +104,11 @@
     "unassigned": "לא משויך — לחץ להקצאה",
     "clickToEdit": "לחץ לעריכת הכותרת",
     "pageTitle": "כותרת הדף",
-    "dueDate": "תאריך"
+    "dueDate": "תאריך",
+    "checkAll": "סמן הכל",
+    "uncheckAll": "בטל סימון",
+    "clearAll": "נקה הכל",
+    "clearConfirm": "למחוק את כל הפריטים?"
   },
   "tasks": {
     "todo": "לביצוע",
