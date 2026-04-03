@@ -106,7 +106,11 @@ export class InvitesService {
       include: { family: { select: { name: true, emoji: true } } },
     });
 
-    if (!invite || invite.status !== InviteStatus.PENDING || invite.expiresAt < new Date()) {
+    if (
+      !invite ||
+      invite.status !== InviteStatus.PENDING ||
+      invite.expiresAt < new Date()
+    ) {
       throw new GoneException('Invite is invalid or expired');
     }
 
