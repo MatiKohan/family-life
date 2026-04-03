@@ -24,15 +24,23 @@ export function useRestoreSession() {
       return;
     }
 
-    fetch(`${BASE_URL}/auth/refresh`, {
-      method: 'POST',
-      credentials: 'include',
-    })
-      .then(async (res) => {
+    const tryRefresh = () =>
+      fetch(`${BASE_URL}/auth/refresh`, {
+        method: 'POST',
+        credentials: 'include',
+      }).then(async (res) => {
         if (!res.ok) throw new Error('refresh failed');
         const data = (await res.json()) as RefreshResponse;
         setSession(data.user, data.accessToken);
-      })
+      });
+
+    tryRefresh()
+      .catch(
+        () =>
+          new Promise<void>((resolve, reject) =>
+            setTimeout(() => tryRefresh().then(resolve).catch(reject), 3000),
+          ),
+      )
       .catch(() => clearSession())
       .finally(() => setRestoring(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps

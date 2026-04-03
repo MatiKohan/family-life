@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { ProtectedRoute } from './components/ProtectedRoute/ProtectedRoute';
 import { ErrorBoundary } from './components/ErrorBoundary/ErrorBoundary';
 import { Layout } from './components/Layout/Layout';
@@ -32,17 +33,22 @@ function HomeRedirect() {
 }
 
 function FamiliesRedirect() {
-  const { data: families, isLoading } = useMyFamilies();
+  const { data: families, isLoading, isError } = useMyFamilies();
   const setActiveFamily = useFamilyStore((s) => s.setActiveFamily);
+  const navigate = useNavigate();
 
-  if (isLoading) return null;
+  useEffect(() => {
+    if (isLoading) return;
+    if (isError) return; // don't redirect on network error — stay put
+    if (families && families.length > 0) {
+      setActiveFamily(families[0].id);
+      navigate(`/family/${families[0].id}`, { replace: true });
+    } else if (families) {
+      navigate('/family/create', { replace: true });
+    }
+  }, [families, isLoading, isError, setActiveFamily, navigate]);
 
-  if (families && families.length > 0) {
-    setActiveFamily(families[0].id);
-    return <Navigate to={`/family/${families[0].id}`} replace />;
-  }
-
-  return <Navigate to="/family/create" replace />;
+  return null;
 }
 
 function App() {
