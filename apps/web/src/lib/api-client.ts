@@ -5,14 +5,23 @@ const BASE_URL = import.meta.env.VITE_API_URL
   : '/api';
 
 async function refreshAccessToken(): Promise<string | null> {
-  const res = await fetch(`${BASE_URL}/auth/refresh`, {
-    method: 'POST',
-    credentials: 'include',
-  });
-  if (!res.ok) return null;
-  const data = (await res.json()) as { accessToken: string };
-  useAuthStore.getState().setAccessToken(data.accessToken);
-  return data.accessToken;
+  try {
+    const res = await fetch(`${BASE_URL}/auth/refresh`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+    if (res.status === 401) {
+      // Refresh token is definitively invalid — clear session
+      useAuthStore.getState().clearSession();
+      return null;
+    }
+    if (!res.ok) return null; // network/server error — don't clear session
+    const data = (await res.json()) as { accessToken: string };
+    useAuthStore.getState().setAccessToken(data.accessToken);
+    return data.accessToken;
+  } catch {
+    return null; // fetch failed (offline) — don't clear session
+  }
 }
 
 export async function apiRequest<T>(
@@ -36,7 +45,7 @@ export async function apiRequest<T>(
   if (res.status === 401) {
     const newToken = await refreshAccessToken();
     if (!newToken) {
-      useAuthStore.getState().clearSession();
+      // clearSession already called inside refreshAccessToken if token was invalid
       throw new Error('Unauthorized');
     }
     headers['Authorization'] = `Bearer ${newToken}`;

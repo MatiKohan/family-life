@@ -62,7 +62,11 @@
     "expiresOn": "Expires {{date}}",
     "revokeInvite": "Revoke",
     "activeInvites": "Active invites",
-    "noActiveInvites": "No active invites"
+    "noActiveInvites": "No active invites",
+    "youreInvited": "You've been invited!",
+    "joinFamily": "Join {{familyName}} on Family Life",
+    "createAccountToJoin": "Create account & join",
+    "signInToJoin": "Sign in to join"
   },
   "pages": {
     "newPage": "+ New Page",

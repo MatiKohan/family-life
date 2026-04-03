@@ -66,6 +66,12 @@ export class InvitesController {
     await this.invitesService.revokeInvite(user.id, familyId, inviteId);
   }
 
+  /** Public — returns family name/emoji for a valid pending invite (no auth). */
+  @Get('invites/info/:token')
+  getInviteInfo(@Param('token') token: string) {
+    return this.invitesService.getInviteInfo(token);
+  }
+
   /**
    * Public endpoint — JWT is optional.
    * OptionalJwtAuthGuard populates req.user when a valid token is present

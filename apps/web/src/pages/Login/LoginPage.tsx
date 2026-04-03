@@ -24,7 +24,9 @@ export function LoginPage() {
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get('redirect') ?? '/';
 
-  const [mode, setMode] = useState<Mode>('login');
+  const [mode, setMode] = useState<Mode>(
+    searchParams.get('mode') === 'register' ? 'register' : 'login',
+  );
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');

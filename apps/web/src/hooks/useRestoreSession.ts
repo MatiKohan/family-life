@@ -11,6 +11,23 @@ interface RefreshResponse {
   user: AuthUser;
 }
 
+class AuthError extends Error {}
+
+async function attemptRefresh(
+  setSession: (user: AuthUser, token: string) => void,
+): Promise<void> {
+  const res = await fetch(`${BASE_URL}/auth/refresh`, {
+    method: 'POST',
+    credentials: 'include',
+  });
+  if (res.status === 401) throw new AuthError('Token expired');
+  if (!res.ok) throw new Error('Network error');
+  const data = (await res.json()) as RefreshResponse;
+  setSession(data.user, data.accessToken);
+}
+
+const RETRY_DELAYS = [2000, 4000, 6000]; // 3 retries, increasing backoff
+
 export function useRestoreSession() {
   const user = useAuthStore((s) => s.user);
   const accessToken = useAuthStore((s) => s.accessToken);
@@ -24,27 +41,36 @@ export function useRestoreSession() {
       return;
     }
 
-    const tryRefresh = () =>
-      fetch(`${BASE_URL}/auth/refresh`, {
-        method: 'POST',
-        credentials: 'include',
-      }).then(async (res) => {
-        if (!res.ok) throw new Error('refresh failed');
-        const data = (await res.json()) as RefreshResponse;
-        setSession(data.user, data.accessToken);
-      });
+    let cancelled = false;
 
-    tryRefresh()
-      .catch(
-        () =>
-          new Promise<void>((resolve, reject) =>
-            setTimeout(() => tryRefresh().then(resolve).catch(reject), 3000),
-          ),
-      )
-      .catch(() => clearSession())
-      .finally(() => setRestoring(false));
+    async function restore() {
+      for (let attempt = 0; attempt <= RETRY_DELAYS.length; attempt++) {
+        try {
+          await attemptRefresh(setSession);
+          return; // success
+        } catch (err) {
+          if (err instanceof AuthError) {
+            // Token is definitively invalid — log out
+            if (!cancelled) clearSession();
+            return;
+          }
+          // Network/server error — retry after delay
+          if (attempt < RETRY_DELAYS.length) {
+            await new Promise((r) => setTimeout(r, RETRY_DELAYS[attempt]));
+          }
+        }
+      }
+      // All retries exhausted due to network errors — keep user session intact,
+      // apiRequest will retry refresh on the first API call
+    }
+
+    restore().finally(() => {
+      if (!cancelled) setRestoring(false);
+    });
+
+    return () => { cancelled = true; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // run once on mount — intentional: we want snapshot of initial store state
+  }, []); // run once on mount
 
   return { restoring };
 }

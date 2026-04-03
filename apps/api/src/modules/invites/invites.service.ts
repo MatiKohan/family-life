@@ -100,6 +100,19 @@ export class InvitesService {
     await this.prisma.familyInvite.delete({ where: { id: inviteId } });
   }
 
+  async getInviteInfo(token: string) {
+    const invite = await this.prisma.familyInvite.findUnique({
+      where: { token },
+      include: { family: { select: { name: true, emoji: true } } },
+    });
+
+    if (!invite || invite.status !== InviteStatus.PENDING || invite.expiresAt < new Date()) {
+      throw new GoneException('Invite is invalid or expired');
+    }
+
+    return { familyName: invite.family.name, familyEmoji: invite.family.emoji };
+  }
+
   async redeemInvite(token: string, userId: string | undefined) {
     if (!userId) {
       return { requiresAuth: true, token };

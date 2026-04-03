@@ -62,7 +62,11 @@
     "expiresOn": "תוקף עד {{date}}",
     "revokeInvite": "בטל",
     "activeInvites": "הזמנות פעילות",
-    "noActiveInvites": "אין הזמנות פעילות"
+    "noActiveInvites": "אין הזמנות פעילות",
+    "youreInvited": "הוזמנת!",
+    "joinFamily": "הצטרף ל-{{familyName}} ב-Family Life",
+    "createAccountToJoin": "צור חשבון והצטרף",
+    "signInToJoin": "התחבר והצטרף"
   },
   "pages": {
     "newPage": "+ דף חדש",
