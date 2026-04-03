@@ -79,3 +79,7 @@ The access token is kept in memory only; on page load `useRestoreSession` calls 
 **Data fetching** — TanStack Query hooks in `src/hooks/`. Pattern: `useQuery` with `enabled: !!dependency`, query key `[resource, id]`.
 
 **Testing** — MSW (`src/mocks/handlers.ts`) mocks all API responses in Vitest. API unit tests use `@nestjs/testing` with Jest.
+
+## Before pushing / marking a task done
+
+Always run `pnpm test:ci` and fix any failures before considering a task complete or pushing to remote. Do not skip this step.

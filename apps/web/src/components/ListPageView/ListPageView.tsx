@@ -1,6 +1,22 @@
 import { useState, useRef, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import {
+  DndContext,
+  DragEndEvent,
+  PointerSensor,
+  TouchSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  arrayMove,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { apiRequest } from '../../lib/api-client';
 import { Page, ListItem } from '../../types/page';
 import { useFamily } from '../../hooks/useFamily';
@@ -45,6 +61,21 @@ function avatarColor(userId: string) {
 function isOverdue(dateStr: string | null): boolean {
   if (!dateStr) return false;
   return new Date(dateStr) < new Date(new Date().toDateString());
+}
+
+// ---- helpers ---------------------------------------------------------------
+
+function GripIcon() {
+  return (
+    <svg className="w-3 h-3" viewBox="0 0 10 16" fill="currentColor" aria-hidden="true">
+      <circle cx="3" cy="3" r="1.2" />
+      <circle cx="7" cy="3" r="1.2" />
+      <circle cx="3" cy="8" r="1.2" />
+      <circle cx="7" cy="8" r="1.2" />
+      <circle cx="3" cy="13" r="1.2" />
+      <circle cx="7" cy="13" r="1.2" />
+    </svg>
+  );
 }
 
 // ---- sub-components --------------------------------------------------------
@@ -368,6 +399,34 @@ export function ListPageView({ page, familyId }: Props) {
     onSettled: () => queryClient.invalidateQueries({ queryKey: cacheKey }),
   });
 
+  // Reorder items
+  const reorderMutation = useMutation({
+    mutationFn: (itemIds: string[]) =>
+      apiRequest(`/families/${familyId}/pages/${page.id}/items/reorder`, {
+        method: 'PATCH',
+        body: JSON.stringify({ itemIds }),
+      }),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: cacheKey }),
+  });
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
+  );
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const items = page.items;
+    const oldIndex = items.findIndex((i) => i.id === active.id);
+    const newIndex = items.findIndex((i) => i.id === over.id);
+    const reordered = arrayMove(items, oldIndex, newIndex);
+    queryClient.setQueryData<Page>(cacheKey, (old) =>
+      old ? { ...old, items: reordered } : old,
+    );
+    reorderMutation.mutate(reordered.map((i) => i.id));
+  }
+
   // Update page title
   const updateTitleMutation = useMutation({
     mutationFn: (newTitle: string) =>
@@ -471,24 +530,28 @@ export function ListPageView({ page, familyId }: Props) {
       )}
 
       {/* Items list */}
-      <div className="divide-y divide-gray-100">
-        {page.items.map((item) => (
-          <ItemRow
-            key={item.id}
-            item={item}
-            members={members}
-            onToggle={(checked) => toggleMutation.mutate({ itemId: item.id, checked })}
-            onDelete={() => deleteMutation.mutate(item.id)}
-            onAssign={(userId) =>
-              patchItemMutation.mutate({ itemId: item.id, patch: { assigneeId: userId } })
-            }
-            onDueDateChange={(date) =>
-              patchItemMutation.mutate({ itemId: item.id, patch: { dueDate: date } })
-            }
-            onTextChange={(text) => editTextMutation.mutate({ itemId: item.id, text })}
-          />
-        ))}
-      </div>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={page.items.map((i) => i.id)} strategy={verticalListSortingStrategy}>
+          <div className="divide-y divide-gray-100">
+            {page.items.map((item) => (
+              <SortableItemRow
+                key={item.id}
+                item={item}
+                members={members}
+                onToggle={(checked) => toggleMutation.mutate({ itemId: item.id, checked })}
+                onDelete={() => deleteMutation.mutate(item.id)}
+                onAssign={(userId) =>
+                  patchItemMutation.mutate({ itemId: item.id, patch: { assigneeId: userId } })
+                }
+                onDueDateChange={(date) =>
+                  patchItemMutation.mutate({ itemId: item.id, patch: { dueDate: date } })
+                }
+                onTextChange={(text) => editTextMutation.mutate({ itemId: item.id, text })}
+              />
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
 
       {/* Add item input */}
       <form onSubmit={handleAddItem} className="mt-2">
@@ -531,9 +594,31 @@ interface ItemRowProps {
   onAssign: (userId: string | null) => void;
   onDueDateChange: (date: string | null) => void;
   onTextChange: (text: string) => void;
+  dragHandle?: React.ReactNode;
 }
 
-function ItemRow({ item, members, onToggle, onDelete, onAssign, onDueDateChange, onTextChange }: ItemRowProps) {
+function SortableItemRow(props: Omit<ItemRowProps, 'dragHandle'>) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: props.item.id });
+  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 };
+  const dragHandle = (
+    <button
+      {...attributes}
+      {...listeners}
+      className="shrink-0 text-gray-300 opacity-30 group-hover:opacity-60 touch-none cursor-grab active:cursor-grabbing p-0.5 rounded"
+      aria-label="Drag to reorder"
+      tabIndex={-1}
+    >
+      <GripIcon />
+    </button>
+  );
+  return (
+    <div ref={setNodeRef} style={style}>
+      <ItemRow {...props} dragHandle={dragHandle} />
+    </div>
+  );
+}
+
+function ItemRow({ item, members, onToggle, onDelete, onAssign, onDueDateChange, onTextChange, dragHandle }: ItemRowProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(item.text);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -556,6 +641,9 @@ function ItemRow({ item, members, onToggle, onDelete, onAssign, onDueDateChange,
 
   return (
     <div className="flex items-center gap-3 py-2.5 min-h-[44px] group">
+      {/* Drag handle */}
+      {dragHandle}
+
       {/* Checkbox */}
       <button
         type="button"

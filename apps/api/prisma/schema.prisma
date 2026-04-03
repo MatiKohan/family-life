@@ -38,6 +38,7 @@ model Page {
   title     String
   emoji     String   @default("📄")
   type      String
+  sortOrder Int      @default(0)
   items     Json     @default("[]")
   taskItems Json     @default("[]")
   eventIds  Json     @default("[]")

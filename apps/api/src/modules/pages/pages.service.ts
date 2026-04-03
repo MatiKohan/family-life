@@ -47,18 +47,24 @@ export class PagesService {
     return this.prisma.page.findMany({
       where: { familyId },
       select: { id: true, title: true, emoji: true, type: true },
-      orderBy: { createdAt: 'asc' },
+      orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
     });
   }
 
   async createPage(familyId: string, userId: string, dto: CreatePageDto) {
     await this.requireMember(familyId, userId);
+    const maxOrder = await this.prisma.page.aggregate({
+      where: { familyId },
+      _max: { sortOrder: true },
+    });
+    const sortOrder = (maxOrder._max.sortOrder ?? -1) + 1;
     return this.prisma.page.create({
       data: {
         familyId,
         title: dto.title,
         emoji: dto.emoji ?? '📄',
         type: dto.type,
+        sortOrder,
         createdBy: userId,
       },
     });
@@ -294,6 +300,60 @@ export class PagesService {
     return this.prisma.page.update({
       where: { id: pageId },
       data: { eventIds },
+    });
+  }
+
+  async reorderPages(familyId: string, userId: string, pageIds: string[]) {
+    await this.requireMember(familyId, userId);
+    await Promise.all(
+      pageIds.map((id, index) =>
+        this.prisma.page.updateMany({
+          where: { id, familyId },
+          data: { sortOrder: index },
+        }),
+      ),
+    );
+  }
+
+  async reorderItems(
+    familyId: string,
+    pageId: string,
+    userId: string,
+    itemIds: string[],
+  ) {
+    await this.requireMember(familyId, userId);
+    const page = await this.prisma.page.findFirst({
+      where: { id: pageId, familyId },
+    });
+    if (!page) throw new NotFoundException('Page not found');
+    const items = page.items as ListItemData[];
+    const reordered = itemIds
+      .map((id) => items.find((i) => i.id === id))
+      .filter((i): i is ListItemData => !!i);
+    return this.prisma.page.update({
+      where: { id: pageId },
+      data: { items: reordered },
+    });
+  }
+
+  async reorderTaskItems(
+    familyId: string,
+    pageId: string,
+    userId: string,
+    taskItemIds: string[],
+  ) {
+    await this.requireMember(familyId, userId);
+    const page = await this.prisma.page.findFirst({
+      where: { id: pageId, familyId },
+    });
+    if (!page) throw new NotFoundException('Page not found');
+    const taskItems = page.taskItems as TaskItemData[];
+    const reordered = taskItemIds
+      .map((id) => taskItems.find((i) => i.id === id))
+      .filter((i): i is TaskItemData => !!i);
+    return this.prisma.page.update({
+      where: { id: pageId },
+      data: { taskItems: reordered },
     });
   }
 }

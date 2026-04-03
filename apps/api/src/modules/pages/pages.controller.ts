@@ -10,12 +10,30 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { IsString } from 'class-validator';
+import { IsString, IsArray } from 'class-validator';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 
 class EventRefDto {
   @IsString()
   eventId!: string;
+}
+
+class ReorderPagesDto {
+  @IsArray()
+  @IsString({ each: true })
+  pageIds!: string[];
+}
+
+class ReorderItemsDto {
+  @IsArray()
+  @IsString({ each: true })
+  itemIds!: string[];
+}
+
+class ReorderTaskItemsDto {
+  @IsArray()
+  @IsString({ each: true })
+  taskItemIds!: string[];
 }
 import { PagesService } from './pages.service';
 import { CreatePageDto } from './dto/create-page.dto';
@@ -58,6 +76,16 @@ export class PagesController {
     return this.pagesService.getPage(familyId, pageId, user.id);
   }
 
+  @Patch('reorder')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async reorderPages(
+    @CurrentUser() user: AuthUser,
+    @Param('id') familyId: string,
+    @Body() dto: ReorderPagesDto,
+  ) {
+    await this.pagesService.reorderPages(familyId, user.id, dto.pageIds);
+  }
+
   @Patch(':pageId')
   updatePage(
     @CurrentUser() user: AuthUser,
@@ -86,6 +114,22 @@ export class PagesController {
     @Body() dto: CreateItemDto,
   ) {
     return this.pagesService.addItem(familyId, pageId, user.id, dto);
+  }
+
+  @Patch(':pageId/items/reorder')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async reorderItems(
+    @CurrentUser() user: AuthUser,
+    @Param('id') familyId: string,
+    @Param('pageId') pageId: string,
+    @Body() dto: ReorderItemsDto,
+  ) {
+    await this.pagesService.reorderItems(
+      familyId,
+      pageId,
+      user.id,
+      dto.itemIds,
+    );
   }
 
   @Patch(':pageId/items/:itemId')
@@ -118,6 +162,22 @@ export class PagesController {
     @Body() dto: CreateTaskItemDto,
   ) {
     return this.pagesService.addTaskItem(familyId, pageId, user.id, dto);
+  }
+
+  @Patch(':pageId/task-items/reorder')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async reorderTaskItems(
+    @CurrentUser() user: AuthUser,
+    @Param('id') familyId: string,
+    @Param('pageId') pageId: string,
+    @Body() dto: ReorderTaskItemsDto,
+  ) {
+    await this.pagesService.reorderTaskItems(
+      familyId,
+      pageId,
+      user.id,
+      dto.taskItemIds,
+    );
   }
 
   @Patch(':pageId/task-items/:itemId')

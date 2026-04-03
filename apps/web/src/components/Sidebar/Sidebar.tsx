@@ -1,12 +1,30 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import {
+  DndContext,
+  DragEndEvent,
+  PointerSensor,
+  TouchSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  arrayMove,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { FamilySwitcher } from './FamilySwitcher';
 import { useFamily } from '../../hooks/useFamily';
 import { usePages } from '../../hooks/usePages';
 import { CreatePageModal } from '../CreatePageModal/CreatePageModal';
 import { LanguageSwitcher } from '../LanguageSwitcher/LanguageSwitcher';
 import { PageSummary } from '../../types/page';
+import { apiRequest } from '../../lib/api-client';
 
 interface SidebarProps {
   familyId: string;
@@ -30,15 +48,114 @@ function SettingsIcon() {
   );
 }
 
+function GripIcon() {
+  return (
+    <svg className="w-3 h-3" viewBox="0 0 10 16" fill="currentColor" aria-hidden="true">
+      <circle cx="3" cy="3" r="1.2" />
+      <circle cx="7" cy="3" r="1.2" />
+      <circle cx="3" cy="8" r="1.2" />
+      <circle cx="7" cy="8" r="1.2" />
+      <circle cx="3" cy="13" r="1.2" />
+      <circle cx="7" cy="13" r="1.2" />
+    </svg>
+  );
+}
+
+interface SortablePageItemProps {
+  page: PageSummary;
+  familyId: string;
+  isActive: boolean;
+  onClose?: () => void;
+}
+
+function SortablePageItem({ page, familyId, isActive, onClose }: SortablePageItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: page.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+  };
+
+  return (
+    <li ref={setNodeRef} style={style} className="group/page flex items-center gap-1">
+      {/* Drag handle */}
+      <button
+        {...attributes}
+        {...listeners}
+        className="shrink-0 text-gray-300 opacity-0 group-hover/page:opacity-100 touch-none cursor-grab active:cursor-grabbing p-1 rounded hover:text-gray-500 transition-opacity"
+        aria-label="Drag to reorder"
+        tabIndex={-1}
+      >
+        <GripIcon />
+      </button>
+
+      <NavLink
+        to={`/family/${familyId}/pages/${page.id}`}
+        onClick={() => onClose?.()}
+        className={`flex-1 flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors min-w-0 ${
+          isActive
+            ? 'bg-brand-50 text-brand-700 font-medium'
+            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+        }`}
+      >
+        <span className="leading-none shrink-0">{page.emoji}</span>
+        <span className="truncate">{page.title}</span>
+      </NavLink>
+    </li>
+  );
+}
 
 export function Sidebar({ familyId, onClose }: SidebarProps) {
   const { t } = useTranslation();
   const { data: family } = useFamily(familyId);
   const { data: pages, isLoading: pagesLoading } = usePages(familyId);
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const params = useParams<{ pageId?: string }>();
   const activePageId = params.pageId;
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [localPages, setLocalPages] = useState<PageSummary[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Sync local pages from query data when not dragging
+  useEffect(() => {
+    if (!isDragging && pages) setLocalPages(pages);
+  }, [pages, isDragging]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
+  );
+
+  const reorderMutation = useMutation({
+    mutationFn: (pageIds: string[]) =>
+      apiRequest(`/families/${familyId}/pages/reorder`, {
+        method: 'PATCH',
+        body: JSON.stringify({ pageIds }),
+      }),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['pages', familyId] }),
+  });
+
+  function handleDragEnd(event: DragEndEvent) {
+    setIsDragging(false);
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    setLocalPages((prev) => {
+      const oldIndex = prev.findIndex((p) => p.id === active.id);
+      const newIndex = prev.findIndex((p) => p.id === over.id);
+      const reordered = arrayMove(prev, oldIndex, newIndex);
+      reorderMutation.mutate(reordered.map((p) => p.id));
+      return reordered;
+    });
+  }
 
   function handlePageCreated(page: PageSummary) {
     setShowCreateModal(false);
@@ -62,39 +179,40 @@ export function Sidebar({ familyId, onClose }: SidebarProps) {
         <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">{t('pages.pages')}</p>
 
         {pagesLoading ? (
-          // Loading skeleton
           <div className="space-y-2" aria-label="Loading pages">
             <div className="h-8 bg-gray-100 rounded-lg animate-pulse" />
             <div className="h-8 bg-gray-100 rounded-lg animate-pulse" />
             <div className="h-8 bg-gray-100 rounded-lg animate-pulse" />
           </div>
-        ) : pages && pages.length > 0 ? (
+        ) : localPages.length > 0 ? (
           <nav aria-label="Pages">
-            <ul className="space-y-0.5">
-              {pages.map((page) => (
-                <li key={page.id}>
-                  <NavLink
-                    to={`/family/${familyId}/pages/${page.id}`}
-                    onClick={() => onClose?.()}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors w-full ${
-                      activePageId === page.id
-                        ? 'bg-brand-50 text-brand-700 font-medium'
-                        : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                    }`}
-                  >
-                    <span className="leading-none shrink-0">{page.emoji}</span>
-                    <span className="truncate">{page.title}</span>
-                  </NavLink>
-                </li>
-              ))}
-            </ul>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragStart={() => setIsDragging(true)}
+              onDragEnd={handleDragEnd}
+              onDragCancel={() => setIsDragging(false)}
+            >
+              <SortableContext items={localPages.map((p) => p.id)} strategy={verticalListSortingStrategy}>
+                <ul className="space-y-0.5">
+                  {localPages.map((page) => (
+                    <SortablePageItem
+                      key={page.id}
+                      page={page}
+                      familyId={familyId}
+                      isActive={activePageId === page.id}
+                      onClose={onClose}
+                    />
+                  ))}
+                </ul>
+              </SortableContext>
+            </DndContext>
           </nav>
         ) : null}
       </div>
 
       {/* Bottom nav */}
       <div className="p-4 border-t border-gray-100 space-y-1">
-        {/* Calendar */}
         <NavLink
           to={`/family/${familyId}/calendar`}
           onClick={() => onClose?.()}
@@ -125,7 +243,6 @@ export function Sidebar({ familyId, onClose }: SidebarProps) {
           {t('family.settings')}
         </NavLink>
 
-        {/* New Page */}
         <button
           onClick={() => setShowCreateModal(true)}
           className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-brand-600 hover:bg-brand-50 hover:text-brand-700 transition-colors font-medium"

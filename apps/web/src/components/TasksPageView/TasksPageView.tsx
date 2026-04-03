@@ -1,6 +1,22 @@
 import { useState, useRef, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import {
+  DndContext,
+  DragEndEvent,
+  PointerSensor,
+  TouchSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  arrayMove,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { apiRequest } from '../../lib/api-client';
 import { Page, TaskItem, TaskStatus } from '../../types/page';
 import { useFamily } from '../../hooks/useFamily';
@@ -45,6 +61,19 @@ function avatarColor(userId: string) {
 function isOverdue(dateStr: string | null): boolean {
   if (!dateStr) return false;
   return new Date(dateStr) < new Date(new Date().toDateString());
+}
+
+function GripIcon() {
+  return (
+    <svg className="w-3 h-3" viewBox="0 0 10 16" fill="currentColor" aria-hidden="true">
+      <circle cx="3" cy="3" r="1.2" />
+      <circle cx="7" cy="3" r="1.2" />
+      <circle cx="3" cy="8" r="1.2" />
+      <circle cx="7" cy="8" r="1.2" />
+      <circle cx="3" cy="13" r="1.2" />
+      <circle cx="7" cy="13" r="1.2" />
+    </svg>
+  );
 }
 
 const STATUS_ORDER: TaskStatus[] = ['todo', 'in-progress', 'done'];
@@ -237,9 +266,31 @@ interface TaskCardProps {
   onDueDateChange: (date: string | null) => void;
   onDelete: () => void;
   onTextChange: (text: string) => void;
+  dragHandle?: React.ReactNode;
 }
 
-function TaskCard({ task, members, onStatusChange, onAssign, onDueDateChange, onDelete, onTextChange }: TaskCardProps) {
+function SortableTaskCard(props: Omit<TaskCardProps, 'dragHandle'>) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: props.task.id });
+  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 };
+  const dragHandle = (
+    <button
+      {...attributes}
+      {...listeners}
+      className="shrink-0 text-gray-300 opacity-30 group-hover:opacity-60 touch-none cursor-grab active:cursor-grabbing p-0.5 rounded"
+      aria-label="Drag to reorder"
+      tabIndex={-1}
+    >
+      <GripIcon />
+    </button>
+  );
+  return (
+    <div ref={setNodeRef} style={style}>
+      <TaskCard {...props} dragHandle={dragHandle} />
+    </div>
+  );
+}
+
+function TaskCard({ task, members, onStatusChange, onAssign, onDueDateChange, onDelete, onTextChange, dragHandle }: TaskCardProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(task.text);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -263,8 +314,9 @@ function TaskCard({ task, members, onStatusChange, onAssign, onDueDateChange, on
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm group">
-      {/* Row 1: status badge + title + delete */}
+      {/* Row 1: drag handle + status badge + title + delete */}
       <div className="flex items-start gap-2 min-h-[44px]">
+        {dragHandle}
         <StatusBadge
           status={task.status}
           onClick={() => onStatusChange(nextStatus(task.status))}
@@ -328,7 +380,9 @@ interface StatusSectionProps {
   onDueDateChange: (taskId: string, date: string | null) => void;
   onDelete: (taskId: string) => void;
   onTextChange: (taskId: string, text: string) => void;
+  onReorder: (reorderedIds: string[]) => void;
   addInput?: React.ReactNode;
+  sensors: ReturnType<typeof useSensors>;
 }
 
 function StatusSection({
@@ -340,7 +394,9 @@ function StatusSection({
   onDueDateChange,
   onDelete,
   onTextChange,
+  onReorder,
   addInput,
+  sensors,
 }: StatusSectionProps) {
   const { t } = useTranslation();
 
@@ -355,6 +411,15 @@ function StatusSection({
     'in-progress': t('tasks.inProgress'),
     'done': t('tasks.done'),
   };
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = tasks.findIndex((t) => t.id === active.id);
+    const newIndex = tasks.findIndex((t) => t.id === over.id);
+    const reordered = arrayMove(tasks, oldIndex, newIndex);
+    onReorder(reordered.map((t) => t.id));
+  }
 
   return (
     <div className="flex flex-col gap-3">
@@ -375,20 +440,24 @@ function StatusSection({
           {t('tasks.emptyState')}
         </div>
       ) : (
-        <div className="flex flex-col gap-2">
-          {tasks.map((task) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              members={members}
-              onStatusChange={(s) => onStatusChange(task.id, s)}
-              onAssign={(userId) => onAssign(task.id, userId)}
-              onDueDateChange={(date) => onDueDateChange(task.id, date)}
-              onDelete={() => onDelete(task.id)}
-              onTextChange={(text) => onTextChange(task.id, text)}
-            />
-          ))}
-        </div>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
+            <div className="flex flex-col gap-2">
+              {tasks.map((task) => (
+                <SortableTaskCard
+                  key={task.id}
+                  task={task}
+                  members={members}
+                  onStatusChange={(s) => onStatusChange(task.id, s)}
+                  onAssign={(userId) => onAssign(task.id, userId)}
+                  onDueDateChange={(date) => onDueDateChange(task.id, date)}
+                  onDelete={() => onDelete(task.id)}
+                  onTextChange={(text) => onTextChange(task.id, text)}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
       )}
     </div>
   );
@@ -527,6 +596,34 @@ export function TasksPageView({ page, familyId }: Props) {
     onSettled: () => queryClient.invalidateQueries({ queryKey: cacheKey }),
   });
 
+  // Reorder task items
+  const reorderTaskMutation = useMutation({
+    mutationFn: (taskItemIds: string[]) =>
+      apiRequest(`/families/${familyId}/pages/${page.id}/task-items/reorder`, {
+        method: 'PATCH',
+        body: JSON.stringify({ taskItemIds }),
+      }),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: cacheKey }),
+  });
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
+  );
+
+  function handleReorderSection(reorderedIds: string[], sectionStatus: TaskStatus) {
+    // Rebuild the full taskItems array: reordered section + other sections in original order
+    const otherItems = taskItems.filter((t) => t.status !== sectionStatus);
+    const reorderedSection = reorderedIds
+      .map((id) => taskItems.find((t) => t.id === id))
+      .filter((t): t is TaskItem => !!t);
+    const fullOrder = [...reorderedSection, ...otherItems];
+    queryClient.setQueryData<Page>(cacheKey, (old) =>
+      old ? { ...old, taskItems: fullOrder } : old,
+    );
+    reorderTaskMutation.mutate(fullOrder.map((t) => t.id));
+  }
+
   // Update page title
   const updateTitleMutation = useMutation({
     mutationFn: (newTitle: string) =>
@@ -626,32 +723,38 @@ export function TasksPageView({ page, familyId }: Props) {
           status="todo"
           tasks={todoTasks}
           members={members}
+          sensors={sensors}
           onStatusChange={(id, s) => patchTaskMutation.mutate({ taskId: id, patch: { status: s } })}
           onAssign={(id, userId) => patchTaskMutation.mutate({ taskId: id, patch: { assigneeId: userId } })}
           onDueDateChange={(id, date) => patchTaskMutation.mutate({ taskId: id, patch: { dueDate: date } })}
           onDelete={(id) => deleteTaskMutation.mutate(id)}
           onTextChange={(id, text) => editTextMutation.mutate({ taskId: id, text })}
+          onReorder={(ids) => handleReorderSection(ids, 'todo')}
           addInput={addTaskInput}
         />
         <StatusSection
           status="in-progress"
           tasks={inProgressTasks}
           members={members}
+          sensors={sensors}
           onStatusChange={(id, s) => patchTaskMutation.mutate({ taskId: id, patch: { status: s } })}
           onAssign={(id, userId) => patchTaskMutation.mutate({ taskId: id, patch: { assigneeId: userId } })}
           onDueDateChange={(id, date) => patchTaskMutation.mutate({ taskId: id, patch: { dueDate: date } })}
           onDelete={(id) => deleteTaskMutation.mutate(id)}
           onTextChange={(id, text) => editTextMutation.mutate({ taskId: id, text })}
+          onReorder={(ids) => handleReorderSection(ids, 'in-progress')}
         />
         <StatusSection
           status="done"
           tasks={doneTasks}
           members={members}
+          sensors={sensors}
           onStatusChange={(id, s) => patchTaskMutation.mutate({ taskId: id, patch: { status: s } })}
           onAssign={(id, userId) => patchTaskMutation.mutate({ taskId: id, patch: { assigneeId: userId } })}
           onDueDateChange={(id, date) => patchTaskMutation.mutate({ taskId: id, patch: { dueDate: date } })}
           onDelete={(id) => deleteTaskMutation.mutate(id)}
           onTextChange={(id, text) => editTextMutation.mutate({ taskId: id, text })}
+          onReorder={(ids) => handleReorderSection(ids, 'done')}
         />
       </div>
     </div>

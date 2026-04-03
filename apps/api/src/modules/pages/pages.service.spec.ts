@@ -55,6 +55,8 @@ const mockPrisma = {
     create: jest.fn(),
     update: jest.fn(),
     delete: jest.fn(),
+    aggregate: jest.fn(),
+    updateMany: jest.fn(),
   },
   calendarEvent: {
     findMany: jest.fn(),
@@ -94,7 +96,7 @@ describe('PagesService', () => {
       expect(mockPrisma.page.findMany).toHaveBeenCalledWith({
         where: { familyId: FAMILY_ID },
         select: { id: true, title: true, emoji: true, type: true },
-        orderBy: { createdAt: 'asc' },
+        orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
       });
       expect(result).toEqual(pages);
     });
@@ -113,6 +115,7 @@ describe('PagesService', () => {
   describe('createPage', () => {
     it('creates and returns a page when user is a member', async () => {
       mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
+      mockPrisma.page.aggregate.mockResolvedValue({ _max: { sortOrder: 0 } });
       const createdPage = makeListPage({ title: 'Shopping' });
       mockPrisma.page.create.mockResolvedValue(createdPage);
 
@@ -128,6 +131,7 @@ describe('PagesService', () => {
           emoji: '📄',
           type: 'list',
           createdBy: USER_ID,
+          sortOrder: 1,
         },
       });
       expect(result).toEqual(createdPage);
@@ -180,7 +184,7 @@ describe('PagesService', () => {
         FAMILY_ID,
         PAGE_ID,
         USER_ID,
-      )) as typeof eventsPage & { events: unknown[] };
+      )) as unknown as typeof eventsPage & { events: unknown[] };
       expect(result.events).toEqual(events);
     });
   });
