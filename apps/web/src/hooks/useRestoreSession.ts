@@ -28,6 +28,12 @@ async function attemptRefresh(
 
 const RETRY_DELAYS = [2000, 4000, 6000]; // 3 retries, increasing backoff
 
+// Module-level singleton: prevents duplicate HTTP calls when React StrictMode
+// double-invokes effects (mount → unmount → remount in development).
+// Without this, two concurrent refresh calls race: the first rotates the token
+// in the DB, making the second one fail with 401 → session cleared → login redirect.
+let refreshInFlight: Promise<void> | null = null;
+
 export function useRestoreSession() {
   const user = useAuthStore((s) => s.user);
   const accessToken = useAuthStore((s) => s.accessToken);
@@ -41,34 +47,35 @@ export function useRestoreSession() {
       return;
     }
 
-    let cancelled = false;
-
     async function restore() {
-      for (let attempt = 0; attempt <= RETRY_DELAYS.length; attempt++) {
-        try {
-          await attemptRefresh(setSession);
-          return; // success
-        } catch (err) {
-          if (err instanceof AuthError) {
-            // Token is definitively invalid — log out
-            if (!cancelled) clearSession();
-            return;
+      if (!refreshInFlight) {
+        refreshInFlight = (async () => {
+          for (let attempt = 0; attempt <= RETRY_DELAYS.length; attempt++) {
+            try {
+              await attemptRefresh(setSession);
+              return; // success
+            } catch (err) {
+              if (err instanceof AuthError) {
+                // Token is definitively invalid — log out
+                clearSession();
+                return;
+              }
+              // Network/server error — retry after delay
+              if (attempt < RETRY_DELAYS.length) {
+                await new Promise((r) => setTimeout(r, RETRY_DELAYS[attempt]));
+              }
+            }
           }
-          // Network/server error — retry after delay
-          if (attempt < RETRY_DELAYS.length) {
-            await new Promise((r) => setTimeout(r, RETRY_DELAYS[attempt]));
-          }
-        }
+          // All retries exhausted due to network errors — keep session intact
+        })().finally(() => {
+          refreshInFlight = null;
+        });
       }
-      // All retries exhausted due to network errors — keep user session intact,
-      // apiRequest will retry refresh on the first API call
+
+      await refreshInFlight;
     }
 
-    restore().finally(() => {
-      if (!cancelled) setRestoring(false);
-    });
-
-    return () => { cancelled = true; };
+    restore().finally(() => setRestoring(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // run once on mount
 
