@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { CreatePageModal } from '../CreatePageModal/CreatePageModal';
 import { PageSummary } from '../../types/page';
 
@@ -44,6 +45,7 @@ const activeClass = 'text-brand-600';
 const inactiveClass = 'text-gray-500';
 
 export function BottomNav({ familyId }: Props) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [showCreateModal, setShowCreateModal] = useState(false);
 
@@ -69,7 +71,7 @@ export function BottomNav({ familyId }: Props) {
           }
         >
           <PagesIcon />
-          <span>Pages</span>
+          <span>{t('pages.pages')}</span>
         </NavLink>
 
         {/* Calendar tab */}
@@ -82,17 +84,17 @@ export function BottomNav({ familyId }: Props) {
           }
         >
           <CalendarIcon />
-          <span>Calendar</span>
+          <span>{t('pages.calendar')}</span>
         </NavLink>
 
         {/* New Page tab */}
         <button
           onClick={() => setShowCreateModal(true)}
           className={`flex-1 flex flex-col items-center justify-center gap-1 py-2 text-xs font-medium transition-colors ${inactiveClass} hover:text-brand-600`}
-          aria-label="New Page"
+          aria-label={t('pages.newPage')}
         >
           <PlusIcon />
-          <span>New Page</span>
+          <span>{t('pages.newPage')}</span>
         </button>
 
         {/* Settings tab */}
@@ -105,7 +107,7 @@ export function BottomNav({ familyId }: Props) {
           }
         >
           <SettingsIcon />
-          <span>Settings</span>
+          <span>{t('family.settings')}</span>
         </NavLink>
       </nav>
 
