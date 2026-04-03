@@ -16,6 +16,7 @@ import { InvitesService } from './invites.service';
 import { CreateLinkInviteDto } from './dto/create-link-invite.dto';
 import { CreateTargetedInviteDto } from './dto/create-targeted-invite.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthUser } from '@family-life/types';
 
@@ -67,10 +68,11 @@ export class InvitesController {
 
   /**
    * Public endpoint — JWT is optional.
-   * If the user is authenticated the guard would normally reject missing tokens,
-   * so we read the user from request directly after optional JWT parsing.
+   * OptionalJwtAuthGuard populates req.user when a valid token is present
+   * but does NOT throw when no token is provided.
    */
   @Post('invites/join/:token')
+  @UseGuards(OptionalJwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   redeemInvite(@Req() req: Request, @Param('token') token: string) {
     const user = req.user as AuthUser | undefined;

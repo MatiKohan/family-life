@@ -77,7 +77,14 @@ describe('ProtectedRoute', () => {
       ),
     );
 
+    vi.useFakeTimers();
+
     renderWithRouter();
+
+    // Advance past the 3-second retry delay so the retry also fails
+    await vi.runAllTimersAsync();
+
+    vi.useRealTimers();
 
     await waitFor(() =>
       expect(screen.getByText('Login Page')).toBeInTheDocument(),

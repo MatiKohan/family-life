@@ -2,12 +2,18 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useFamilyStore } from '../../store/family.store';
+import { apiRequest } from '../../lib/api-client';
 
 type JoinStatus = 'loading' | 'success' | 'error';
 
 interface JoinResponse {
   familyId: string;
   familyName: string;
+}
+
+interface RequiresAuthResponse {
+  requiresAuth: true;
+  token: string;
 }
 
 export function JoinFamilyPage() {
@@ -30,44 +36,30 @@ export function JoinFamilyPage() {
 
     async function joinFamily() {
       try {
-        const res = await fetch(`/api/invites/join/${token}`, {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-        });
+        const data = await apiRequest<JoinResponse | RequiresAuthResponse>(
+          `/invites/join/${token}`,
+          { method: 'POST' },
+        );
 
         if (cancelled) return;
 
-        if (res.status === 401) {
-          const body = (await res.json()) as { requiresAuth?: boolean };
-          if (body.requiresAuth) {
-            navigate(`/login?redirect=/join/${token}`, { replace: true });
-            return;
-          }
-          setStatus('error');
-          setErrorMessage('You must be logged in to join this family.');
+        if ('requiresAuth' in data && data.requiresAuth) {
+          navigate(`/login?redirect=/join/${token}`, { replace: true });
           return;
         }
 
-        if (!res.ok) {
-          const text = await res.text();
-          setStatus('error');
-          setErrorMessage(text || 'This invite is expired or invalid.');
-          return;
-        }
-
-        const data = (await res.json()) as JoinResponse;
-        if (cancelled) return;
-
-        setActiveFamily(data.familyId);
-        navigate(`/family/${data.familyId}`, {
+        const joined = data as JoinResponse;
+        setActiveFamily(joined.familyId);
+        navigate(`/family/${joined.familyId}`, {
           replace: true,
-          state: { toast: `Welcome to ${data.familyName}!` },
+          state: { toast: `Welcome to ${joined.familyName}!` },
         });
-      } catch {
+      } catch (err) {
         if (!cancelled) {
           setStatus('error');
-          setErrorMessage('Something went wrong. Please try again.');
+          setErrorMessage(
+            err instanceof Error ? err.message : t('invite.tryAgain'),
+          );
         }
       }
     }
@@ -77,7 +69,7 @@ export function JoinFamilyPage() {
     return () => {
       cancelled = true;
     };
-  }, [token, navigate, setActiveFamily]);
+  }, [token, navigate, setActiveFamily, t]);
 
   if (status === 'loading') {
     return (
@@ -95,7 +87,7 @@ export function JoinFamilyPage() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="max-w-sm w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
           <div className="text-4xl mb-4">😕</div>
-          <h1 className="text-xl font-bold text-gray-900 mb-2">{t('invite.invalidToken')}</h1>
+          <h1 className="text-xl font-bold text-gray-900 mb-2">{t('invite.inviteNotValid')}</h1>
           <p className="text-gray-500 text-sm mb-6">{errorMessage}</p>
           <Link
             to="/"

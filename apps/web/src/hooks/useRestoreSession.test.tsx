@@ -47,9 +47,16 @@ describe('useRestoreSession', () => {
       ),
     );
 
+    vi.useFakeTimers();
+
     const { result } = renderHook(() => useRestoreSession());
 
     expect(result.current.restoring).toBe(true);
+
+    // Advance past the 3-second retry delay
+    await vi.runAllTimersAsync();
+
+    vi.useRealTimers();
 
     await waitFor(() => expect(result.current.restoring).toBe(false));
 
