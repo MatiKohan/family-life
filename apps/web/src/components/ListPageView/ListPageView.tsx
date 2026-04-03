@@ -347,6 +347,27 @@ export function ListPageView({ page, familyId }: Props) {
     onSettled: () => queryClient.invalidateQueries({ queryKey: cacheKey }),
   });
 
+  // Edit item text (optimistic)
+  const editTextMutation = useMutation({
+    mutationFn: ({ itemId, text }: { itemId: string; text: string }) =>
+      apiRequest(`/families/${familyId}/pages/${page.id}/items/${itemId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ text }),
+      }),
+    onMutate: async ({ itemId, text }) => {
+      await queryClient.cancelQueries({ queryKey: cacheKey });
+      const previous = queryClient.getQueryData<Page>(cacheKey);
+      queryClient.setQueryData<Page>(cacheKey, (old) =>
+        old ? { ...old, items: old.items.map((i) => i.id === itemId ? { ...i, text } : i) } : old,
+      );
+      return { previous };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.previous) queryClient.setQueryData(cacheKey, ctx.previous);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: cacheKey }),
+  });
+
   // Update page title
   const updateTitleMutation = useMutation({
     mutationFn: (newTitle: string) =>
@@ -464,6 +485,7 @@ export function ListPageView({ page, familyId }: Props) {
             onDueDateChange={(date) =>
               patchItemMutation.mutate({ itemId: item.id, patch: { dueDate: date } })
             }
+            onTextChange={(text) => editTextMutation.mutate({ itemId: item.id, text })}
           />
         ))}
       </div>
@@ -508,17 +530,32 @@ interface ItemRowProps {
   onDelete: () => void;
   onAssign: (userId: string | null) => void;
   onDueDateChange: (date: string | null) => void;
+  onTextChange: (text: string) => void;
 }
 
-function ItemRow({ item, members, onToggle, onDelete, onAssign, onDueDateChange }: ItemRowProps) {
-  const [hovered, setHovered] = useState(false);
+function ItemRow({ item, members, onToggle, onDelete, onAssign, onDueDateChange, onTextChange }: ItemRowProps) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(item.text);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editing) inputRef.current?.select();
+  }, [editing]);
+
+  function commitEdit() {
+    setEditing(false);
+    const trimmed = draft.trim();
+    if (trimmed && trimmed !== item.text) onTextChange(trimmed);
+    else setDraft(item.text);
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter') e.currentTarget.blur();
+    else if (e.key === 'Escape') { setDraft(item.text); setEditing(false); }
+  }
 
   return (
-    <div
-      className="flex items-center gap-3 py-2.5 min-h-[44px] group"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
+    <div className="flex items-center gap-3 py-2.5 min-h-[44px] group">
       {/* Checkbox */}
       <button
         type="button"
@@ -539,14 +576,28 @@ function ItemRow({ item, members, onToggle, onDelete, onAssign, onDueDateChange 
         )}
       </button>
 
-      {/* Item text */}
-      <span
-        className={`flex-1 text-sm min-w-0 ${
-          item.checked ? 'line-through text-gray-400' : 'text-gray-800'
-        }`}
-      >
-        {item.text}
-      </span>
+      {/* Item text — click to edit */}
+      {editing ? (
+        <input
+          ref={inputRef}
+          type="text"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commitEdit}
+          onKeyDown={handleKeyDown}
+          style={{ fontSize: '16px' }}
+          className="flex-1 bg-transparent border-b border-brand-400 focus:outline-none text-gray-800 min-w-0"
+        />
+      ) : (
+        <span
+          onClick={() => { setDraft(item.text); setEditing(true); }}
+          className={`flex-1 text-sm min-w-0 cursor-text ${
+            item.checked ? 'line-through text-gray-400' : 'text-gray-800'
+          }`}
+        >
+          {item.text}
+        </span>
+      )}
 
       {/* Due date */}
       <DueDateBadge dueDate={item.dueDate} onDateChange={onDueDateChange} />
@@ -564,9 +615,7 @@ function ItemRow({ item, members, onToggle, onDelete, onAssign, onDueDateChange 
       <button
         type="button"
         onClick={onDelete}
-        className={`text-gray-400 hover:text-red-500 transition-colors shrink-0 w-5 h-5 flex items-center justify-center rounded ${
-          hovered ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
+        className="text-gray-400 hover:text-red-500 transition-colors shrink-0 w-5 h-5 flex items-center justify-center rounded md:opacity-0 md:pointer-events-none md:group-hover:opacity-100 md:group-hover:pointer-events-auto"
         aria-label="Delete item"
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

@@ -236,37 +236,64 @@ interface TaskCardProps {
   onAssign: (userId: string | null) => void;
   onDueDateChange: (date: string | null) => void;
   onDelete: () => void;
+  onTextChange: (text: string) => void;
 }
 
-function TaskCard({ task, members, onStatusChange, onAssign, onDueDateChange, onDelete }: TaskCardProps) {
-  const [hovered, setHovered] = useState(false);
+function TaskCard({ task, members, onStatusChange, onAssign, onDueDateChange, onDelete, onTextChange }: TaskCardProps) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(task.text);
+  const inputRef = useRef<HTMLInputElement>(null);
   const { t } = useTranslation();
 
+  useEffect(() => {
+    if (editing) inputRef.current?.select();
+  }, [editing]);
+
+  function commitEdit() {
+    setEditing(false);
+    const trimmed = draft.trim();
+    if (trimmed && trimmed !== task.text) onTextChange(trimmed);
+    else setDraft(task.text);
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter') e.currentTarget.blur();
+    else if (e.key === 'Escape') { setDraft(task.text); setEditing(false); }
+  }
+
   return (
-    <div
-      className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm group"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
+    <div className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm group">
       {/* Row 1: status badge + title + delete */}
       <div className="flex items-start gap-2 min-h-[44px]">
         <StatusBadge
           status={task.status}
           onClick={() => onStatusChange(nextStatus(task.status))}
         />
-        <span
-          className={`flex-1 text-sm text-gray-800 pt-0.5 min-w-0 ${
-            task.status === 'done' ? 'line-through text-gray-400' : ''
-          }`}
-        >
-          {task.text}
-        </span>
+        {editing ? (
+          <input
+            ref={inputRef}
+            type="text"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={commitEdit}
+            onKeyDown={handleKeyDown}
+            style={{ fontSize: '16px' }}
+            className="flex-1 bg-transparent border-b border-brand-400 focus:outline-none text-gray-800 pt-0.5 min-w-0"
+          />
+        ) : (
+          <span
+            onClick={() => { setDraft(task.text); setEditing(true); }}
+            className={`flex-1 text-sm pt-0.5 min-w-0 cursor-text ${
+              task.status === 'done' ? 'line-through text-gray-400' : 'text-gray-800'
+            }`}
+          >
+            {task.text}
+          </span>
+        )}
         <button
           type="button"
           onClick={onDelete}
-          className={`text-gray-400 hover:text-red-500 transition-colors shrink-0 w-5 h-5 flex items-center justify-center rounded ${
-            hovered ? 'opacity-100' : 'opacity-0 pointer-events-none'
-          }`}
+          className="text-gray-400 hover:text-red-500 transition-colors shrink-0 w-5 h-5 flex items-center justify-center rounded md:opacity-0 md:pointer-events-none md:group-hover:opacity-100 md:group-hover:pointer-events-auto"
           aria-label={t('tasks.deleteTask')}
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -300,6 +327,7 @@ interface StatusSectionProps {
   onAssign: (taskId: string, userId: string | null) => void;
   onDueDateChange: (taskId: string, date: string | null) => void;
   onDelete: (taskId: string) => void;
+  onTextChange: (taskId: string, text: string) => void;
   addInput?: React.ReactNode;
 }
 
@@ -311,6 +339,7 @@ function StatusSection({
   onAssign,
   onDueDateChange,
   onDelete,
+  onTextChange,
   addInput,
 }: StatusSectionProps) {
   const { t } = useTranslation();
@@ -356,6 +385,7 @@ function StatusSection({
               onAssign={(userId) => onAssign(task.id, userId)}
               onDueDateChange={(date) => onDueDateChange(task.id, date)}
               onDelete={() => onDelete(task.id)}
+              onTextChange={(text) => onTextChange(task.id, text)}
             />
           ))}
         </div>
@@ -474,6 +504,29 @@ export function TasksPageView({ page, familyId }: Props) {
     },
   });
 
+  // Edit task text (optimistic)
+  const editTextMutation = useMutation({
+    mutationFn: ({ taskId, text }: { taskId: string; text: string }) =>
+      apiRequest(`/families/${familyId}/pages/${page.id}/task-items/${taskId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ text }),
+      }),
+    onMutate: async ({ taskId, text }) => {
+      await queryClient.cancelQueries({ queryKey: cacheKey });
+      const previous = queryClient.getQueryData<Page>(cacheKey);
+      queryClient.setQueryData<Page>(cacheKey, (old) =>
+        old
+          ? { ...old, taskItems: (old.taskItems ?? []).map((t) => t.id === taskId ? { ...t, text } : t) }
+          : old,
+      );
+      return { previous };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.previous) queryClient.setQueryData(cacheKey, ctx.previous);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: cacheKey }),
+  });
+
   // Update page title
   const updateTitleMutation = useMutation({
     mutationFn: (newTitle: string) =>
@@ -577,6 +630,7 @@ export function TasksPageView({ page, familyId }: Props) {
           onAssign={(id, userId) => patchTaskMutation.mutate({ taskId: id, patch: { assigneeId: userId } })}
           onDueDateChange={(id, date) => patchTaskMutation.mutate({ taskId: id, patch: { dueDate: date } })}
           onDelete={(id) => deleteTaskMutation.mutate(id)}
+          onTextChange={(id, text) => editTextMutation.mutate({ taskId: id, text })}
           addInput={addTaskInput}
         />
         <StatusSection
@@ -587,6 +641,7 @@ export function TasksPageView({ page, familyId }: Props) {
           onAssign={(id, userId) => patchTaskMutation.mutate({ taskId: id, patch: { assigneeId: userId } })}
           onDueDateChange={(id, date) => patchTaskMutation.mutate({ taskId: id, patch: { dueDate: date } })}
           onDelete={(id) => deleteTaskMutation.mutate(id)}
+          onTextChange={(id, text) => editTextMutation.mutate({ taskId: id, text })}
         />
         <StatusSection
           status="done"
@@ -596,6 +651,7 @@ export function TasksPageView({ page, familyId }: Props) {
           onAssign={(id, userId) => patchTaskMutation.mutate({ taskId: id, patch: { assigneeId: userId } })}
           onDueDateChange={(id, date) => patchTaskMutation.mutate({ taskId: id, patch: { dueDate: date } })}
           onDelete={(id) => deleteTaskMutation.mutate(id)}
+          onTextChange={(id, text) => editTextMutation.mutate({ taskId: id, text })}
         />
       </div>
     </div>
