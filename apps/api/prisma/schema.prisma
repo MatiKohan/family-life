@@ -100,3 +100,14 @@ enum InviteStatus {
   ACCEPTED
   EXPIRED
 }
+
+model NotificationLog {
+  id        String   @id @default(cuid())
+  type      String   // 'invite' | 'assignment' | 'reminder'
+  channel   String   // 'whatsapp'
+  to        String   // phone number
+  status    String   // 'sent' | 'failed'
+  error     String?
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now())
+}

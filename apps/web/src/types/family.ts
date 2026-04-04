@@ -9,12 +9,19 @@ export interface Family {
   _count?: { members: number };
 }
 
+export interface NotificationSettings {
+  invite?: boolean;
+  itemAssigned?: boolean;
+  eventReminder?: boolean;
+}
+
 export interface FamilyMember {
   id: string;
   familyId: string;
   userId: string;
   role: FamilyRole;
   whatsappPhone: string | null;
+  notificationSettings: NotificationSettings;
   joinedAt: string;
   user: {
     id: string;

@@ -57,7 +57,7 @@ export function BottomNav({ familyId }: Props) {
   return (
     <>
       <nav
-        className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-gray-200 flex items-stretch"
+        className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-gray-200 flex items-stretch pb-[env(safe-area-inset-bottom)]"
         aria-label="Bottom navigation"
       >
         {/* Pages tab */}

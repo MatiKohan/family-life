@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PagesService } from './pages.service';
 import { PrismaService } from '../../database/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 const FAMILY_ID = 'family-1';
 const USER_ID = 'user-1';
@@ -71,6 +72,10 @@ describe('PagesService', () => {
       providers: [
         PagesService,
         { provide: PrismaService, useValue: mockPrisma },
+        {
+          provide: NotificationsService,
+          useValue: { sendAssignmentNotification: jest.fn() },
+        },
       ],
     }).compile();
 

@@ -15,6 +15,7 @@ import { FamilyService } from './family.service';
 import { CreateFamilyDto } from './dto/create-family.dto';
 import { UpdateFamilyDto } from './dto/update-family.dto';
 import { UpdateMemberDto } from './dto/update-member.dto';
+import { UpdateMyMemberDto } from './dto/update-my-member.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthUser } from '@family-life/types';
@@ -59,6 +60,15 @@ export class FamilyController {
   @Get(':id/members')
   listMembers(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     return this.familyService.listMembers(user.id, id);
+  }
+
+  @Patch(':id/members/me')
+  updateMyMember(
+    @CurrentUser() user: AuthUser,
+    @Param('id') familyId: string,
+    @Body() dto: UpdateMyMemberDto,
+  ) {
+    return this.familyService.updateMyMember(user.id, familyId, dto);
   }
 
   @Patch(':id/members/:userId')
