@@ -10,6 +10,7 @@ import { FamilyModule } from './modules/family/family.module';
 import { InvitesModule } from './modules/invites/invites.module';
 import { PagesModule } from './modules/pages/pages.module';
 import { CalendarModule } from './modules/calendar/calendar.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { CalendarModule } from './modules/calendar/calendar.module';
     InvitesModule,
     PagesModule,
     CalendarModule,
+    NotificationsModule,
   ],
   providers: [
     {

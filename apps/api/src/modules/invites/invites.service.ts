@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { InviteStatus, FamilyRole } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { FamilyService } from '../family/family.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreateLinkInviteDto } from './dto/create-link-invite.dto';
 import { CreateTargetedInviteDto } from './dto/create-targeted-invite.dto';
 
@@ -12,6 +13,7 @@ export class InvitesService {
     private readonly prisma: PrismaService,
     private readonly familyService: FamilyService,
     private readonly configService: ConfigService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async createLinkInvite(
@@ -66,7 +68,28 @@ export class InvitesService {
       },
     });
 
-    return invite;
+    const webUrl = this.configService.get<string>(
+      'WEB_URL',
+      'http://localhost:5173',
+    );
+    const inviteUrl = `${webUrl}/join/${invite.token}`;
+
+    if (dto.phone) {
+      const family = await this.prisma.family.findUnique({
+        where: { id: familyId },
+        select: { name: true, emoji: true },
+      });
+      if (family) {
+        void this.notificationsService.sendInviteNotification(
+          dto.phone,
+          inviteUrl,
+          family.name,
+          family.emoji,
+        );
+      }
+    }
+
+    return { ...invite, inviteUrl };
   }
 
   async listInvites(userId: string, familyId: string) {

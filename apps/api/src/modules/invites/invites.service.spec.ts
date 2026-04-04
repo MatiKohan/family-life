@@ -5,6 +5,7 @@ import { InviteStatus, FamilyRole } from '@prisma/client';
 import { InvitesService } from './invites.service';
 import { FamilyService } from '../family/family.service';
 import { PrismaService } from '../../database/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 const mockPrisma = {
   familyInvite: {
@@ -15,6 +16,9 @@ const mockPrisma = {
     update: jest.fn(),
     delete: jest.fn(),
   },
+  family: {
+    findUnique: jest.fn(),
+  },
 };
 
 const mockFamilyService = {
@@ -24,6 +28,10 @@ const mockFamilyService = {
 
 const mockConfigService = {
   get: jest.fn().mockReturnValue('http://localhost:5173'),
+};
+
+const mockNotificationsService = {
+  sendInviteNotification: jest.fn(),
 };
 
 const USER_ID = 'user-1';
@@ -54,6 +62,7 @@ describe('InvitesService', () => {
         { provide: PrismaService, useValue: mockPrisma },
         { provide: FamilyService, useValue: mockFamilyService },
         { provide: ConfigService, useValue: mockConfigService },
+        { provide: NotificationsService, useValue: mockNotificationsService },
       ],
     }).compile();
 
@@ -105,6 +114,13 @@ describe('InvitesService', () => {
         phone: '+1234',
       };
       mockPrisma.familyInvite.create.mockResolvedValue(inviteWithContact);
+      mockPrisma.family.findUnique.mockResolvedValue({
+        name: 'Test Family',
+        emoji: '🏠',
+      });
+      mockNotificationsService.sendInviteNotification.mockResolvedValue(
+        undefined,
+      );
 
       const result = await service.createTargetedInvite(USER_ID, FAMILY_ID, {
         email: 'a@b.com',
@@ -112,6 +128,49 @@ describe('InvitesService', () => {
       });
 
       expect(result.email).toBe('a@b.com');
+    });
+
+    it('calls sendInviteNotification with correct args when phone is provided', async () => {
+      mockFamilyService.requireRole.mockResolvedValue(undefined);
+      const inviteWithPhone = {
+        ...pendingInvite,
+        phone: '+15551234567',
+        token: INVITE_TOKEN,
+      };
+      mockPrisma.familyInvite.create.mockResolvedValue(inviteWithPhone);
+      mockPrisma.family.findUnique.mockResolvedValue({
+        name: 'Test Family',
+        emoji: '🏠',
+      });
+      mockNotificationsService.sendInviteNotification.mockResolvedValue(
+        undefined,
+      );
+
+      await service.createTargetedInvite(USER_ID, FAMILY_ID, {
+        phone: '+15551234567',
+      });
+
+      // Allow the fire-and-forget void promise to resolve
+      await Promise.resolve();
+
+      expect(mockNotificationsService.sendInviteNotification).toHaveBeenCalledWith(
+        '+15551234567',
+        `http://localhost:5173/join/${INVITE_TOKEN}`,
+        'Test Family',
+        '🏠',
+      );
+    });
+
+    it('does NOT call sendInviteNotification when phone is not provided', async () => {
+      mockFamilyService.requireRole.mockResolvedValue(undefined);
+      const inviteNoPhone = { ...pendingInvite, email: 'a@b.com', phone: null };
+      mockPrisma.familyInvite.create.mockResolvedValue(inviteNoPhone);
+
+      await service.createTargetedInvite(USER_ID, FAMILY_ID, {
+        email: 'a@b.com',
+      });
+
+      expect(mockNotificationsService.sendInviteNotification).not.toHaveBeenCalled();
     });
   });
 

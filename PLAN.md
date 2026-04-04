@@ -56,9 +56,9 @@ Status: **not started**
 
 Notify family members via WhatsApp (Twilio) for key events.
 
-- [ ] Integrate Twilio WhatsApp API in NestJS (notifications module)
-- [ ] Send notification on family invite received
-- [ ] Send notification on item/task assigned to a member
+- [x] Integrate Twilio WhatsApp API in NestJS (notifications module)
+- [x] Send notification on family invite received (targeted invite with phone)
+- [x] Send notification on item/task assigned to a member
 - [ ] Send notification on calendar event reminder (configurable lead time)
 - [ ] Respect `FamilyMember.notificationSettings` (per-user on/off per type)
 - [ ] Store delivery logs in a `NotificationLog` table

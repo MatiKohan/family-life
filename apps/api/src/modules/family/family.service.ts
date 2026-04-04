@@ -8,6 +8,7 @@ import { FamilyRole } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { CreateFamilyDto } from './dto/create-family.dto';
 import { UpdateFamilyDto } from './dto/update-family.dto';
+import { UpdateMyMemberDto } from './dto/update-my-member.dto';
 
 const USER_SELECT = {
   id: true,
@@ -184,6 +185,20 @@ export class FamilyService {
       throw new ForbiddenException('Insufficient role');
     }
     return member;
+  }
+
+  async updateMyMember(userId: string, familyId: string, dto: UpdateMyMemberDto) {
+    await this.requireMember(userId, familyId);
+    return this.prisma.familyMember.update({
+      where: { familyId_userId: { familyId, userId } },
+      data: {
+        ...(dto.whatsappPhone !== undefined && { whatsappPhone: dto.whatsappPhone }),
+        ...(dto.notificationSettings !== undefined && {
+          notificationSettings: { ...dto.notificationSettings },
+        }),
+      },
+      include: { user: { select: { id: true, name: true, email: true, avatarUrl: true } } },
+    });
   }
 
   async addMemberByInvite(userId: string, familyId: string): Promise<void> {

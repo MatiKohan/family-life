@@ -5,6 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreatePageDto } from './dto/create-page.dto';
 import { UpdatePageDto } from './dto/update-page.dto';
 import { CreateItemDto } from './dto/create-item.dto';
@@ -32,7 +33,10 @@ type TaskItemData = {
 
 @Injectable()
 export class PagesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   private async requireMember(familyId: string, userId: string) {
     const member = await this.prisma.familyMember.findUnique({
@@ -138,10 +142,22 @@ export class PagesService {
       dueDate: dto.dueDate ?? null,
       createdAt: new Date().toISOString(),
     };
-    return this.prisma.page.update({
+    const result = await this.prisma.page.update({
       where: { id: pageId },
       data: { items: [...items, newItem] },
     });
+    if (newItem.assigneeId && newItem.assigneeId !== userId) {
+      const family = await this.prisma.family.findUnique({
+        where: { id: familyId },
+        select: { name: true, emoji: true },
+      });
+      if (family) {
+        void this.notificationsService.sendAssignmentNotification(
+          familyId, newItem.assigneeId, newItem.text, family.name, family.emoji,
+        );
+      }
+    }
+    return result;
   }
 
   async updateItem(
@@ -156,6 +172,11 @@ export class PagesService {
       where: { id: pageId, familyId },
     });
     if (!page) throw new NotFoundException('Page not found');
+    const existingItem = (page.items as ListItemData[]).find((i) => i.id === itemId);
+    const assigneeChanged =
+      dto.assigneeId != null &&
+      dto.assigneeId !== existingItem?.assigneeId &&
+      dto.assigneeId !== userId;
     const items = (page.items as ListItemData[]).map((item) =>
       item.id === itemId
         ? {
@@ -166,7 +187,20 @@ export class PagesService {
           }
         : item,
     );
-    return this.prisma.page.update({ where: { id: pageId }, data: { items } });
+    const result = await this.prisma.page.update({ where: { id: pageId }, data: { items } });
+    if (assigneeChanged && dto.assigneeId) {
+      const family = await this.prisma.family.findUnique({
+        where: { id: familyId },
+        select: { name: true, emoji: true },
+      });
+      if (family) {
+        const updatedItem = items.find((i) => i.id === itemId);
+        void this.notificationsService.sendAssignmentNotification(
+          familyId, dto.assigneeId, updatedItem?.text ?? '', family.name, family.emoji,
+        );
+      }
+    }
+    return result;
   }
 
   async deleteItem(
@@ -209,10 +243,22 @@ export class PagesService {
       dueDate: dto.dueDate ?? null,
       createdAt: new Date().toISOString(),
     };
-    return this.prisma.page.update({
+    const result = await this.prisma.page.update({
       where: { id: pageId },
       data: { taskItems: [...taskItems, newItem] },
     });
+    if (newItem.assigneeId && newItem.assigneeId !== userId) {
+      const family = await this.prisma.family.findUnique({
+        where: { id: familyId },
+        select: { name: true, emoji: true },
+      });
+      if (family) {
+        void this.notificationsService.sendAssignmentNotification(
+          familyId, newItem.assigneeId, newItem.text, family.name, family.emoji,
+        );
+      }
+    }
+    return result;
   }
 
   async updateTaskItem(
@@ -227,6 +273,11 @@ export class PagesService {
       where: { id: pageId, familyId },
     });
     if (!page) throw new NotFoundException('Page not found');
+    const existingTaskItem = (page.taskItems as TaskItemData[]).find((i) => i.id === itemId);
+    const assigneeChanged =
+      dto.assigneeId != null &&
+      dto.assigneeId !== existingTaskItem?.assigneeId &&
+      dto.assigneeId !== userId;
     const taskItems = (page.taskItems as TaskItemData[]).map((item) =>
       item.id === itemId
         ? {
@@ -237,10 +288,23 @@ export class PagesService {
           }
         : item,
     );
-    return this.prisma.page.update({
+    const result = await this.prisma.page.update({
       where: { id: pageId },
       data: { taskItems },
     });
+    if (assigneeChanged && dto.assigneeId) {
+      const family = await this.prisma.family.findUnique({
+        where: { id: familyId },
+        select: { name: true, emoji: true },
+      });
+      if (family) {
+        const updatedTaskItem = taskItems.find((i) => i.id === itemId);
+        void this.notificationsService.sendAssignmentNotification(
+          familyId, dto.assigneeId, updatedTaskItem?.text ?? '', family.name, family.emoji,
+        );
+      }
+    }
+    return result;
   }
 
   async deleteTaskItem(
