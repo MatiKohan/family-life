@@ -9,6 +9,8 @@ class NotificationSettingsDto {
 
 export class UpdateMyMemberDto {
   @IsOptional() @IsString() whatsappPhone?: string | null;
-  @IsOptional() @ValidateNested() @Type(() => NotificationSettingsDto)
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => NotificationSettingsDto)
   notificationSettings?: NotificationSettingsDto;
 }

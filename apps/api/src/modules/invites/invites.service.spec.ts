@@ -153,7 +153,9 @@ describe('InvitesService', () => {
       // Allow the fire-and-forget void promise to resolve
       await Promise.resolve();
 
-      expect(mockNotificationsService.sendInviteNotification).toHaveBeenCalledWith(
+      expect(
+        mockNotificationsService.sendInviteNotification,
+      ).toHaveBeenCalledWith(
         '+15551234567',
         `http://localhost:5173/join/${INVITE_TOKEN}`,
         'Test Family',
@@ -170,7 +172,9 @@ describe('InvitesService', () => {
         email: 'a@b.com',
       });
 
-      expect(mockNotificationsService.sendInviteNotification).not.toHaveBeenCalled();
+      expect(
+        mockNotificationsService.sendInviteNotification,
+      ).not.toHaveBeenCalled();
     });
   });
 

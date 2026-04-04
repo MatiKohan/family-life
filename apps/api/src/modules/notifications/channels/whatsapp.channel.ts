@@ -21,7 +21,9 @@ export class WhatsAppChannel implements INotificationChannel {
       this.from = from;
       this.logger.log('WhatsApp channel initialized');
     } else {
-      this.logger.warn('WhatsApp channel not configured — notifications disabled');
+      this.logger.warn(
+        'WhatsApp channel not configured — notifications disabled',
+      );
     }
   }
 

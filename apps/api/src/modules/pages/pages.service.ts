@@ -153,7 +153,11 @@ export class PagesService {
       });
       if (family) {
         void this.notificationsService.sendAssignmentNotification(
-          familyId, newItem.assigneeId, newItem.text, family.name, family.emoji,
+          familyId,
+          newItem.assigneeId,
+          newItem.text,
+          family.name,
+          family.emoji,
         );
       }
     }
@@ -172,7 +176,9 @@ export class PagesService {
       where: { id: pageId, familyId },
     });
     if (!page) throw new NotFoundException('Page not found');
-    const existingItem = (page.items as ListItemData[]).find((i) => i.id === itemId);
+    const existingItem = (page.items as ListItemData[]).find(
+      (i) => i.id === itemId,
+    );
     const assigneeChanged =
       dto.assigneeId != null &&
       dto.assigneeId !== existingItem?.assigneeId &&
@@ -187,7 +193,10 @@ export class PagesService {
           }
         : item,
     );
-    const result = await this.prisma.page.update({ where: { id: pageId }, data: { items } });
+    const result = await this.prisma.page.update({
+      where: { id: pageId },
+      data: { items },
+    });
     if (assigneeChanged && dto.assigneeId) {
       const family = await this.prisma.family.findUnique({
         where: { id: familyId },
@@ -196,7 +205,11 @@ export class PagesService {
       if (family) {
         const updatedItem = items.find((i) => i.id === itemId);
         void this.notificationsService.sendAssignmentNotification(
-          familyId, dto.assigneeId, updatedItem?.text ?? '', family.name, family.emoji,
+          familyId,
+          dto.assigneeId,
+          updatedItem?.text ?? '',
+          family.name,
+          family.emoji,
         );
       }
     }
@@ -254,7 +267,11 @@ export class PagesService {
       });
       if (family) {
         void this.notificationsService.sendAssignmentNotification(
-          familyId, newItem.assigneeId, newItem.text, family.name, family.emoji,
+          familyId,
+          newItem.assigneeId,
+          newItem.text,
+          family.name,
+          family.emoji,
         );
       }
     }
@@ -273,7 +290,9 @@ export class PagesService {
       where: { id: pageId, familyId },
     });
     if (!page) throw new NotFoundException('Page not found');
-    const existingTaskItem = (page.taskItems as TaskItemData[]).find((i) => i.id === itemId);
+    const existingTaskItem = (page.taskItems as TaskItemData[]).find(
+      (i) => i.id === itemId,
+    );
     const assigneeChanged =
       dto.assigneeId != null &&
       dto.assigneeId !== existingTaskItem?.assigneeId &&
@@ -300,7 +319,11 @@ export class PagesService {
       if (family) {
         const updatedTaskItem = taskItems.find((i) => i.id === itemId);
         void this.notificationsService.sendAssignmentNotification(
-          familyId, dto.assigneeId, updatedTaskItem?.text ?? '', family.name, family.emoji,
+          familyId,
+          dto.assigneeId,
+          updatedTaskItem?.text ?? '',
+          family.name,
+          family.emoji,
         );
       }
     }

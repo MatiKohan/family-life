@@ -39,12 +39,27 @@ export class NotificationsService {
     } catch (err) {
       status = 'failed';
       error = err instanceof Error ? err.message : String(err);
-      this.logger.error(`[${channelName}] Failed to send (${type}) to ${to}: ${error}`);
+      this.logger.error(
+        `[${channelName}] Failed to send (${type}) to ${to}: ${error}`,
+      );
     }
 
-    await this.prisma.notificationLog.create({
-      data: { type, channel: channelName, to, status, error, metadata: metadata as object },
-    });
+    try {
+      await this.prisma.notificationLog.create({
+        data: {
+          type,
+          channel: channelName,
+          to,
+          status,
+          error,
+          metadata: metadata as object,
+        },
+      });
+    } catch (err) {
+      this.logger.error(
+        `[${channelName}] Failed to write notification log: ${String(err)}`,
+      );
+    }
   }
 
   // ─── Public notification methods ─────────────────────────────────────────
@@ -78,7 +93,10 @@ export class NotificationsService {
 
     if (!member?.whatsappPhone) return;
 
-    const settings = (member.notificationSettings ?? {}) as Record<string, boolean>;
+    const settings = (member.notificationSettings ?? {}) as Record<
+      string,
+      boolean
+    >;
     if (settings.itemAssigned === false) return;
 
     const body =

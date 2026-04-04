@@ -187,17 +187,27 @@ export class FamilyService {
     return member;
   }
 
-  async updateMyMember(userId: string, familyId: string, dto: UpdateMyMemberDto) {
+  async updateMyMember(
+    userId: string,
+    familyId: string,
+    dto: UpdateMyMemberDto,
+  ) {
     await this.requireMember(userId, familyId);
     return this.prisma.familyMember.update({
       where: { familyId_userId: { familyId, userId } },
       data: {
-        ...(dto.whatsappPhone !== undefined && { whatsappPhone: dto.whatsappPhone }),
+        ...(dto.whatsappPhone !== undefined && {
+          whatsappPhone: dto.whatsappPhone,
+        }),
         ...(dto.notificationSettings !== undefined && {
           notificationSettings: { ...dto.notificationSettings },
         }),
       },
-      include: { user: { select: { id: true, name: true, email: true, avatarUrl: true } } },
+      include: {
+        user: {
+          select: { id: true, name: true, email: true, avatarUrl: true },
+        },
+      },
     });
   }
 
