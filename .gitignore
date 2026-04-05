@@ -50,3 +50,8 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+
+# Playwright MCP session artifacts
+.playwright-mcp/
+snapshot-*.md
+yad2-*.png

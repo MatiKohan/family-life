@@ -103,6 +103,46 @@ Status: **needs attention**
 
 ---
 
+## Phase 7 — Apartments page type
+
+New page type for tracking apartment listings (rent or buy) from yad2.co.il.
+
+### Data source strategy
+**Apify managed scraper** (recommended) — calls the published yad2 actor via Apify API.
+- No anti-bot complexity, no proxy management
+- Returns structured JSON (rooms, price, location, floor, images, amenities, listing URL)
+- ~$5/1k results; personal/family use fits free tier
+- Requires `APIFY_TOKEN` env var
+
+### Search params (user-configured per page)
+- Deal type: rent | buy
+- Rooms: min / max
+- Location: city / area (yad2 area codes)
+- Price: max (₪/month for rent, ₪ total for buy)
+- Floor: min / max (optional)
+- Keywords: free text (optional)
+
+### Backend
+- [ ] Add `'apartments'` to `PageType` in `packages/types`
+- [ ] New `ApartmentListing` type in `packages/types` (id, title, price, rooms, floor, area, city, url, imageUrl, foundAt)
+- [ ] New `ApartmentSearch` type for search params stored on the Page
+- [ ] `apartments` NestJS module with `ApartmentsService` (fetch from Apify, diff against stored, save new)
+- [ ] Add `@nestjs/schedule` (also needed for Phase 4 event reminders) — daily cron at configurable time
+- [ ] Store listings as JSONB `items` on the `Page` (consistent with list/task pages)
+- [ ] Store search params as JSONB `metadata` column on `Page` (add to schema)
+
+### Frontend
+- [ ] `ApartmentsPageView` component — card grid layout (image, price, rooms, location, link to yad2)
+- [ ] Search params form in `CreatePageModal` when type = apartments
+- [ ] "Last synced" timestamp + manual "Sync now" button
+- [ ] Mark listings as seen/archived (per user)
+
+### Future
+- [ ] WhatsApp notification when new listings found (via existing NotificationsService)
+- [ ] Support additional sources (Homeless.co.il, Facebook Marketplace)
+
+---
+
 ## Backlog / Future ideas
 
 - [ ] Photo/media pages

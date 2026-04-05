@@ -5,6 +5,7 @@ import { usePage } from '../../hooks/usePage';
 import { ListPageView } from '../../components/ListPageView/ListPageView';
 import { TasksPageView } from '../../components/TasksPageView/TasksPageView';
 import { EventsPageView } from '../../components/EventsPageView/EventsPageView';
+import { ApartmentsPageView } from '../../components/ApartmentsPageView/ApartmentsPageView';
 
 export function PageViewPage() {
   const { t } = useTranslation();
@@ -76,6 +77,10 @@ export function PageViewPage() {
 
   if (page.type === 'events') {
     return <EventsPageView page={page} familyId={familyId!} />;
+  }
+
+  if (page.type === 'apartments') {
+    return <ApartmentsPageView familyId={familyId!} pageId={pageId!} />;
   }
 
   return null;

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ScheduleModule } from '@nestjs/schedule';
 import { HealthModule } from './modules/health/health.module';
 import { PrismaModule } from './database/prisma.module';
 import { UsersModule } from './modules/users/users.module';
@@ -11,6 +12,7 @@ import { InvitesModule } from './modules/invites/invites.module';
 import { PagesModule } from './modules/pages/pages.module';
 import { CalendarModule } from './modules/calendar/calendar.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { ApartmentsModule } from './modules/apartments/apartments.module';
 
 @Module({
   imports: [
@@ -19,6 +21,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
       envFilePath: [`.env.${process.env.NODE_ENV ?? 'development'}`, '.env'],
     }),
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 60 }]),
+    ScheduleModule.forRoot(),
     PrismaModule,
     HealthModule,
     UsersModule,
@@ -28,6 +31,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     PagesModule,
     CalendarModule,
     NotificationsModule,
+    ApartmentsModule,
   ],
   providers: [
     {

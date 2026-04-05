@@ -62,6 +62,7 @@ export class PagesService {
       _max: { sortOrder: true },
     });
     const sortOrder = (maxOrder._max.sortOrder ?? -1) + 1;
+    const metadataValue = dto.metadata as any;
     return this.prisma.page.create({
       data: {
         familyId,
@@ -70,6 +71,7 @@ export class PagesService {
         type: dto.type,
         sortOrder,
         createdBy: userId,
+        ...(dto.metadata ? { metadata: metadataValue } : {}),
       },
     });
   }
