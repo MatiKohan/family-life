@@ -400,7 +400,12 @@ describe('PagesService', () => {
       expect(mockPrisma.page.update).toHaveBeenCalledWith({
         where: { id: PAGE_ID },
         data: {
-          items: [expect.objectContaining({ id: ITEM_ID, deletedAt: expect.any(String) })],
+          items: [
+            expect.objectContaining({
+              id: ITEM_ID,
+              deletedAt: expect.any(String),
+            }),
+          ],
         },
       });
     });
@@ -538,7 +543,12 @@ describe('PagesService', () => {
       expect(mockPrisma.page.update).toHaveBeenCalledWith({
         where: { id: PAGE_ID },
         data: {
-          taskItems: [expect.objectContaining({ id: ITEM_ID, deletedAt: expect.any(String) })],
+          taskItems: [
+            expect.objectContaining({
+              id: ITEM_ID,
+              deletedAt: expect.any(String),
+            }),
+          ],
         },
       });
     });
