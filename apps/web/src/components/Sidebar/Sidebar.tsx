@@ -66,9 +66,10 @@ interface SortablePageItemProps {
   familyId: string;
   isActive: boolean;
   onClose?: () => void;
+  onDelete: () => void;
 }
 
-function SortablePageItem({ page, familyId, isActive, onClose }: SortablePageItemProps) {
+function SortablePageItem({ page, familyId, isActive, onClose, onDelete }: SortablePageItemProps) {
   const {
     attributes,
     listeners,
@@ -109,6 +110,18 @@ function SortablePageItem({ page, familyId, isActive, onClose }: SortablePageIte
         <span className="leading-none shrink-0">{page.emoji}</span>
         <span className="truncate">{page.title}</span>
       </NavLink>
+
+      {/* Delete page button */}
+      <button
+        onClick={onDelete}
+        className="shrink-0 text-gray-300 opacity-0 group-hover/page:opacity-100 p-1 rounded hover:text-red-500 transition-opacity"
+        aria-label="Delete page"
+        tabIndex={-1}
+      >
+        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+      </button>
     </li>
   );
 }
@@ -143,6 +156,20 @@ export function Sidebar({ familyId, onClose }: SidebarProps) {
       }),
     onSettled: () => queryClient.invalidateQueries({ queryKey: ['pages', familyId] }),
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: (pageId: string) =>
+      apiRequest(`/families/${familyId}/pages/${pageId}`, { method: 'DELETE' }),
+    onSuccess: (_data, pageId) => {
+      queryClient.invalidateQueries({ queryKey: ['pages', familyId] });
+      if (activePageId === pageId) navigate(`/family/${familyId}`);
+    },
+  });
+
+  function handleDeletePage(pageId: string, pageTitle: string) {
+    if (!window.confirm(`Delete "${pageTitle}"?`)) return;
+    deleteMutation.mutate(pageId);
+  }
 
   function handleDragEnd(event: DragEndEvent) {
     setIsDragging(false);
@@ -202,6 +229,7 @@ export function Sidebar({ familyId, onClose }: SidebarProps) {
                       familyId={familyId}
                       isActive={activePageId === page.id}
                       onClose={onClose}
+                      onDelete={() => handleDeletePage(page.id, page.title)}
                     />
                   ))}
                 </ul>

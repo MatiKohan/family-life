@@ -12,18 +12,76 @@ export class Yad2ApifyProvider implements IApartmentProvider {
   private readonly token: string | null;
   private readonly actorId = 'swerve~yad2-scraper';
 
+  private readonly isDev: boolean;
+
   constructor(
     private readonly config: ConfigService,
     private readonly http: HttpService,
   ) {
     this.token = config.get<string>('APIFY_TOKEN') ?? null;
+    this.isDev = config.get<string>('NODE_ENV') !== 'production';
     if (!this.token) {
-      this.logger.warn('APIFY_TOKEN not set — yad2-apify provider disabled');
+      if (this.isDev) {
+        this.logger.log('APIFY_TOKEN not set — using mock data in development');
+      } else {
+        this.logger.warn('APIFY_TOKEN not set — yad2-apify provider disabled');
+      }
     }
   }
 
   get isConfigured(): boolean {
-    return this.token !== null;
+    return this.token !== null || this.isDev;
+  }
+
+  private mockListings(params: ApartmentSearchParams): ApartmentListing[] {
+    const city = params.city ?? 'תל אביב';
+    return [
+      {
+        id: 'mock-1',
+        title: `רחוב דיזנגוף 42, מרכז, ${city}`,
+        price: 6500,
+        rooms: 3,
+        floor: 2,
+        area: 'מרכז',
+        city,
+        url: 'https://www.yad2.co.il',
+        imageUrl: null,
+        description: 'דירה מרווחת במיקום מרכזי, קרובה לתחבורה ציבורית.',
+        provider: this.providerName,
+        foundAt: new Date().toISOString(),
+        seenBy: [],
+      },
+      {
+        id: 'mock-2',
+        title: `שדרות רוטשילד 15, לב העיר, ${city}`,
+        price: 8200,
+        rooms: 4,
+        floor: 5,
+        area: 'לב העיר',
+        city,
+        url: 'https://www.yad2.co.il',
+        imageUrl: null,
+        description: 'דירת יוקרה עם נוף פנורמי ומרפסת גדולה.',
+        provider: this.providerName,
+        foundAt: new Date().toISOString(),
+        seenBy: [],
+      },
+      {
+        id: 'mock-3',
+        title: `רחוב בן יהודה 88, צפון, ${city}`,
+        price: 5400,
+        rooms: 2.5,
+        floor: 1,
+        area: 'צפון',
+        city,
+        url: 'https://www.yad2.co.il',
+        imageUrl: null,
+        description: 'דירה שקטה עם חנייה צמודה.',
+        provider: this.providerName,
+        foundAt: new Date().toISOString(),
+        seenBy: [],
+      },
+    ];
   }
 
   private buildInput(params: ApartmentSearchParams): Record<string, unknown> {
@@ -93,7 +151,10 @@ export class Yad2ApifyProvider implements IApartmentProvider {
   }
 
   async search(params: ApartmentSearchParams): Promise<ApartmentListing[]> {
-    if (!this.token) return [];
+    if (!this.token) {
+      this.logger.log('Returning mock listings (dev mode)');
+      return this.mockListings(params);
+    }
 
     const input = this.buildInput(params);
     this.logger.log(`Searching yad2 via Apify: ${JSON.stringify(input)}`);
