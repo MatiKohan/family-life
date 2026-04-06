@@ -21,6 +21,7 @@ type ListItemData = {
   assigneeId: string | null;
   dueDate: string | null;
   createdAt: string;
+  deletedAt?: string | null;
 };
 type TaskItemData = {
   id: string;
@@ -29,6 +30,7 @@ type TaskItemData = {
   status: string;
   dueDate: string | null;
   createdAt: string;
+  deletedAt?: string | null;
 };
 
 @Injectable()
@@ -82,6 +84,13 @@ export class PagesService {
       where: { id: pageId, familyId },
     });
     if (!page) throw new NotFoundException('Page not found');
+    // Filter soft-deleted items
+    const items = ((page.items as ListItemData[]) || []).filter(
+      (i) => !i.deletedAt,
+    );
+    const taskItems = ((page.taskItems as TaskItemData[]) || []).filter(
+      (i) => !i.deletedAt,
+    );
     // For events type, attach calendar events
     if (page.type === 'events') {
       const eventIds = (page.eventIds as string[]) || [];
@@ -91,9 +100,9 @@ export class PagesService {
               where: { id: { in: eventIds } },
             })
           : [];
-      return { ...page, events };
+      return { ...page, items, taskItems, events };
     }
-    return page;
+    return { ...page, items, taskItems };
   }
 
   async updatePage(
@@ -229,8 +238,10 @@ export class PagesService {
       where: { id: pageId, familyId },
     });
     if (!page) throw new NotFoundException('Page not found');
-    const items = (page.items as ListItemData[]).filter(
-      (item) => item.id !== itemId,
+    const items = (page.items as ListItemData[]).map((item) =>
+      item.id === itemId
+        ? { ...item, deletedAt: new Date().toISOString() }
+        : item,
     );
     return this.prisma.page.update({ where: { id: pageId }, data: { items } });
   }
@@ -343,8 +354,10 @@ export class PagesService {
       where: { id: pageId, familyId },
     });
     if (!page) throw new NotFoundException('Page not found');
-    const taskItems = (page.taskItems as TaskItemData[]).filter(
-      (item) => item.id !== itemId,
+    const taskItems = (page.taskItems as TaskItemData[]).map((item) =>
+      item.id === itemId
+        ? { ...item, deletedAt: new Date().toISOString() }
+        : item,
     );
     return this.prisma.page.update({
       where: { id: pageId },
@@ -416,12 +429,13 @@ export class PagesService {
     });
     if (!page) throw new NotFoundException('Page not found');
     const items = page.items as ListItemData[];
+    const deleted = items.filter((i) => i.deletedAt);
     const reordered = itemIds
-      .map((id) => items.find((i) => i.id === id))
+      .map((id) => items.find((i) => i.id === id && !i.deletedAt))
       .filter((i): i is ListItemData => !!i);
     return this.prisma.page.update({
       where: { id: pageId },
-      data: { items: reordered },
+      data: { items: [...reordered, ...deleted] },
     });
   }
 
@@ -437,12 +451,13 @@ export class PagesService {
     });
     if (!page) throw new NotFoundException('Page not found');
     const taskItems = page.taskItems as TaskItemData[];
+    const deleted = taskItems.filter((i) => i.deletedAt);
     const reordered = taskItemIds
-      .map((id) => taskItems.find((i) => i.id === id))
+      .map((id) => taskItems.find((i) => i.id === id && !i.deletedAt))
       .filter((i): i is TaskItemData => !!i);
     return this.prisma.page.update({
       where: { id: pageId },
-      data: { taskItems: reordered },
+      data: { taskItems: [...reordered, ...deleted] },
     });
   }
 }

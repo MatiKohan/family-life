@@ -7,6 +7,7 @@ export interface ListItem {
   assigneeId: string | null;
   dueDate: string | null;
   createdAt: string;
+  deletedAt?: string | null;
 }
 
 export interface TaskItem {
@@ -16,6 +17,7 @@ export interface TaskItem {
   assigneeId: string | null;
   dueDate: string | null;
   createdAt: string;
+  deletedAt?: string | null;
 }
 
 // ─── Apartments ───────────────────────────────────────────────────────────────
