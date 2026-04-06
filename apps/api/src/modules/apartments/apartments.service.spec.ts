@@ -174,7 +174,7 @@ describe('ApartmentsService', () => {
       await service.syncAll();
 
       expect(mockPrisma.page.findMany).toHaveBeenCalledWith({
-        where: { type: 'apartments' },
+        where: { type: 'apartments', deletedAt: null },
       });
       expect(mockPrisma.page.findUnique).toHaveBeenCalledTimes(2);
     });
