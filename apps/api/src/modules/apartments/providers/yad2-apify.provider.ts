@@ -35,9 +35,10 @@ export class Yad2ApifyProvider implements IApartmentProvider {
 
   private mockListings(params: ApartmentSearchParams): ApartmentListing[] {
     const city = params.city ?? 'תל אביב';
+    const ts = Date.now();
     return [
       {
-        id: 'mock-1',
+        id: `mock-${ts}-1`,
         title: `רחוב דיזנגוף 42, מרכז, ${city}`,
         price: 6500,
         rooms: 3,
@@ -52,7 +53,7 @@ export class Yad2ApifyProvider implements IApartmentProvider {
         seenBy: [],
       },
       {
-        id: 'mock-2',
+        id: `mock-${ts}-2`,
         title: `שדרות רוטשילד 15, לב העיר, ${city}`,
         price: 8200,
         rooms: 4,
@@ -67,7 +68,7 @@ export class Yad2ApifyProvider implements IApartmentProvider {
         seenBy: [],
       },
       {
-        id: 'mock-3',
+        id: `mock-${ts}-3`,
         title: `רחוב בן יהודה 88, צפון, ${city}`,
         price: 5400,
         rooms: 2.5,

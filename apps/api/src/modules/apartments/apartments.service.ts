@@ -29,7 +29,7 @@ export class ApartmentsService {
   /** Called by the scheduler — syncs ALL apartments pages across all families */
   async syncAll(): Promise<void> {
     const pages = await this.prisma.page.findMany({
-      where: { type: 'apartments' },
+      where: { type: 'apartments', deletedAt: null },
     });
     this.logger.log(`Syncing ${pages.length} apartments page(s)`);
     for (const page of pages) {
