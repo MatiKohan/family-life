@@ -1,4 +1,11 @@
 {
+  "home": {
+    "goodMorning": "בוקר טוב",
+    "goodAfternoon": "צהריים טובים",
+    "goodEvening": "ערב טוב",
+    "members": "{{count}} חברים",
+    "yourPages": "הדפים שלכם"
+  },
   "common": {
     "loading": "טוען...",
     "error": "משהו השתבש",

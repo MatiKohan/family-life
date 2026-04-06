@@ -76,7 +76,10 @@ export function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="max-w-sm w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">Family Life</h1>
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <img src="/logo.svg" alt="" className="w-8 h-8 rounded-xl" />
+            <h1 className="text-2xl font-bold text-gray-900">{t('nav.familyLife')}</h1>
+          </div>
           <p className="text-gray-500 text-sm">{t('auth.signInToContinue')}</p>
         </div>
 

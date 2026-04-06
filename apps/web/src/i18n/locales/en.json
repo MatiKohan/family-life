@@ -1,4 +1,11 @@
 {
+  "home": {
+    "goodMorning": "Good morning",
+    "goodAfternoon": "Good afternoon",
+    "goodEvening": "Good evening",
+    "members": "{{count}} members",
+    "yourPages": "Your pages"
+  },
   "common": {
     "loading": "Loading...",
     "error": "Something went wrong",

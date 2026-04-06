@@ -16,14 +16,21 @@ class AuthError extends Error {}
 async function attemptRefresh(
   setSession: (user: AuthUser, token: string) => void,
 ): Promise<void> {
-  const res = await fetch(`${BASE_URL}/auth/refresh`, {
-    method: 'POST',
-    credentials: 'include',
-  });
-  if (res.status === 401) throw new AuthError('Token expired');
-  if (!res.ok) throw new Error('Network error');
-  const data = (await res.json()) as RefreshResponse;
-  setSession(data.user, data.accessToken);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+  try {
+    const res = await fetch(`${BASE_URL}/auth/refresh`, {
+      method: 'POST',
+      credentials: 'include',
+      signal: controller.signal,
+    });
+    if (res.status === 401) throw new AuthError('Token expired');
+    if (!res.ok) throw new Error('Network error');
+    const data = (await res.json()) as RefreshResponse;
+    setSession(data.user, data.accessToken);
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 const RETRY_DELAYS = [2000, 4000, 6000]; // 3 retries, increasing backoff
