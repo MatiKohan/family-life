@@ -33,7 +33,7 @@
     "createTitle": "יצירת משפחה",
     "createSubtitle": "הגדר את מרחב המשפחה שלך כדי להתחיל.",
     "familyName": "שם המשפחה",
-    "familyNamePlaceholder": "משפחת כהן",
+    "familyNamePlaceholder": "משפחת קוהן",
     "icon": "אייקון",
     "creating": "יוצר...",
     "createButton": "צור משפחה",
@@ -70,7 +70,7 @@
     "signInToJoin": "התחבר והצטרף"
   },
   "pages": {
-    "newPage": "+ דף חדש",
+    "newPage": "דף חדש",
     "calendar": "לוח שנה",
     "createTitle": "דף חדש",
     "titleLabel": "כותרת",
@@ -203,7 +203,7 @@
     "language": "שפה",
     "english": "English",
     "hebrew": "עברית",
-    "familyLife": "Family Life",
+    "familyLife": "שלום בית",
     "openMenu": "פתח תפריט",
     "closeMenu": "סגור תפריט"
   }

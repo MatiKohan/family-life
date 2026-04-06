@@ -48,6 +48,7 @@ model Page {
   createdBy         String
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime?
   family            Family    @relation(fields: [familyId], references: [id], onDelete: Cascade)
 }
 

@@ -13,10 +13,10 @@ export default defineConfig({
       strategies: 'injectManifest',
       srcDir: 'src',
       filename: 'sw.ts',
-      includeAssets: ['icon-192.png', 'icon-512.png'],
+      includeAssets: ['icon-192.png', 'icon-512.png', 'logo.svg'],
       manifest: {
-        name: 'Family Life',
-        short_name: 'FamilyLife',
+        name: 'Shlom Bait',
+        short_name: 'Shlom Bait',
         description: 'Family management app',
         theme_color: '#7c3aed',
         background_color: '#ffffff',

@@ -70,7 +70,7 @@
     "signInToJoin": "Sign in to join"
   },
   "pages": {
-    "newPage": "+ New Page",
+    "newPage": "New Page",
     "calendar": "Calendar",
     "createTitle": "New page",
     "titleLabel": "Title",
@@ -203,7 +203,7 @@
     "language": "Language",
     "english": "English",
     "hebrew": "עברית",
-    "familyLife": "Family Life",
+    "familyLife": "Shlom Bait",
     "openMenu": "Open menu",
     "closeMenu": "Close menu"
   }

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#5b21b6"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded square background -->
+  <rect width="192" height="192" rx="38" fill="url(#bg)"/>
+
+  <!-- House walls -->
+  <rect x="48" y="98" width="96" height="66" rx="4" fill="white" opacity="0.95"/>
+
+  <!-- Roof -->
+  <polygon points="96,34 152,98 40,98" fill="white" opacity="0.95"/>
+
+  <!-- Chimney -->
+  <rect x="116" y="50" width="14" height="28" rx="2" fill="white" opacity="0.95"/>
+
+  <!-- Door -->
+  <rect x="79" y="128" width="34" height="36" rx="5" fill="#7c3aed"/>
+
+  <!-- Heart inside house (above door) -->
+  <path d="M96 122 C96 122 76 110 76 99 C76 92 82 87 89 87 C92 87 95 89 96 91 C97 89 100 87 103 87 C110 87 116 92 116 99 C116 110 96 122 96 122 Z" fill="#f472b6"/>
+</svg>

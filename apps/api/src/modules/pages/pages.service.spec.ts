@@ -99,7 +99,7 @@ describe('PagesService', () => {
         where: { familyId_userId: { familyId: FAMILY_ID, userId: USER_ID } },
       });
       expect(mockPrisma.page.findMany).toHaveBeenCalledWith({
-        where: { familyId: FAMILY_ID },
+        where: { familyId: FAMILY_ID, deletedAt: null },
         select: { id: true, title: true, emoji: true, type: true },
         orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
       });
@@ -229,15 +229,19 @@ describe('PagesService', () => {
   // --- deletePage ---
 
   describe('deletePage', () => {
-    it('deletes the page when it exists and user is member', async () => {
+    it('soft-deletes the page when it exists and user is member', async () => {
       mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
       const page = makeListPage();
       mockPrisma.page.findFirst.mockResolvedValue(page);
-      mockPrisma.page.delete.mockResolvedValue(page);
+      mockPrisma.page.update.mockResolvedValue({
+        ...page,
+        deletedAt: new Date(),
+      });
 
       await service.deletePage(FAMILY_ID, PAGE_ID, USER_ID);
-      expect(mockPrisma.page.delete).toHaveBeenCalledWith({
+      expect(mockPrisma.page.update).toHaveBeenCalledWith({
         where: { id: PAGE_ID },
+        data: { deletedAt: expect.any(Date) },
       });
     });
 

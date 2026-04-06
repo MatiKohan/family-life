@@ -51,7 +51,7 @@ export class PagesService {
   async listPages(familyId: string, userId: string) {
     await this.requireMember(familyId, userId);
     return this.prisma.page.findMany({
-      where: { familyId },
+      where: { familyId, deletedAt: null },
       select: { id: true, title: true, emoji: true, type: true },
       orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
     });
@@ -81,7 +81,7 @@ export class PagesService {
   async getPage(familyId: string, pageId: string, userId: string) {
     await this.requireMember(familyId, userId);
     const page = await this.prisma.page.findFirst({
-      where: { id: pageId, familyId },
+      where: { id: pageId, familyId, deletedAt: null },
     });
     if (!page) throw new NotFoundException('Page not found');
     // Filter soft-deleted items
@@ -113,7 +113,7 @@ export class PagesService {
   ) {
     await this.requireMember(familyId, userId);
     const page = await this.prisma.page.findFirst({
-      where: { id: pageId, familyId },
+      where: { id: pageId, familyId, deletedAt: null },
     });
     if (!page) throw new NotFoundException('Page not found');
     return this.prisma.page.update({
@@ -125,10 +125,13 @@ export class PagesService {
   async deletePage(familyId: string, pageId: string, userId: string) {
     await this.requireMember(familyId, userId);
     const page = await this.prisma.page.findFirst({
-      where: { id: pageId, familyId },
+      where: { id: pageId, familyId, deletedAt: null },
     });
     if (!page) throw new NotFoundException('Page not found');
-    await this.prisma.page.delete({ where: { id: pageId } });
+    await this.prisma.page.update({
+      where: { id: pageId },
+      data: { deletedAt: new Date() },
+    });
   }
 
   // List items
@@ -140,7 +143,7 @@ export class PagesService {
   ) {
     await this.requireMember(familyId, userId);
     const page = await this.prisma.page.findFirst({
-      where: { id: pageId, familyId },
+      where: { id: pageId, familyId, deletedAt: null },
     });
     if (!page) throw new NotFoundException('Page not found');
     if (page.type !== 'list') throw new BadRequestException('Not a list page');
@@ -184,7 +187,7 @@ export class PagesService {
   ) {
     await this.requireMember(familyId, userId);
     const page = await this.prisma.page.findFirst({
-      where: { id: pageId, familyId },
+      where: { id: pageId, familyId, deletedAt: null },
     });
     if (!page) throw new NotFoundException('Page not found');
     const existingItem = (page.items as ListItemData[]).find(
@@ -235,7 +238,7 @@ export class PagesService {
   ) {
     await this.requireMember(familyId, userId);
     const page = await this.prisma.page.findFirst({
-      where: { id: pageId, familyId },
+      where: { id: pageId, familyId, deletedAt: null },
     });
     if (!page) throw new NotFoundException('Page not found');
     const items = (page.items as ListItemData[]).map((item) =>
@@ -255,7 +258,7 @@ export class PagesService {
   ) {
     await this.requireMember(familyId, userId);
     const page = await this.prisma.page.findFirst({
-      where: { id: pageId, familyId },
+      where: { id: pageId, familyId, deletedAt: null },
     });
     if (!page) throw new NotFoundException('Page not found');
     if (page.type !== 'tasks')
@@ -300,7 +303,7 @@ export class PagesService {
   ) {
     await this.requireMember(familyId, userId);
     const page = await this.prisma.page.findFirst({
-      where: { id: pageId, familyId },
+      where: { id: pageId, familyId, deletedAt: null },
     });
     if (!page) throw new NotFoundException('Page not found');
     const existingTaskItem = (page.taskItems as TaskItemData[]).find(
@@ -351,7 +354,7 @@ export class PagesService {
   ) {
     await this.requireMember(familyId, userId);
     const page = await this.prisma.page.findFirst({
-      where: { id: pageId, familyId },
+      where: { id: pageId, familyId, deletedAt: null },
     });
     if (!page) throw new NotFoundException('Page not found');
     const taskItems = (page.taskItems as TaskItemData[]).map((item) =>
@@ -374,7 +377,7 @@ export class PagesService {
   ) {
     await this.requireMember(familyId, userId);
     const page = await this.prisma.page.findFirst({
-      where: { id: pageId, familyId },
+      where: { id: pageId, familyId, deletedAt: null },
     });
     if (!page) throw new NotFoundException('Page not found');
     const eventIds = (page.eventIds as string[]) || [];
@@ -395,7 +398,7 @@ export class PagesService {
   ) {
     await this.requireMember(familyId, userId);
     const page = await this.prisma.page.findFirst({
-      where: { id: pageId, familyId },
+      where: { id: pageId, familyId, deletedAt: null },
     });
     if (!page) throw new NotFoundException('Page not found');
     const eventIds = (page.eventIds as string[]).filter((id) => id !== eventId);
@@ -425,7 +428,7 @@ export class PagesService {
   ) {
     await this.requireMember(familyId, userId);
     const page = await this.prisma.page.findFirst({
-      where: { id: pageId, familyId },
+      where: { id: pageId, familyId, deletedAt: null },
     });
     if (!page) throw new NotFoundException('Page not found');
     const items = page.items as ListItemData[];
@@ -447,7 +450,7 @@ export class PagesService {
   ) {
     await this.requireMember(familyId, userId);
     const page = await this.prisma.page.findFirst({
-      where: { id: pageId, familyId },
+      where: { id: pageId, familyId, deletedAt: null },
     });
     if (!page) throw new NotFoundException('Page not found');
     const taskItems = page.taskItems as TaskItemData[];
