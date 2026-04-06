@@ -114,7 +114,7 @@ export function CreatePageModal({ familyId, onClose, onCreated }: Props) {
             {/* Page type selector */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">{t('pages.typeLabel')}</label>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 {/* List type */}
                 <button
                   type="button"
@@ -166,6 +166,24 @@ export function CreatePageModal({ familyId, onClose, onCreated }: Props) {
                   <span className="absolute top-2 end-2 text-xs bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full leading-none">
                     {t('common.comingSoon')}
                   </span>
+                </button>
+
+                {/* Apartments type */}
+                <button
+                  type="button"
+                  onClick={() => setType('apartments')}
+                  className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-colors ${
+                    type === 'apartments'
+                      ? 'border-brand-500 bg-brand-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  aria-pressed={type === 'apartments'}
+                >
+                  <span className="text-2xl">🏠</span>
+                  <div className="text-center">
+                    <div className="text-sm font-semibold text-gray-900">{t('pages.apartmentsType')}</div>
+                    <div className="text-xs text-gray-500 mt-0.5">{t('pages.apartmentsTypeDesc')}</div>
+                  </div>
                 </button>
               </div>
             </div>

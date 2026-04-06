@@ -41,6 +41,9 @@ export const mockPage: Page = {
   ],
   taskItems: [],
   eventIds: [],
+  apartmentListings: [],
+  metadata: {},
+  lastSyncedAt: null,
   createdBy: 'user-1',
   createdAt: '2026-03-01T00:00:00.000Z',
   updatedAt: '2026-03-01T00:00:00.000Z',
@@ -80,6 +83,9 @@ export const mockTaskPage: Page = {
     },
   ],
   eventIds: [],
+  apartmentListings: [],
+  metadata: {},
+  lastSyncedAt: null,
   createdBy: 'user-1',
   createdAt: '2026-03-01T00:00:00.000Z',
   updatedAt: '2026-03-01T00:00:00.000Z',
@@ -200,6 +206,17 @@ export const handlers = [
     const body = await request.json();
     return HttpResponse.json(body, { status: 201 });
   }),
+
+  // Apartment search params, sync, seen
+  http.patch('/api/families/:familyId/pages/:pageId/apartments/search-params', () =>
+    new HttpResponse(null, { status: 204 }),
+  ),
+  http.post('/api/families/:familyId/pages/:pageId/apartments/sync', () =>
+    new HttpResponse(null, { status: 204 }),
+  ),
+  http.patch('/api/families/:familyId/pages/:pageId/apartments/:listingId/seen', () =>
+    new HttpResponse(null, { status: 204 }),
+  ),
 
   // Task items
   http.post('/api/families/:familyId/pages/:pageId/task-items', async ({ request }) => {

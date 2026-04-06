@@ -381,7 +381,7 @@ describe('PagesService', () => {
   // --- deleteItem ---
 
   describe('deleteItem', () => {
-    it('removes item from the page', async () => {
+    it('soft-deletes item by setting deletedAt', async () => {
       mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
       const item = {
         id: ITEM_ID,
@@ -393,14 +393,20 @@ describe('PagesService', () => {
       };
       const page = makeListPage({ items: [item] });
       mockPrisma.page.findFirst.mockResolvedValue(page);
-      const updatedPage = { ...page, items: [] };
-      mockPrisma.page.update.mockResolvedValue(updatedPage);
+      mockPrisma.page.update.mockResolvedValue(page);
 
       await service.deleteItem(FAMILY_ID, PAGE_ID, ITEM_ID, USER_ID);
 
       expect(mockPrisma.page.update).toHaveBeenCalledWith({
         where: { id: PAGE_ID },
-        data: { items: [] },
+        data: {
+          items: [
+            expect.objectContaining({
+              id: ITEM_ID,
+              deletedAt: expect.any(String),
+            }),
+          ],
+        },
       });
     });
 
@@ -518,7 +524,7 @@ describe('PagesService', () => {
   // --- deleteTaskItem ---
 
   describe('deleteTaskItem', () => {
-    it('removes the task item from the page', async () => {
+    it('soft-deletes task item by setting deletedAt', async () => {
       mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
       const taskItem = {
         id: ITEM_ID,
@@ -530,14 +536,20 @@ describe('PagesService', () => {
       };
       const page = makeListPage({ type: 'tasks', taskItems: [taskItem] });
       mockPrisma.page.findFirst.mockResolvedValue(page);
-      const updatedPage = { ...page, taskItems: [] };
-      mockPrisma.page.update.mockResolvedValue(updatedPage);
+      mockPrisma.page.update.mockResolvedValue(page);
 
       await service.deleteTaskItem(FAMILY_ID, PAGE_ID, ITEM_ID, USER_ID);
 
       expect(mockPrisma.page.update).toHaveBeenCalledWith({
         where: { id: PAGE_ID },
-        data: { taskItems: [] },
+        data: {
+          taskItems: [
+            expect.objectContaining({
+              id: ITEM_ID,
+              deletedAt: expect.any(String),
+            }),
+          ],
+        },
       });
     });
   });
