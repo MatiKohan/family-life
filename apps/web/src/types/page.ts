@@ -24,14 +24,18 @@ export interface ListItem {
 
 export interface ApartmentSearchParams {
   dealType: ApartmentDealType;
+  city?: string;
+  neighbourhood?: string;
   minRooms?: number;
   maxRooms?: number;
-  city?: string;
-  area?: string;
+  minPrice?: number;
   maxPrice?: number;
   minFloor?: number;
   maxFloor?: number;
-  keywords?: string;
+  requireParking?: boolean;
+  requireBalcony?: boolean;
+  requireElevator?: boolean;
+  requireSecureRoom?: boolean;
 }
 
 export interface ApartmentListing {
