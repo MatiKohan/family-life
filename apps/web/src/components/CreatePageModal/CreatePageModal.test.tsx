@@ -40,7 +40,7 @@ describe('CreatePageModal', () => {
     expect(screen.getByRole('heading', { name: /new page/i })).toBeInTheDocument();
     expect(screen.getByLabelText(/title/i)).toBeInTheDocument();
     expect(screen.getByText('List')).toBeInTheDocument();
-    expect(screen.getByText('Events')).toBeInTheDocument();
+    expect(screen.getByText('Tasks')).toBeInTheDocument();
   });
 
   it('Create button is disabled when title is empty', () => {
@@ -99,10 +99,10 @@ describe('CreatePageModal', () => {
     );
   });
 
-  it('Events type button is disabled', () => {
+  it('Apartments type button is enabled', () => {
     renderModal();
-    const eventsBtn = screen.getByRole('button', { name: /events/i });
-    expect(eventsBtn).toBeDisabled();
+    const apartmentsBtn = screen.getByRole('button', { name: /apartments/i });
+    expect(apartmentsBtn).not.toBeDisabled();
   });
 
   it('allows selecting a different emoji', async () => {

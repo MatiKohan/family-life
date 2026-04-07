@@ -82,6 +82,20 @@ function formatEventTime(ev: CalendarEvent): string {
 }
 
 // ---------------------------------------------------------------------------
+// Reminder options
+// ---------------------------------------------------------------------------
+
+const REMINDER_OPTIONS: { label: string; value: number | null }[] = [
+  { label: 'No reminder', value: null },
+  { label: '15 minutes before', value: 15 },
+  { label: '30 minutes before', value: 30 },
+  { label: '1 hour before', value: 60 },
+  { label: '2 hours before', value: 120 },
+  { label: '1 day before', value: 1440 },
+  { label: '2 days before', value: 2880 },
+];
+
+// ---------------------------------------------------------------------------
 // CreateEventModal
 // ---------------------------------------------------------------------------
 
@@ -108,6 +122,7 @@ function CreateEventModal({ familyId, initialDate, onClose, onCreated }: CreateE
   const [startAt, setStartAt] = useState(defaultStart);
   const [endAt, setEndAt] = useState(defaultEnd);
   const [isAllDay, setIsAllDay] = useState(false);
+  const [reminderMinutesBefore, setReminderMinutesBefore] = useState<number | null>(null);
 
   const createMutation = useMutation({
     mutationFn: (req: CreateEventRequest) =>
@@ -137,6 +152,7 @@ function CreateEventModal({ familyId, initialDate, onClose, onCreated }: CreateE
         ? new Date(startAt.slice(0, 10) + 'T23:59:59').toISOString()
         : new Date(endAt).toISOString(),
       isAllDay,
+      reminderMinutesBefore: reminderMinutesBefore ?? undefined,
     };
 
     createMutation.mutate(req);
@@ -237,6 +253,24 @@ function CreateEventModal({ familyId, initialDate, onClose, onCreated }: CreateE
             </div>
           )}
 
+          {/* Reminder */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t('calendar.reminder')}
+            </label>
+            <select
+              value={reminderMinutesBefore ?? ''}
+              onChange={(e) => setReminderMinutesBefore(e.target.value === '' ? null : Number(e.target.value))}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+            >
+              {REMINDER_OPTIONS.map((opt) => (
+                <option key={opt.value ?? 'none'} value={opt.value ?? ''}>
+                  {t(`calendar.reminder_${opt.value ?? 'none'}`, { defaultValue: opt.label })}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* Actions */}
           <div className="flex justify-end gap-3 pt-2">
             <button
@@ -280,6 +314,7 @@ function EventDetailModal({ event, familyId, onClose }: EventDetailModalProps) {
   const [startAt, setStartAt] = useState(toLocalDateTimeString(new Date(event.startAt)));
   const [endAt, setEndAt] = useState(toLocalDateTimeString(new Date(event.endAt)));
   const [isAllDay, setIsAllDay] = useState(event.isAllDay);
+  const [reminderMinutesBefore, setReminderMinutesBefore] = useState<number | null>(event.reminderMinutesBefore);
 
   const updateMutation = useMutation({
     mutationFn: (patch: Partial<CreateEventRequest>) =>
@@ -314,6 +349,7 @@ function EventDetailModal({ event, familyId, onClose }: EventDetailModalProps) {
         ? new Date(startAt.slice(0, 10) + 'T23:59:59').toISOString()
         : new Date(endAt).toISOString(),
       isAllDay,
+      reminderMinutesBefore,
     });
   }
 
@@ -365,6 +401,14 @@ function EventDetailModal({ event, familyId, onClose }: EventDetailModalProps) {
               )}
               {event.description && (
                 <p className="text-sm text-gray-700 mt-2 whitespace-pre-wrap">{event.description}</p>
+              )}
+              {event.reminderMinutesBefore != null && (
+                <p className="text-sm text-gray-600">
+                  <span className="font-medium">🔔 {t('calendar.reminder')}:</span>{' '}
+                  {t(`calendar.reminder_${event.reminderMinutesBefore}`, {
+                    defaultValue: REMINDER_OPTIONS.find((o) => o.value === event.reminderMinutesBefore)?.label ?? '',
+                  })}
+                </p>
               )}
             </div>
 
@@ -456,6 +500,22 @@ function EventDetailModal({ event, familyId, onClose }: EventDetailModalProps) {
                   />
                 </div>
               )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t('calendar.reminder')}
+                </label>
+                <select
+                  value={reminderMinutesBefore ?? ''}
+                  onChange={(e) => setReminderMinutesBefore(e.target.value === '' ? null : Number(e.target.value))}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+                >
+                  {REMINDER_OPTIONS.map((opt) => (
+                    <option key={opt.value ?? 'none'} value={opt.value ?? ''}>
+                      {t(`calendar.reminder_${opt.value ?? 'none'}`, { defaultValue: opt.label })}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="button"

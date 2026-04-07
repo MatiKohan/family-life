@@ -80,6 +80,41 @@ export class NotificationsService {
     });
   }
 
+  async sendEventReminderNotification(
+    familyId: string,
+    eventId: string,
+    eventTitle: string,
+    startAt: Date,
+    familyName: string,
+    familyEmoji: string,
+  ): Promise<void> {
+    const members = await this.prisma.familyMember.findMany({
+      where: { familyId },
+    });
+
+    const timeLabel = startAt.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    });
+
+    const body =
+      `${familyEmoji} Reminder: *${eventTitle}* is coming up on ${timeLabel}`;
+
+    for (const member of members) {
+      if (!member.whatsappPhone) continue;
+      const settings = (member.notificationSettings ?? {}) as Record<string, boolean>;
+      if (settings.eventReminder === false) continue;
+
+      await this.deliver('whatsapp', member.whatsappPhone, body, 'reminder', {
+        familyId,
+        eventId,
+        eventTitle,
+      });
+    }
+  }
+
   async sendAssignmentNotification(
     familyId: string,
     assigneeUserId: string,

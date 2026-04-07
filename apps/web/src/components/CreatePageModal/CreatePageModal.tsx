@@ -5,8 +5,10 @@ import { apiRequest } from '../../lib/api-client';
 import { PageSummary, PageType } from '../../types/page';
 
 const PAGE_EMOJIS = [
-  '📝', '📋', '🛒', '🎁', '🏠', '🍕', '📅', '✅', '🎯', '🎨',
-  '🌟', '🏖️', '🎵', '📚', '💪', '🧹', '🌿', '💊', '🐾', '🎉',
+  '📝', '📋', '🛒', '🛍️', '🎁', '🏠', '🍕', '🍽️', '📅', '✅',
+  '🎯', '🎨', '✈️', '🚗', '🚀', '🌟', '🏖️', '🏕️', '🎵', '📚',
+  '💪', '🏋️', '🧹', '🌿', '💊', '🏥', '🐾', '🎉', '🎂', '💰',
+  '💻', '🔧', '⚽', '🎮', '👶', '🌍', '🏡', '🎓', '🧺', '🌅',
 ];
 
 interface Props {
@@ -151,28 +153,11 @@ export function CreatePageModal({ familyId, onClose, onCreated }: Props) {
                   </div>
                 </button>
 
-                {/* Events type — coming soon */}
-                <button
-                  type="button"
-                  disabled
-                  className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-gray-200 opacity-60 cursor-not-allowed relative"
-                  aria-disabled="true"
-                >
-                  <span className="text-2xl">📅</span>
-                  <div className="text-center">
-                    <div className="text-sm font-semibold text-gray-500">{t('pages.eventsType')}</div>
-                    <div className="text-xs text-gray-400 mt-0.5">{t('pages.eventsTypeDesc')}</div>
-                  </div>
-                  <span className="absolute top-2 end-2 text-xs bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full leading-none">
-                    {t('common.comingSoon')}
-                  </span>
-                </button>
-
                 {/* Apartments type */}
                 <button
                   type="button"
                   onClick={() => setType('apartments')}
-                  className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-colors ${
+                  className={`col-span-2 flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-colors ${
                     type === 'apartments'
                       ? 'border-brand-500 bg-brand-50'
                       : 'border-gray-200 hover:border-gray-300'

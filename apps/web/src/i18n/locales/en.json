@@ -51,7 +51,11 @@
     "noPages": "No pages yet",
     "createFirstPage": "Create your first page to organize your family.",
     "createFirstPageButton": "+ Create your first page",
-    "members": "Members"
+    "members": "Members",
+    "you": "you",
+    "roleMember": "Member",
+    "roleAdmin": "Admin",
+    "roleOwner": "Owner"
   },
   "invite": {
     "joining": "Joining family...",
@@ -166,7 +170,15 @@
     "pickEvent": "Pick an event",
     "confirmDelete": "Delete this event?",
     "starts": "Starts",
-    "edit": "Edit"
+    "edit": "Edit",
+    "reminder": "Reminder",
+    "reminder_none": "No reminder",
+    "reminder_15": "15 minutes before",
+    "reminder_30": "30 minutes before",
+    "reminder_60": "1 hour before",
+    "reminder_120": "2 hours before",
+    "reminder_1440": "1 day before",
+    "reminder_2880": "2 days before"
   },
   "apartments": {
     "searchParams": "Search Filters",
@@ -213,5 +225,13 @@
     "familyLife": "Shlom Bait",
     "openMenu": "Open menu",
     "closeMenu": "Close menu"
+  },
+  "notifications": {
+    "myNotifications": "My Notifications",
+    "whatsappPhone": "WhatsApp phone",
+    "phoneHint": "Used for WhatsApp notifications",
+    "itemAssigned": "Notify me when I'm assigned an item",
+    "eventReminder": "Send me calendar event reminders",
+    "saved": "Saved!"
   }
 }

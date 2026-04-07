@@ -55,6 +55,7 @@ export class CalendarService {
         startAt: new Date(dto.startAt),
         endAt: new Date(dto.endAt),
         isAllDay: dto.isAllDay ?? false,
+        reminderMinutesBefore: dto.reminderMinutesBefore ?? null,
         createdBy: userId,
       },
     });
@@ -75,6 +76,10 @@ export class CalendarService {
     if (event.familyId !== familyId)
       throw new ForbiddenException('Event does not belong to this family');
 
+    const reminderChanged =
+      dto.reminderMinutesBefore !== undefined ||
+      dto.startAt !== undefined;
+
     return this.prisma.calendarEvent.update({
       where: { id: eventId },
       data: {
@@ -83,6 +88,11 @@ export class CalendarService {
         ...(dto.startAt !== undefined && { startAt: new Date(dto.startAt) }),
         ...(dto.endAt !== undefined && { endAt: new Date(dto.endAt) }),
         ...(dto.isAllDay !== undefined && { isAllDay: dto.isAllDay }),
+        ...(dto.reminderMinutesBefore !== undefined && {
+          reminderMinutesBefore: dto.reminderMinutesBefore,
+        }),
+        // Reset sent flag so reminder fires again if time or lead changes
+        ...(reminderChanged && { reminderSentAt: null }),
       },
     });
   }

@@ -51,7 +51,11 @@
     "noPages": "אין דפים עדיין",
     "createFirstPage": "צור את הדף הראשון שלך לארגון המשפחה.",
     "createFirstPageButton": "+ צור את הדף הראשון שלך",
-    "members": "חברים"
+    "members": "חברים",
+    "you": "אתה",
+    "roleMember": "חבר",
+    "roleAdmin": "מנהל",
+    "roleOwner": "בעלים"
   },
   "invite": {
     "joining": "מצטרף למשפחה...",
@@ -166,7 +170,15 @@
     "pickEvent": "בחר אירוע",
     "confirmDelete": "למחוק אירוע זה?",
     "starts": "מתחיל",
-    "edit": "ערוך"
+    "edit": "ערוך",
+    "reminder": "תזכורת",
+    "reminder_none": "ללא תזכורת",
+    "reminder_15": "15 דקות לפני",
+    "reminder_30": "30 דקות לפני",
+    "reminder_60": "שעה לפני",
+    "reminder_120": "שעתיים לפני",
+    "reminder_1440": "יום לפני",
+    "reminder_2880": "יומיים לפני"
   },
   "apartments": {
     "searchParams": "פרמטרי חיפוש",
@@ -213,5 +225,13 @@
     "familyLife": "שלום בית",
     "openMenu": "פתח תפריט",
     "closeMenu": "סגור תפריט"
+  },
+  "notifications": {
+    "myNotifications": "ההתראות שלי",
+    "whatsappPhone": "מספר וואטסאפ",
+    "phoneHint": "משמש לשליחת התראות בוואטסאפ",
+    "itemAssigned": "הודע לי כשמשימה מוקצית אליי",
+    "eventReminder": "שלח לי תזכורות לאירועים ביומן",
+    "saved": "נשמר!"
   }
 }

@@ -53,17 +53,19 @@ model Page {
 }
 
 model CalendarEvent {
-  id          String   @id @default(cuid())
-  familyId    String
-  title       String
-  description String?
-  startAt     DateTime
-  endAt       DateTime
-  isAllDay    Boolean  @default(false)
-  createdBy   String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  family      Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  id                   String    @id @default(cuid())
+  familyId             String
+  title                String
+  description          String?
+  startAt              DateTime
+  endAt                DateTime
+  isAllDay             Boolean   @default(false)
+  reminderMinutesBefore Int?
+  reminderSentAt       DateTime?
+  createdBy            String
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  family               Family    @relation(fields: [familyId], references: [id], onDelete: Cascade)
 }
 
 model FamilyMember {

@@ -6,6 +6,7 @@ export interface CalendarEvent {
   startAt: string;
   endAt: string;
   isAllDay: boolean;
+  reminderMinutesBefore: number | null;
   createdBy: string;
   createdAt: string;
   updatedAt: string;
@@ -17,4 +18,5 @@ export interface CreateEventRequest {
   startAt: string;
   endAt: string;
   isAllDay?: boolean;
+  reminderMinutesBefore?: number | null;
 }

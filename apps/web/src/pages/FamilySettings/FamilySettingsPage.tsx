@@ -4,7 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { useFamily } from '../../hooks/useFamily';
 import { useAuthStore } from '../../store/auth.store';
 import { useUpdateMyMember } from '../../hooks/useUpdateMyMember';
+import { useUpdateMemberRole } from '../../hooks/useUpdateMemberRole';
 import { InviteModal } from '../../components/InviteModal/InviteModal';
+import type { FamilyRole } from '../../types/family';
 
 const ROLE_BADGE: Record<string, string> = {
   OWNER: 'bg-purple-100 text-purple-700',
@@ -21,22 +23,26 @@ export function FamilySettingsPage() {
 
   const [phone, setPhone] = useState('');
   const [itemAssignedEnabled, setItemAssignedEnabled] = useState(true);
+  const [eventReminderEnabled, setEventReminderEnabled] = useState(true);
   const updateMyMember = useUpdateMyMember(id!);
+  const updateMemberRole = useUpdateMemberRole(id!);
 
   const currentMember = family?.members.find((m) => m.user.id === currentUser?.id);
   const canInvite = currentMember?.role === 'OWNER' || currentMember?.role === 'ADMIN';
+  const canManageRoles = currentMember?.role === 'OWNER' || currentMember?.role === 'ADMIN';
 
   useEffect(() => {
     if (currentMember) {
       setPhone(currentMember.whatsappPhone ?? '');
       setItemAssignedEnabled(currentMember.notificationSettings?.itemAssigned !== false);
+      setEventReminderEnabled(currentMember.notificationSettings?.eventReminder !== false);
     }
   }, [currentMember]);
 
   const handleSaveNotifications = () => {
     updateMyMember.mutate({
       whatsappPhone: phone || null,
-      notificationSettings: { itemAssigned: itemAssignedEnabled },
+      notificationSettings: { itemAssigned: itemAssignedEnabled, eventReminder: eventReminderEnabled },
     });
   };
 
@@ -87,33 +93,52 @@ export function FamilySettingsPage() {
             {t('family.members')}
           </h2>
           <ul className="bg-white border border-gray-200 rounded-xl divide-y divide-gray-100">
-            {family.members.map((member) => (
-              <li key={member.id} className="flex items-center gap-3 px-4 py-3">
-                <div className="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-medium text-sm shrink-0">
-                  {member.user.avatarUrl ? (
-                    <img
-                      src={member.user.avatarUrl}
-                      alt={member.user.name}
-                      className="w-8 h-8 rounded-full object-cover"
-                    />
-                  ) : (
-                    member.user.name[0]?.toUpperCase()
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
-                    {member.user.name}
-                    {member.user.id === currentUser?.id && (
-                      <span className="ml-1 text-gray-400 font-normal">(you)</span>
+            {family.members.map((member) => {
+              const isSelf = member.user.id === currentUser?.id;
+              const isOwner = member.role === 'OWNER';
+              const canChangeRole = canManageRoles && !isSelf && !isOwner;
+
+              return (
+                <li key={member.id} className="flex items-center gap-3 px-4 py-3">
+                  <div className="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-medium text-sm shrink-0">
+                    {member.user.avatarUrl ? (
+                      <img
+                        src={member.user.avatarUrl}
+                        alt={member.user.name}
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                    ) : (
+                      member.user.name[0]?.toUpperCase()
                     )}
-                  </p>
-                  <p className="text-xs text-gray-500 truncate">{member.user.email}</p>
-                </div>
-                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${ROLE_BADGE[member.role] ?? ROLE_BADGE.MEMBER}`}>
-                  {member.role}
-                </span>
-              </li>
-            ))}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {member.user.name}
+                      {isSelf && (
+                        <span className="ms-1 text-gray-400 font-normal">({t('family.you', 'you')})</span>
+                      )}
+                    </p>
+                    <p className="text-xs text-gray-500 truncate">{member.user.email}</p>
+                  </div>
+                  {canChangeRole ? (
+                    <select
+                      value={member.role}
+                      onChange={(e) =>
+                        updateMemberRole.mutate({ userId: member.user.id, role: e.target.value as FamilyRole })
+                      }
+                      className="text-xs border border-gray-200 rounded-lg px-2 py-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-400"
+                    >
+                      <option value="MEMBER">{t('family.roleMember', 'Member')}</option>
+                      <option value="ADMIN">{t('family.roleAdmin', 'Admin')}</option>
+                    </select>
+                  ) : (
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${ROLE_BADGE[member.role] ?? ROLE_BADGE.MEMBER}`}>
+                      {t(`family.role${member.role.charAt(0) + member.role.slice(1).toLowerCase()}`, member.role)}
+                    </span>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </div>
 
@@ -141,17 +166,30 @@ export function FamilySettingsPage() {
               </div>
 
               {phone && (
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={itemAssignedEnabled}
-                    onChange={(e) => setItemAssignedEnabled(e.target.checked)}
-                    className="w-4 h-4 rounded text-brand-600"
-                  />
-                  <span className="text-sm text-gray-700">
-                    {t('notifications.itemAssigned', "Notify me when I'm assigned an item")}
-                  </span>
-                </label>
+                <div className="space-y-2">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={itemAssignedEnabled}
+                      onChange={(e) => setItemAssignedEnabled(e.target.checked)}
+                      className="w-4 h-4 rounded text-brand-600"
+                    />
+                    <span className="text-sm text-gray-700">
+                      {t('notifications.itemAssigned', "Notify me when I'm assigned an item")}
+                    </span>
+                  </label>
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={eventReminderEnabled}
+                      onChange={(e) => setEventReminderEnabled(e.target.checked)}
+                      className="w-4 h-4 rounded text-brand-600"
+                    />
+                    <span className="text-sm text-gray-700">
+                      {t('notifications.eventReminder', 'Send me calendar event reminders')}
+                    </span>
+                  </label>
+                </div>
               )}
 
               <button

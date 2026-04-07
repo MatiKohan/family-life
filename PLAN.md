@@ -52,18 +52,18 @@ Status as of 2026-04-03. The app is functionally complete for core features. Rem
 
 ## Phase 4 — WhatsApp Notifications
 
-Status: **not started**
+Status: **complete**
 
 Notify family members via WhatsApp (Twilio) for key events.
 
 - [x] Integrate Twilio WhatsApp API in NestJS (notifications module)
 - [x] Send notification on family invite received (targeted invite with phone)
 - [x] Send notification on item/task assigned to a member
-- [ ] Send notification on calendar event reminder (configurable lead time)
-- [ ] Respect `FamilyMember.notificationSettings` (per-user on/off per type)
-- [ ] Store delivery logs in a `NotificationLog` table
-- [ ] Add `whatsappPhone` collection to onboarding / settings UI
-- [ ] Add notification preferences UI in FamilySettings
+- [x] Send notification on calendar event reminder (configurable lead time)
+- [x] Respect `FamilyMember.notificationSettings` (per-user on/off per type)
+- [x] Store delivery logs in a `NotificationLog` table
+- [x] Add `whatsappPhone` collection to onboarding / settings UI
+- [x] Add notification preferences UI in FamilySettings
 
 ---
 
@@ -76,8 +76,8 @@ Status: **partially done**
 - [x] Add `TaskItem` interface and `taskItems` field to the `Page` type
 
 ### Role management UI
-- [ ] Allow Owner/Admin to promote/demote members from FamilySettings
-- [ ] Show member actions (promote, remove) behind role check
+- [x] Allow Owner/Admin to promote/demote members from FamilySettings
+- [x] Show member actions (promote, remove) behind role check
 
 ### Event editing
 - [ ] Full edit dialog for existing calendar events (currently unclear if implemented)
@@ -87,7 +87,7 @@ Status: **partially done**
 - [ ] Queue failed POST/PATCH/DELETE mutations when offline and replay on reconnect
 
 ### Dev-mode security
-- [ ] Remove / gate dev preset credentials in LoginPage (`?dev` query param) — do not ship to production
+- [x] Remove / gate dev preset credentials in LoginPage (`?dev` query param) — do not ship to production
 
 ---
 

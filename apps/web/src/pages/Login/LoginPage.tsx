@@ -12,10 +12,6 @@ interface AuthResponse {
   user: AuthUser;
 }
 
-const isDev = new URLSearchParams(window.location.search).has('dev');
-
-const DEV_PRESET = { email: 'dev@example.com', password: 'password123', name: 'Dev User' };
-
 export function LoginPage() {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
@@ -32,12 +28,6 @@ export function LoginPage() {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
-  function fillDev() {
-    setEmail(DEV_PRESET.email);
-    setPassword(DEV_PRESET.password);
-    if (mode === 'register') setName(DEV_PRESET.name);
-  }
 
   useEffect(() => {
     if (user) navigate(redirectTo, { replace: true });
@@ -174,15 +164,6 @@ export function LoginPage() {
           </a>
         </div>
 
-        {isDev && (
-          <button
-            type="button"
-            onClick={fillDev}
-            className="mt-4 w-full px-3 py-2 text-xs font-mono border border-dashed border-amber-400 text-amber-600 rounded-lg hover:bg-amber-50 transition-colors"
-          >
-            [dev] fill
-          </button>
-        )}
       </div>
     </div>
   );

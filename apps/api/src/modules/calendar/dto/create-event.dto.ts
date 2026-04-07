@@ -3,6 +3,8 @@ import {
   IsBoolean,
   IsOptional,
   IsDateString,
+  IsInt,
+  Min,
   MinLength,
   MaxLength,
 } from 'class-validator';
@@ -27,4 +29,9 @@ export class CreateEventDto {
   @IsOptional()
   @IsBoolean()
   isAllDay?: boolean;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  reminderMinutesBefore?: number;
 }
