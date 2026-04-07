@@ -5,6 +5,7 @@ import { useFamily } from '../../hooks/useFamily';
 import { useAuthStore } from '../../store/auth.store';
 import { useUpdateMyMember } from '../../hooks/useUpdateMyMember';
 import { useUpdateMemberRole } from '../../hooks/useUpdateMemberRole';
+import { useUpdateFamily } from '../../hooks/useUpdateFamily';
 import { InviteModal } from '../../components/InviteModal/InviteModal';
 import type { FamilyRole } from '../../types/family';
 
@@ -20,12 +21,16 @@ export function FamilySettingsPage() {
   const currentUser = useAuthStore((s) => s.user);
   const { data: family, isLoading } = useFamily(id);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [editingFamily, setEditingFamily] = useState(false);
+  const [familyName, setFamilyName] = useState('');
+  const [familyEmoji, setFamilyEmoji] = useState('');
 
   const [phone, setPhone] = useState('');
   const [itemAssignedEnabled, setItemAssignedEnabled] = useState(true);
   const [eventReminderEnabled, setEventReminderEnabled] = useState(true);
   const updateMyMember = useUpdateMyMember(id!);
   const updateMemberRole = useUpdateMemberRole(id!);
+  const updateFamily = useUpdateFamily(id!);
 
   const currentMember = family?.members.find((m) => m.user.id === currentUser?.id);
   const canInvite = currentMember?.role === 'OWNER' || currentMember?.role === 'ADMIN';
@@ -63,18 +68,72 @@ export function FamilySettingsPage() {
     <main className="flex-1 p-6 overflow-y-auto">
       <div className="max-w-lg mx-auto space-y-6">
         {/* Family info */}
-        <div>
-          <h1 className="text-xl font-semibold text-gray-900 mb-4">{t('family.settings')}</h1>
-          <div className="bg-white border border-gray-200 rounded-xl p-4 flex items-center gap-3">
-            <span className="text-3xl">{family.emoji}</span>
-            <div>
-              <p className="font-medium text-gray-900">{family.name}</p>
-              <p className="text-sm text-gray-500">
-                {family._count?.members ?? family.members.length}{' '}
-                {t('family.members').toLowerCase()}
-              </p>
+        <div className="space-y-3">
+          <h1 className="text-xl font-semibold text-gray-900">{t('family.settings')}</h1>
+
+          {editingFamily ? (
+            <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
+              <div className="flex items-center gap-3">
+                <input
+                  type="text"
+                  value={familyEmoji}
+                  onChange={(e) => setFamilyEmoji(e.target.value)}
+                  className="w-14 text-3xl text-center border border-gray-200 rounded-lg p-1 focus:outline-none focus:ring-2 focus:ring-brand-400"
+                  maxLength={2}
+                />
+                <input
+                  autoFocus
+                  type="text"
+                  value={familyName}
+                  onChange={(e) => setFamilyName(e.target.value)}
+                  className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  placeholder={t('family.namePlaceholder', 'Family name')}
+                />
+              </div>
+              <div className="flex gap-2 justify-end">
+                <button
+                  type="button"
+                  onClick={() => setEditingFamily(false)}
+                  className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  {t('common.cancel')}
+                </button>
+                <button
+                  type="button"
+                  disabled={!familyName.trim() || updateFamily.isPending}
+                  onClick={() => {
+                    updateFamily.mutate(
+                      { name: familyName.trim(), emoji: familyEmoji },
+                      { onSuccess: () => setEditingFamily(false) },
+                    );
+                  }}
+                  className="px-3 py-1.5 text-sm font-medium text-white bg-brand-600 rounded-lg hover:bg-brand-700 disabled:opacity-50 transition-colors"
+                >
+                  {updateFamily.isPending ? t('common.saving') : t('common.save')}
+                </button>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="bg-white border border-gray-200 rounded-xl p-4 flex items-center gap-3">
+              <span className="text-3xl">{family.emoji}</span>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-gray-900">{family.name}</p>
+                <p className="text-sm text-gray-500">
+                  {family._count?.members ?? family.members.length}{' '}
+                  {t('family.members').toLowerCase()}
+                </p>
+              </div>
+              {currentMember?.role === 'OWNER' && (
+                <button
+                  type="button"
+                  onClick={() => { setFamilyName(family.name); setFamilyEmoji(family.emoji); setEditingFamily(true); }}
+                  className="text-xs text-gray-400 hover:text-brand-600 transition-colors px-2 py-1 rounded hover:bg-brand-50"
+                >
+                  {t('common.edit', 'Edit')}
+                </button>
+              )}
+            </div>
+          )}
 
           {canInvite && (
             <button

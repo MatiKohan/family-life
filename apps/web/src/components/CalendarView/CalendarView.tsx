@@ -688,11 +688,14 @@ export function CalendarView({ familyId, onEventClick }: CalendarViewProps) {
                       <button
                         key={ev.id}
                         onClick={(e) => handleEventPillClick(e, ev)}
-                        className="w-full text-start bg-blue-100 text-blue-700 text-xs px-1.5 py-0.5 rounded truncate block hover:bg-blue-200 transition-colors"
+                        className="w-full text-start bg-blue-100 text-blue-700 text-xs px-1.5 py-0.5 rounded truncate flex items-center gap-0.5 hover:bg-blue-200 transition-colors"
                         title={ev.title}
                       >
-                        {ev.isAllDay ? '' : formatEventTime(ev) + ' '}
-                        {ev.title}
+                        {ev.reminderMinutesBefore != null && <span className="shrink-0">🔔</span>}
+                        <span className="truncate">
+                          {ev.isAllDay ? '' : formatEventTime(ev) + ' '}
+                          {ev.title}
+                        </span>
                       </button>
                     ))}
                     {hasOverflow && (

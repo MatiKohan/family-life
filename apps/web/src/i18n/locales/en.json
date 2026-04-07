@@ -16,7 +16,8 @@
     "create": "Create",
     "close": "Close",
     "comingSoon": "Coming soon",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "edit": "Edit"
   },
   "auth": {
     "signIn": "Sign in",
@@ -126,7 +127,9 @@
     "checkAll": "Check all",
     "uncheckAll": "Uncheck all",
     "clearAll": "Clear all",
-    "clearConfirm": "Remove all items?"
+    "clearConfirm": "Remove all items?",
+    "clearChecked": "Clear checked",
+    "clearCheckedConfirm": "Remove all checked items?"
   },
   "tasks": {
     "todo": "To do",

@@ -354,21 +354,21 @@ export function ListPageView({ page, familyId }: Props) {
     onSettled: () => queryClient.invalidateQueries({ queryKey: cacheKey }),
   });
 
-  // Clear all items (optimistic)
-  const clearAllMutation = useMutation({
-    mutationFn: () =>
+  // Clear checked items (optimistic)
+  const clearCheckedMutation = useMutation({
+    mutationFn: (checkedIds: string[]) =>
       Promise.all(
-        page.items.map((i) =>
-          apiRequest(`/families/${familyId}/pages/${page.id}/items/${i.id}`, {
+        checkedIds.map((id) =>
+          apiRequest(`/families/${familyId}/pages/${page.id}/items/${id}`, {
             method: 'DELETE',
           }),
         ),
       ),
-    onMutate: async () => {
+    onMutate: async (checkedIds) => {
       await queryClient.cancelQueries({ queryKey: cacheKey });
       const previous = queryClient.getQueryData<Page>(cacheKey);
       queryClient.setQueryData<Page>(cacheKey, (old) =>
-        old ? { ...old, items: [] } : old,
+        old ? { ...old, items: old.items.filter((i) => !checkedIds.includes(i.id)) } : old,
       );
       return { previous };
     },
@@ -512,20 +512,24 @@ export function ListPageView({ page, familyId }: Props) {
               : t('list.checkAll')}
           </button>
 
-          <span className="text-gray-200 select-none">|</span>
-
-          <button
-            type="button"
-            onClick={() => {
-              if (window.confirm(t('list.clearConfirm'))) {
-                clearAllMutation.mutate();
-              }
-            }}
-            disabled={clearAllMutation.isPending}
-            className="text-xs text-gray-500 hover:text-red-600 font-medium px-2 py-1 rounded hover:bg-red-50 transition-colors"
-          >
-            {t('list.clearAll')}
-          </button>
+          {page.items.some((i) => i.checked) && (
+            <>
+              <span className="text-gray-200 select-none">|</span>
+              <button
+                type="button"
+                onClick={() => {
+                  const checkedIds = page.items.filter((i) => i.checked).map((i) => i.id);
+                  if (window.confirm(t('list.clearCheckedConfirm'))) {
+                    clearCheckedMutation.mutate(checkedIds);
+                  }
+                }}
+                disabled={clearCheckedMutation.isPending}
+                className="text-xs text-gray-500 hover:text-red-600 font-medium px-2 py-1 rounded hover:bg-red-50 transition-colors"
+              >
+                {t('list.clearChecked')}
+              </button>
+            </>
+          )}
         </div>
       )}
 

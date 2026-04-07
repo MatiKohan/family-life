@@ -16,7 +16,8 @@
     "create": "צור",
     "close": "סגור",
     "comingSoon": "בקרוב",
-    "saving": "שומר..."
+    "saving": "שומר...",
+    "edit": "ערוך"
   },
   "auth": {
     "signIn": "התחברות",
@@ -126,7 +127,9 @@
     "checkAll": "סמן הכל",
     "uncheckAll": "בטל סימון",
     "clearAll": "נקה הכל",
-    "clearConfirm": "למחוק את כל הפריטים?"
+    "clearConfirm": "למחוק את כל הפריטים?",
+    "clearChecked": "נקה מסומנים",
+    "clearCheckedConfirm": "למחוק את כל הפריטים המסומנים?"
   },
   "tasks": {
     "todo": "לביצוע",
