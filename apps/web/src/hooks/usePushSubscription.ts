@@ -57,7 +57,7 @@ export function usePushSubscription(): UsePushSubscriptionResult {
       const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY as string;
       const sub = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapidKey),
+        applicationServerKey: urlBase64ToUint8Array(vapidKey).buffer as ArrayBuffer,
       });
 
       await apiRequest<void>('/push/subscribe', {
