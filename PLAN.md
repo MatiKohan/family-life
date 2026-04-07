@@ -143,10 +143,47 @@ New page type for tracking apartment listings (rent or buy) from yad2.co.il.
 
 ---
 
+## Phase 8 — Web Push Notifications
+
+Complement WhatsApp with native browser push notifications. Works for any family member without requiring a phone number. Fires on the same events as WhatsApp (item assigned, event reminder).
+
+### How it works
+- Browser asks permission → registers a push subscription (endpoint + keys)
+- Subscription saved per user/device in the DB
+- Server sends push via `web-push` npm package when events occur
+- Service worker wakes up and shows a native OS notification, even if the tab is closed
+
+### Backend
+- [ ] Install `web-push` package in `apps/api`
+- [ ] Add `PushSubscription` Prisma model (userId, endpoint, p256dh, auth, createdAt)
+- [ ] `POST /api/push/subscribe` — save subscription for current user
+- [ ] `DELETE /api/push/subscribe` — remove subscription (unsubscribe)
+- [ ] `WebPushChannel` implementing `INotificationChannel` — sends via `web-push`
+- [ ] Register `WebPushChannel` in `NotificationsModule` alongside `WhatsAppChannel`
+- [ ] Generate VAPID keys (one-time, stored in env: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`)
+
+### Frontend
+- [ ] Expose `VITE_VAPID_PUBLIC_KEY` env var to the web app
+- [ ] `usePushSubscription` hook — requests permission, subscribes via `serviceWorker.pushManager`, POSTs to API
+- [ ] Push opt-in toggle in FamilySettings notification section (alongside WhatsApp toggles)
+- [ ] Service worker push handler — `push` event → `showNotification` with title + body
+- [ ] `notificationclick` handler — focuses/opens the app when notification is tapped
+
+### Triggers (reuse existing NotificationsService)
+- [ ] Item/task assigned → push to assignee's subscriptions
+- [ ] Calendar event reminder (cron) → push to all family members with subscriptions
+
+### Notes
+- VAPID keys generated once with `npx web-push generate-vapid-keys`
+- iOS requires PWA added to home screen (iOS 16.4+)
+- Multiple subscriptions per user (one per browser/device) must be supported
+- Failed/expired subscriptions (410 Gone) should be auto-deleted
+
+---
+
 ## Backlog / Future ideas
 
 - [ ] Photo/media pages
 - [ ] Budget tracking page type
-- [ ] Push notifications (web push via service worker)
 - [ ] Family activity feed
 - [ ] Dark mode

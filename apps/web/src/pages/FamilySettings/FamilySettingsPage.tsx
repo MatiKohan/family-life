@@ -6,6 +6,7 @@ import { useAuthStore } from '../../store/auth.store';
 import { useUpdateMyMember } from '../../hooks/useUpdateMyMember';
 import { useUpdateMemberRole } from '../../hooks/useUpdateMemberRole';
 import { useUpdateFamily } from '../../hooks/useUpdateFamily';
+import { usePushSubscription } from '../../hooks/usePushSubscription';
 import { InviteModal } from '../../components/InviteModal/InviteModal';
 import type { FamilyRole } from '../../types/family';
 
@@ -31,6 +32,8 @@ export function FamilySettingsPage() {
   const updateMyMember = useUpdateMyMember(id!);
   const updateMemberRole = useUpdateMemberRole(id!);
   const updateFamily = useUpdateFamily(id!);
+
+  const { isSupported: pushSupported, permission: pushPermission, isSubscribed, isLoading: pushLoading, subscribe, unsubscribe } = usePushSubscription();
 
   const currentMember = family?.members.find((m) => m.user.id === currentUser?.id);
   const canInvite = currentMember?.role === 'OWNER' || currentMember?.role === 'ADMIN';
@@ -271,6 +274,39 @@ export function FamilySettingsPage() {
                 <p className="text-xs text-red-500 text-center">
                   {t('common.error', 'Something went wrong')}
                 </p>
+              )}
+
+              {pushSupported && (
+                <div className="pt-3 border-t border-gray-100 space-y-2">
+                  <p className="text-sm font-medium text-gray-700">
+                    {t('notifications.pushNotifications', 'Push Notifications')}
+                  </p>
+                  {pushPermission === 'denied' ? (
+                    <p className="text-xs text-gray-400">
+                      {t('notifications.pushDenied', 'Notifications are blocked in your browser settings')}
+                    </p>
+                  ) : (
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={isSubscribed}
+                        disabled={pushLoading}
+                        onClick={() => isSubscribed ? unsubscribe() : subscribe()}
+                        className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50 ${isSubscribed ? 'bg-brand-600' : 'bg-gray-200'}`}
+                      >
+                        <span
+                          className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${isSubscribed ? 'translate-x-4' : 'translate-x-0'}`}
+                        />
+                      </button>
+                      <span className="text-sm text-gray-700">
+                        {pushLoading
+                          ? t('notifications.pushSubscribing', 'Enabling...')
+                          : t('notifications.pushToggle', 'Notify me on this device')}
+                      </span>
+                    </label>
+                  )}
+                </div>
               )}
             </div>
           </div>
