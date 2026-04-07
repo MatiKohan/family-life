@@ -99,12 +99,14 @@ export class NotificationsService {
       minute: '2-digit',
     });
 
-    const body =
-      `${familyEmoji} Reminder: *${eventTitle}* is coming up on ${timeLabel}`;
+    const body = `${familyEmoji} Reminder: *${eventTitle}* is coming up on ${timeLabel}`;
 
     for (const member of members) {
       if (!member.whatsappPhone) continue;
-      const settings = (member.notificationSettings ?? {}) as Record<string, boolean>;
+      const settings = (member.notificationSettings ?? {}) as Record<
+        string,
+        boolean
+      >;
       if (settings.eventReminder === false) continue;
 
       await this.deliver('whatsapp', member.whatsappPhone, body, 'reminder', {

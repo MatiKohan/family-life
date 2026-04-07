@@ -77,8 +77,7 @@ export class CalendarService {
       throw new ForbiddenException('Event does not belong to this family');
 
     const reminderChanged =
-      dto.reminderMinutesBefore !== undefined ||
-      dto.startAt !== undefined;
+      dto.reminderMinutesBefore !== undefined || dto.startAt !== undefined;
 
     return this.prisma.calendarEvent.update({
       where: { id: eventId },

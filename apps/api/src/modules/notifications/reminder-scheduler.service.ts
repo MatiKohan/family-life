@@ -32,7 +32,9 @@ export class ReminderSchedulerService {
       );
 
       if (reminderAt >= windowStart && reminderAt <= now) {
-        this.logger.log(`Sending reminder for event "${event.title}" (${event.id})`);
+        this.logger.log(
+          `Sending reminder for event "${event.title}" (${event.id})`,
+        );
 
         await this.notifications.sendEventReminderNotification(
           event.familyId,
