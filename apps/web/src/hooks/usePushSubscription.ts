@@ -57,7 +57,7 @@ export function usePushSubscription(): UsePushSubscriptionResult {
       const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY as string;
       const sub = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapidKey).buffer as ArrayBuffer,
+        applicationServerKey: urlBase64ToUint8Array(vapidKey),
       });
 
       await apiRequest<void>('/push/subscribe', {
@@ -70,6 +70,8 @@ export function usePushSubscription(): UsePushSubscriptionResult {
       });
 
       setIsSubscribed(true);
+    } catch (err) {
+      console.error('[PushSubscription] subscribe failed:', err);
     } finally {
       setIsLoading(false);
     }
@@ -81,7 +83,10 @@ export function usePushSubscription(): UsePushSubscriptionResult {
     try {
       const registration = await navigator.serviceWorker.ready;
       const sub = await registration.pushManager.getSubscription();
-      if (!sub) return;
+      if (!sub) {
+        setIsSubscribed(false);
+        return;
+      }
 
       await sub.unsubscribe();
 
