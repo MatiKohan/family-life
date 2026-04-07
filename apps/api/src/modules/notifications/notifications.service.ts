@@ -4,6 +4,7 @@ import {
   INotificationChannel,
   NOTIFICATION_CHANNELS,
 } from './channels/notification-channel.interface';
+import { PushService } from '../push/push.service';
 
 @Injectable()
 export class NotificationsService {
@@ -13,6 +14,7 @@ export class NotificationsService {
     @Inject(NOTIFICATION_CHANNELS)
     private readonly channels: INotificationChannel[],
     private readonly prisma: PrismaService,
+    private readonly push: PushService,
   ) {}
 
   // ─── Internal dispatch ────────────────────────────────────────────────────
@@ -101,13 +103,18 @@ export class NotificationsService {
 
     const body = `${familyEmoji} Reminder: *${eventTitle}* is coming up on ${timeLabel}`;
 
+    const pushUserIds: string[] = [];
+
     for (const member of members) {
-      if (!member.whatsappPhone) continue;
       const settings = (member.notificationSettings ?? {}) as Record<
         string,
         boolean
       >;
       if (settings.eventReminder === false) continue;
+
+      pushUserIds.push(member.userId);
+
+      if (!member.whatsappPhone) continue;
 
       await this.deliver('whatsapp', member.whatsappPhone, body, 'reminder', {
         familyId,
@@ -115,6 +122,12 @@ export class NotificationsService {
         eventTitle,
       });
     }
+
+    await this.push.sendToUsers(pushUserIds, {
+      title: `${familyEmoji} ${familyName}`,
+      body: `Reminder: ${eventTitle} on ${timeLabel}`,
+      url: '/',
+    });
   }
 
   async sendAssignmentNotification(
@@ -128,7 +141,7 @@ export class NotificationsService {
       where: { familyId_userId: { familyId, userId: assigneeUserId } },
     });
 
-    if (!member?.whatsappPhone) return;
+    if (!member) return;
 
     const settings = (member.notificationSettings ?? {}) as Record<
       string,
@@ -140,11 +153,19 @@ export class NotificationsService {
       `${familyEmoji} You've been assigned a task in *${familyName}*:\n\n` +
       `"${itemText}"`;
 
-    await this.deliver('whatsapp', member.whatsappPhone, body, 'assignment', {
-      familyId,
-      assigneeUserId,
-      itemText,
-      familyName,
+    if (member.whatsappPhone) {
+      await this.deliver('whatsapp', member.whatsappPhone, body, 'assignment', {
+        familyId,
+        assigneeUserId,
+        itemText,
+        familyName,
+      });
+    }
+
+    await this.push.sendToUser(assigneeUserId, {
+      title: `${familyEmoji} ${familyName}`,
+      body: `You were assigned: ${itemText}`,
+      url: '/',
     });
   }
 }

@@ -3,8 +3,10 @@ import { WhatsAppChannel } from './channels/whatsapp.channel';
 import { NOTIFICATION_CHANNELS } from './channels/notification-channel.interface';
 import { NotificationsService } from './notifications.service';
 import { ReminderSchedulerService } from './reminder-scheduler.service';
+import { PushModule } from '../push/push.module';
 
 @Module({
+  imports: [PushModule],
   providers: [
     WhatsAppChannel,
     // To add a new channel (e.g. email):

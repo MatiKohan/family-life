@@ -13,6 +13,7 @@ import { PagesModule } from './modules/pages/pages.module';
 import { CalendarModule } from './modules/calendar/calendar.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { ApartmentsModule } from './modules/apartments/apartments.module';
+import { PushModule } from './modules/push/push.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { ApartmentsModule } from './modules/apartments/apartments.module';
     CalendarModule,
     NotificationsModule,
     ApartmentsModule,
+    PushModule,
   ],
   providers: [
     {

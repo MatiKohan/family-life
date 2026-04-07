@@ -235,6 +235,10 @@
     "phoneHint": "Used for WhatsApp notifications",
     "itemAssigned": "Notify me when I'm assigned an item",
     "eventReminder": "Send me calendar event reminders",
-    "saved": "Saved!"
+    "saved": "Saved!",
+    "pushNotifications": "Push Notifications",
+    "pushToggle": "Notify me on this device",
+    "pushDenied": "Notifications are blocked in your browser settings",
+    "pushSubscribing": "Enabling..."
   }
 }
