@@ -181,9 +181,138 @@ Complement WhatsApp with native browser push notifications. Works for any family
 
 ---
 
+## Phase 9 — Functionality Gaps
+
+Core UX improvements that cut across all page types.
+
+### Search
+Global search across all pages, items, tasks, and calendar events.
+- [ ] `GET /api/families/:id/search?q=` — query across Page titles, list items, task items, event titles
+- [ ] Search bar in the sidebar / header (visible on all routes)
+- [ ] Results grouped by type (Pages, Items, Events) with links to the source
+- [ ] Debounced frontend query with TanStack Query (`useSearch` hook)
+
+### Activity Feed
+Show a chronological log of what family members have done: checked off items, added tasks, created events, invited members.
+- [ ] `ActivityLog` Prisma model (familyId, userId, type, payload JSONB, createdAt)
+- [ ] Write activity entries on key mutations (item checked, task created, event created, member invited)
+- [ ] `GET /api/families/:id/activity` — paginated, newest first
+- [ ] `ActivityFeedPage` or sidebar widget — avatar + action + timestamp
+- [ ] Real-time feel: poll every 30s or use a simple SSE endpoint
+
+### Recurring Calendar Events
+Allow events to repeat on a schedule.
+- [ ] Add `recurrence` field to `CalendarEvent` (JSONB: `{ freq: 'weekly' | 'monthly' | 'yearly', until?: date }`)
+- [ ] On create/update, store recurrence rule (no instance expansion in DB — expand at query time)
+- [ ] `CalendarService.listEvents` expands recurring instances within the requested date range
+- [ ] UI: recurrence picker in the event form (None / Daily / Weekly / Monthly / Yearly + optional end date)
+- [ ] Editing a recurring event: "this event only" vs "all future events"
+
+### Shared Notes Page
+A freeform text/markdown page for anything that doesn't fit a structured type.
+- [ ] Add `'notes'` to `PageType` in `packages/types`
+- [ ] `content` field stored as plain text (Markdown) in the page JSONB `items` column (single-entry array)
+- [ ] `NotesPageView` component — rendered Markdown (read mode) + textarea (edit mode)
+- [ ] Auto-save on blur / debounced after typing stops
+- [ ] "Notes" option in `CreatePageModal`
+
+---
+
+## Phase 10 — Meal Planner Page
+
+Status: **complete**
+
+Plan dinners for the week. Optionally generate a shopping list from planned meals.
+
+### Data model
+- `MealPlanItem`: `{ day, weekStart, meal, recipeUrl? }` — stored in `items` JSONB column
+- Multiple weeks co-exist in the same array, keyed by `weekStart` (ISO Monday date)
+
+### Backend
+- [x] Add `'meal-planner'` to `PageType` in `packages/types`
+- [x] `MealPlanDay` + `MealPlanItem` types
+- [x] `PUT /families/:fid/pages/:pid/meal-plan` — replace items for a given `weekStart`
+- [x] `POST /families/:fid/pages/:pid/meal-plan/shopping-list` — create new list page from week's meals
+- [x] `getPage` maps `items` → `mealPlanItems` for meal-planner pages
+- [x] Service tests (9 cases)
+
+### Frontend
+- [x] `MealPlannerPageView` — day cells Mon–Sun, inline editable, recipe URL support
+- [x] Week navigation (← prev / next →), defaulting to current week
+- [x] "Generate shopping list" button with success toast
+- [x] "Meal Planner" option in `CreatePageModal`
+- [x] i18n: English + Hebrew
+
+---
+
+## Phase 11 — Recurring Tasks
+
+Some chores repeat on a schedule (water plants, change filter, pay rent). These are maintenance tasks, not calendar events.
+
+### Data model
+- Add `recurrence` field to `TaskItem` JSONB: `{ freq: 'daily' | 'weekly' | 'monthly', nextDue: date }`
+- When a recurring task is marked done, server auto-resets status to `'todo'` and advances `nextDue`
+
+### Backend
+- [ ] Extend `TaskItem` type in `packages/types` with optional `recurrence` field
+- [ ] `UpdateTaskItemDto` accepts optional `recurrence`
+- [ ] In `PagesService.updateTaskItem`: if item is marked `done` and has recurrence → reset to `todo`, advance `nextDue`
+- [ ] Cron (daily) that scans all task items with `nextDue <= today` and sets them back to `todo` if still `done`
+- [ ] `GET` page response includes `nextDue` so frontend can show "due today" / "overdue" badges
+
+### Frontend
+- [ ] Recurrence picker on task item create/edit (None / Daily / Weekly / Monthly)
+- [ ] "Due today" / "Overdue" badge on task cards in `TasksPageView`
+- [ ] Overdue tasks float to the top of the Todo column
+
+---
+
+## Phase 12 — Packing Lists Page
+
+Reusable checklists for trips and outings. Check items off, then reset for next time.
+
+### Data model
+- Add `'packing-list'` to `PageType`
+- Items stored as JSONB same as list pages (`items` array with `checked`, `category?`, `assigneeId?`)
+- Page-level `lastPackedAt` timestamp (in page metadata JSONB)
+
+### Backend
+- [ ] Add `'packing-list'` to `PageType` in `packages/types`
+- [ ] Reuse existing item CRUD endpoints (same shape as list pages)
+- [ ] `POST /api/families/:fid/pages/:pid/packing-list/reset` — unchecks all items, sets `lastPackedAt`
+- [ ] Items can have an optional `category` string (e.g. "Clothes", "Toiletries", "Kids") for grouping
+
+### Frontend
+- [ ] `PackingListPageView` — items grouped by category, collapsible sections
+- [ ] Progress bar: "12 / 20 packed"
+- [ ] "Reset list" button with confirmation → unchecks everything
+- [ ] "Last packed: 3 days ago" subtitle
+- [ ] "Packing List" option in `CreatePageModal`
+
+---
+
+## Phase 13 — Activity Feed
+
+Show a chronological log of what family members have done.
+
+### Backend
+- [ ] `ActivityLog` Prisma model (id, familyId, userId, type, payload JSONB, createdAt)
+- [ ] `ActivityType` enum: `item_checked`, `item_added`, `task_created`, `task_status_changed`, `event_created`, `member_invited`
+- [ ] Write activity entries on key mutations in PagesService, CalendarService, InvitesService
+- [ ] `GET /api/families/:id/activity?limit=&cursor=` — paginated cursor-based, newest first
+- [ ] `activity` NestJS module with service + controller
+
+### Frontend
+- [ ] `ActivityFeedPage` at `/family/:id/activity`
+- [ ] `useActivityFeed` hook with infinite scroll (TanStack Query `useInfiniteQuery`)
+- [ ] Entry row: member avatar + action description + relative timestamp ("2 min ago")
+- [ ] Add "Activity" link to sidebar nav
+- [ ] Poll every 60s for new entries (or manual refresh button)
+
+---
+
 ## Backlog / Future ideas
 
 - [ ] Photo/media pages
 - [ ] Budget tracking page type
-- [ ] Family activity feed
 - [ ] Dark mode
