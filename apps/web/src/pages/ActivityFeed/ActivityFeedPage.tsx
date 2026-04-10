@@ -36,39 +36,41 @@ function avatarColor(userId: string) {
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 }
 
-export function formatActivity(log: ActivityLog): string {
+type TFunction = (key: string, opts?: Record<string, unknown>) => string;
+
+export function formatActivity(log: ActivityLog, t: TFunction): string {
   const p = log.payload;
   switch (log.type) {
     case 'item_added':
-      return `Added "${p.itemText}" to ${p.pageTitle}`;
+      return t('activity.item_added', { itemText: p.itemText, pageTitle: p.pageTitle });
     case 'item_checked':
-      return `Checked off "${p.itemText}" in ${p.pageTitle}`;
+      return t('activity.item_checked', { itemText: p.itemText, pageTitle: p.pageTitle });
     case 'task_created':
-      return `Created task "${p.taskTitle}" in ${p.pageTitle}`;
+      return t('activity.task_created', { taskTitle: p.taskTitle, pageTitle: p.pageTitle });
     case 'task_status_changed':
-      return `Moved "${p.taskTitle}" to ${p.status} in ${p.pageTitle}`;
+      return t('activity.task_status_changed', { taskTitle: p.taskTitle, status: p.status, pageTitle: p.pageTitle });
     case 'event_created':
-      return `Created event "${p.title}"`;
+      return t('activity.event_created', { title: p.title });
     case 'member_invited':
-      return 'Joined the family';
+      return t('activity.member_invited');
     default:
-      return 'Unknown activity';
+      return t('activity.unknown');
   }
 }
 
-export function timeAgo(dateStr: string): string {
+export function timeAgo(dateStr: string, t: TFunction): string {
   const now = Date.now();
   const then = new Date(dateStr).getTime();
   const diffMs = now - then;
   const diffMin = Math.floor(diffMs / 60_000);
   const diffHours = Math.floor(diffMs / 3_600_000);
 
-  if (diffMin < 1) return 'just now';
-  if (diffMin < 60) return `${diffMin} min ago`;
-  if (diffHours < 24) return `${diffHours} hours ago`;
+  if (diffMin < 1) return t('activity.justNow');
+  if (diffMin < 60) return t('activity.minAgo', { count: diffMin });
+  if (diffHours < 24) return t('activity.hoursAgo', { count: diffHours });
 
   const date = new Date(dateStr);
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
 // ---- sub-components --------------------------------------------------------
@@ -91,6 +93,7 @@ function ActivitySkeleton() {
 }
 
 function ActivityRow({ log }: { log: ActivityLog }) {
+  const { t } = useTranslation();
   return (
     <div className="flex items-start gap-3 py-3">
       <div
@@ -101,13 +104,13 @@ function ActivityRow({ log }: { log: ActivityLog }) {
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-gray-900 truncate">{log.user.name}</p>
-        <p className="text-sm text-gray-600">{formatActivity(log)}</p>
+        <p className="text-sm text-gray-600">{formatActivity(log, t)}</p>
       </div>
       <time
         dateTime={log.createdAt}
         className="text-xs text-gray-400 shrink-0 mt-0.5 whitespace-nowrap"
       >
-        {timeAgo(log.createdAt)}
+        {timeAgo(log.createdAt, t)}
       </time>
     </div>
   );

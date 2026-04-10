@@ -232,7 +232,17 @@
   "activity": {
     "title": "פעילות",
     "empty": "אין פעילות עדיין",
-    "loadMore": "טען עוד"
+    "loadMore": "טען עוד",
+    "item_added": "הוסיף \"{{itemText}}\" ל{{pageTitle}}",
+    "item_checked": "סימן \"{{itemText}}\" כבוצע ב{{pageTitle}}",
+    "task_created": "יצר משימה \"{{taskTitle}}\" ב{{pageTitle}}",
+    "task_status_changed": "הזיז \"{{taskTitle}}\" ל{{status}} ב{{pageTitle}}",
+    "event_created": "יצר אירוע \"{{title}}\"",
+    "member_invited": "הצטרף למשפחה",
+    "unknown": "פעילות לא ידועה",
+    "justNow": "עכשיו",
+    "minAgo": "לפני {{count}} דקות",
+    "hoursAgo": "לפני {{count}} שעות"
   },
   "notifications": {
     "myNotifications": "ההתראות שלי",
