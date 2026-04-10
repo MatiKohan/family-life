@@ -7,6 +7,7 @@ import {
 import { PagesService } from './pages.service';
 import { PrismaService } from '../../database/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { ActivityService } from '../activity/activity.service';
 
 const FAMILY_ID = 'family-1';
 const USER_ID = 'user-1';
@@ -76,6 +77,7 @@ describe('PagesService', () => {
           provide: NotificationsService,
           useValue: { sendAssignmentNotification: jest.fn() },
         },
+        { provide: ActivityService, useValue: { log: jest.fn() } },
       ],
     }).compile();
 

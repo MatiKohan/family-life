@@ -4,12 +4,16 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import { ActivityService } from '../activity/activity.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 
 @Injectable()
 export class CalendarService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly activityService: ActivityService,
+  ) {}
 
   private async requireMember(userId: string, familyId: string) {
     const member = await this.prisma.familyMember.findUnique({
@@ -47,7 +51,7 @@ export class CalendarService {
   async createEvent(familyId: string, userId: string, dto: CreateEventDto) {
     await this.requireMember(userId, familyId);
 
-    return this.prisma.calendarEvent.create({
+    const event = await this.prisma.calendarEvent.create({
       data: {
         familyId,
         title: dto.title,
@@ -59,6 +63,13 @@ export class CalendarService {
         createdBy: userId,
       },
     });
+    void this.activityService.log({
+      familyId,
+      userId,
+      type: 'event_created',
+      payload: { eventId: event.id, title: event.title },
+    });
+    return event;
   }
 
   async updateEvent(

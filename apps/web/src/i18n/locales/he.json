@@ -229,6 +229,11 @@
     "openMenu": "פתח תפריט",
     "closeMenu": "סגור תפריט"
   },
+  "activity": {
+    "title": "פעילות",
+    "empty": "אין פעילות עדיין",
+    "loadMore": "טען עוד"
+  },
   "notifications": {
     "myNotifications": "ההתראות שלי",
     "whatsappPhone": "מספר וואטסאפ",

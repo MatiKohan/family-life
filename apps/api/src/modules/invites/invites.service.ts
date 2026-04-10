@@ -4,6 +4,7 @@ import { InviteStatus, FamilyRole } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { FamilyService } from '../family/family.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { ActivityService } from '../activity/activity.service';
 import { CreateLinkInviteDto } from './dto/create-link-invite.dto';
 import { CreateTargetedInviteDto } from './dto/create-targeted-invite.dto';
 
@@ -14,6 +15,7 @@ export class InvitesService {
     private readonly familyService: FamilyService,
     private readonly configService: ConfigService,
     private readonly notificationsService: NotificationsService,
+    private readonly activityService: ActivityService,
   ) {}
 
   async createLinkInvite(
@@ -169,6 +171,17 @@ export class InvitesService {
     await this.prisma.familyInvite.update({
       where: { id: invite.id },
       data: { status: InviteStatus.ACCEPTED },
+    });
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true },
+    });
+    void this.activityService.log({
+      familyId: invite.familyId,
+      userId,
+      type: 'member_invited',
+      payload: { name: user?.name ?? '' },
     });
 
     return {

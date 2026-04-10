@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { ActivityService } from '../activity/activity.service';
 import { CreatePageDto } from './dto/create-page.dto';
 import { UpdatePageDto } from './dto/update-page.dto';
 import { CreateItemDto } from './dto/create-item.dto';
@@ -38,6 +39,7 @@ export class PagesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notificationsService: NotificationsService,
+    private readonly activityService: ActivityService,
   ) {}
 
   private async requireMember(familyId: string, userId: string) {
@@ -160,6 +162,12 @@ export class PagesService {
       where: { id: pageId },
       data: { items: [...items, newItem] },
     });
+    void this.activityService.log({
+      familyId,
+      userId,
+      type: 'item_added',
+      payload: { pageId, pageTitle: page.title, itemText: newItem.text },
+    });
     if (newItem.assigneeId && newItem.assigneeId !== userId) {
       const family = await this.prisma.family.findUnique({
         where: { id: familyId },
@@ -211,6 +219,19 @@ export class PagesService {
       where: { id: pageId },
       data: { items },
     });
+    if (dto.checked === true && !existingItem?.checked) {
+      const updatedItem = items.find((i) => i.id === itemId);
+      void this.activityService.log({
+        familyId,
+        userId,
+        type: 'item_checked',
+        payload: {
+          pageId,
+          pageTitle: page.title,
+          itemText: updatedItem?.text ?? '',
+        },
+      });
+    }
     if (assigneeChanged && dto.assigneeId) {
       const family = await this.prisma.family.findUnique({
         where: { id: familyId },
@@ -276,6 +297,12 @@ export class PagesService {
       where: { id: pageId },
       data: { taskItems: [...taskItems, newItem] },
     });
+    void this.activityService.log({
+      familyId,
+      userId,
+      type: 'task_created',
+      payload: { pageId, pageTitle: page.title, taskTitle: newItem.text },
+    });
     if (newItem.assigneeId && newItem.assigneeId !== userId) {
       const family = await this.prisma.family.findUnique({
         where: { id: familyId },
@@ -327,6 +354,20 @@ export class PagesService {
       where: { id: pageId },
       data: { taskItems },
     });
+    if (dto.status !== undefined && dto.status !== existingTaskItem?.status) {
+      const updatedTaskItem = taskItems.find((i) => i.id === itemId);
+      void this.activityService.log({
+        familyId,
+        userId,
+        type: 'task_status_changed',
+        payload: {
+          pageId,
+          pageTitle: page.title,
+          taskTitle: updatedTaskItem?.text ?? '',
+          status: dto.status,
+        },
+      });
+    }
     if (assigneeChanged && dto.assigneeId) {
       const family = await this.prisma.family.findUnique({
         where: { id: familyId },

@@ -48,6 +48,14 @@ function SettingsIcon() {
   );
 }
 
+function ActivityIcon() {
+  return (
+    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  );
+}
+
 function GripIcon() {
   return (
     <svg className="w-3 h-3" viewBox="0 0 10 16" fill="currentColor" aria-hidden="true">
@@ -254,6 +262,21 @@ export function Sidebar({ familyId, onClose }: SidebarProps) {
         >
           <CalendarIcon />
           {t('pages.calendar')}
+        </NavLink>
+
+        <NavLink
+          to={`/family/${familyId}/activity`}
+          onClick={() => onClose?.()}
+          className={({ isActive }) =>
+            `flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+              isActive
+                ? 'bg-brand-50 text-brand-700 font-medium'
+                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+            }`
+          }
+        >
+          <ActivityIcon />
+          {t('activity.title')}
         </NavLink>
 
         <NavLink

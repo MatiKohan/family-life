@@ -229,6 +229,11 @@
     "openMenu": "Open menu",
     "closeMenu": "Close menu"
   },
+  "activity": {
+    "title": "Activity",
+    "empty": "No activity yet",
+    "loadMore": "Load more"
+  },
   "notifications": {
     "myNotifications": "My Notifications",
     "whatsappPhone": "WhatsApp phone",

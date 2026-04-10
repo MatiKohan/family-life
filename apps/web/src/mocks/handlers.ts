@@ -221,6 +221,11 @@ export const handlers = [
     new HttpResponse(null, { status: 204 }),
   ),
 
+  // Activity feed
+  http.get('/api/families/:familyId/activity', () =>
+    HttpResponse.json({ items: [], nextCursor: null }),
+  ),
+
   // Task items
   http.post('/api/families/:familyId/pages/:pageId/task-items', async ({ request }) => {
     const body = (await request.json()) as { text: string; status: string };

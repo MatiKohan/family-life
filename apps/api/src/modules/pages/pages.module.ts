@@ -3,9 +3,10 @@ import { PagesController } from './pages.controller';
 import { PagesService } from './pages.service';
 import { PrismaModule } from '../../database/prisma.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { ActivityModule } from '../activity/activity.module';
 
 @Module({
-  imports: [PrismaModule, NotificationsModule],
+  imports: [PrismaModule, NotificationsModule, ActivityModule],
   controllers: [PagesController],
   providers: [PagesService],
   exports: [PagesService],

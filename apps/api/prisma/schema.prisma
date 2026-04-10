@@ -19,6 +19,7 @@ model User {
   updatedAt        DateTime       @updatedAt
   families         FamilyMember[]
   pushSubscriptions PushSubscription[]
+  activityLogs     ActivityLog[]
 }
 
 model Family {
@@ -31,6 +32,7 @@ model Family {
   invites   FamilyInvite[]
   events    CalendarEvent[]
   pages     Page[]
+  activityLogs ActivityLog[]
 }
 
 model Page {
@@ -127,4 +129,18 @@ model NotificationLog {
   error     String?
   metadata  Json     @default("{}")
   createdAt DateTime @default(now())
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  familyId  String
+  userId    String
+  type      String
+  payload   Json     @default("{}")
+  createdAt DateTime @default(now())
+
+  family    Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([familyId, createdAt(sort: Desc)])
 }

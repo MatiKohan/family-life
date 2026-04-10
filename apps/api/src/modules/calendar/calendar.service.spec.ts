@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { CalendarService } from './calendar.service';
 import { PrismaService } from '../../database/prisma.service';
+import { ActivityService } from '../activity/activity.service';
 
 const FAMILY_ID = 'family-1';
 const USER_ID = 'user-1';
@@ -47,6 +48,7 @@ describe('CalendarService', () => {
       providers: [
         CalendarService,
         { provide: PrismaService, useValue: prismaMock },
+        { provide: ActivityService, useValue: { log: jest.fn() } },
       ],
     }).compile();
 

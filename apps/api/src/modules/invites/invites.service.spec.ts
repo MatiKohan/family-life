@@ -6,6 +6,7 @@ import { InvitesService } from './invites.service';
 import { FamilyService } from '../family/family.service';
 import { PrismaService } from '../../database/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { ActivityService } from '../activity/activity.service';
 
 const mockPrisma = {
   familyInvite: {
@@ -17,6 +18,9 @@ const mockPrisma = {
     delete: jest.fn(),
   },
   family: {
+    findUnique: jest.fn(),
+  },
+  user: {
     findUnique: jest.fn(),
   },
 };
@@ -63,6 +67,7 @@ describe('InvitesService', () => {
         { provide: FamilyService, useValue: mockFamilyService },
         { provide: ConfigService, useValue: mockConfigService },
         { provide: NotificationsService, useValue: mockNotificationsService },
+        { provide: ActivityService, useValue: { log: jest.fn() } },
       ],
     }).compile();
 
@@ -258,6 +263,7 @@ describe('InvitesService', () => {
       mockPrisma.familyInvite.findUnique.mockResolvedValue(pendingInvite);
       mockFamilyService.addMemberByInvite.mockResolvedValue(undefined);
       mockPrisma.familyInvite.update.mockResolvedValue({});
+      mockPrisma.user.findUnique.mockResolvedValue({ name: 'Alice' });
 
       const result = await service.redeemInvite(INVITE_TOKEN, USER_ID);
 

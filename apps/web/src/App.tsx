@@ -12,6 +12,7 @@ import { FamilyHomePage } from './pages/FamilyHome/FamilyHomePage';
 import { PageViewPage } from './pages/PageView/PageViewPage';
 import { CalendarPage } from './pages/Calendar/CalendarPage';
 import { FamilySettingsPage } from './pages/FamilySettings/FamilySettingsPage';
+import { ActivityFeedPage } from './pages/ActivityFeed/ActivityFeedPage';
 import { useMyFamilies } from './hooks/useMyFamilies';
 import { useFamilyStore } from './store/family.store';
 
@@ -113,6 +114,15 @@ function App() {
             element={
               <ErrorBoundary>
                 <FamilySettingsPage />
+              </ErrorBoundary>
+            }
+          />
+          {/* activity feed = /family/:id/activity */}
+          <Route
+            path="activity"
+            element={
+              <ErrorBoundary>
+                <ActivityFeedPage />
               </ErrorBoundary>
             }
           />

@@ -181,6 +181,11 @@ i18n.use(initReactI18next).init({
           openMenu: 'Open menu',
           closeMenu: 'Close menu',
         },
+        activity: {
+          title: 'Activity',
+          empty: 'No activity yet',
+          loadMore: 'Load more',
+        },
       },
     },
   },
