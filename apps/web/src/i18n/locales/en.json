@@ -108,6 +108,8 @@
     "pages": "Pages",
     "newFolder": "New folder",
     "folderName": "Folder name",
+    "folderLabel": "Folder",
+    "noFolder": "No folder",
     "deleteFolder": "Delete folder",
     "folderDeleted": "Folder deleted"
   },

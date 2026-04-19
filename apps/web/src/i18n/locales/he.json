@@ -108,6 +108,8 @@
     "pages": "דפים",
     "newFolder": "תיקייה חדשה",
     "folderName": "שם תיקייה",
+    "folderLabel": "תיקייה",
+    "noFolder": "ללא תיקייה",
     "deleteFolder": "מחק תיקייה",
     "folderDeleted": "התיקייה נמחקה"
   },

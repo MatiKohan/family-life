@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { apiRequest } from '../../lib/api-client';
+import { useFolders } from '../../hooks/useFolders';
 import { PageSummary, PageType } from '../../types/page';
 
 const PAGE_EMOJIS = [
@@ -23,7 +24,9 @@ export function CreatePageModal({ familyId, onClose, onCreated }: Props) {
   const [title, setTitle] = useState('');
   const [emoji, setEmoji] = useState('📝');
   const [type, setType] = useState<PageType>('list');
+  const [folderId, setFolderId] = useState<string | null>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
+  const { data: folders } = useFolders(familyId);
 
   useEffect(() => {
     titleInputRef.current?.focus();
@@ -47,7 +50,7 @@ export function CreatePageModal({ familyId, onClose, onCreated }: Props) {
     mutationFn: () =>
       apiRequest<PageSummary>(`/families/${familyId}/pages`, {
         method: 'POST',
-        body: JSON.stringify({ title: title.trim(), emoji, type }),
+        body: JSON.stringify({ title: title.trim(), emoji, type, ...(folderId ? { folderId } : {}) }),
       }),
     onSuccess: (page) => {
       queryClient.invalidateQueries({ queryKey: ['pages', familyId] });
@@ -172,6 +175,28 @@ export function CreatePageModal({ familyId, onClose, onCreated }: Props) {
                 </button>
               </div>
             </div>
+
+            {/* Folder selector */}
+            {folders && folders.length > 0 && (
+              <div>
+                <label htmlFor="page-folder" className="block text-sm font-medium text-gray-700 mb-1">
+                  {t('pages.folderLabel', 'Folder')}
+                </label>
+                <select
+                  id="page-folder"
+                  value={folderId ?? ''}
+                  onChange={(e) => setFolderId(e.target.value || null)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                >
+                  <option value="">{t('pages.noFolder', 'No folder')}</option>
+                  {folders.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.emoji} {f.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
 
           {/* Footer */}

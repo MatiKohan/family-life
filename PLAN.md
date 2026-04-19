@@ -80,7 +80,7 @@ Status: **partially done**
 - [x] Show member actions (promote, remove) behind role check
 
 ### Event editing
-- [ ] Full edit dialog for existing calendar events (currently unclear if implemented)
+- [x] Full edit dialog for existing calendar events
 - [ ] Link/unlink events from an Events page
 
 ### Offline mutations
@@ -145,6 +145,8 @@ New page type for tracking apartment listings (rent or buy) from yad2.co.il.
 
 ## Phase 8 — Web Push Notifications
 
+Status: **complete**
+
 Complement WhatsApp with native browser push notifications. Works for any family member without requiring a phone number. Fires on the same events as WhatsApp (item assigned, event reminder).
 
 ### How it works
@@ -154,24 +156,23 @@ Complement WhatsApp with native browser push notifications. Works for any family
 - Service worker wakes up and shows a native OS notification, even if the tab is closed
 
 ### Backend
-- [ ] Install `web-push` package in `apps/api`
-- [ ] Add `PushSubscription` Prisma model (userId, endpoint, p256dh, auth, createdAt)
-- [ ] `POST /api/push/subscribe` — save subscription for current user
-- [ ] `DELETE /api/push/subscribe` — remove subscription (unsubscribe)
-- [ ] `WebPushChannel` implementing `INotificationChannel` — sends via `web-push`
-- [ ] Register `WebPushChannel` in `NotificationsModule` alongside `WhatsAppChannel`
-- [ ] Generate VAPID keys (one-time, stored in env: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`)
+- [x] Install `web-push` package in `apps/api`
+- [x] Add `PushSubscription` Prisma model (userId, endpoint, p256dh, auth, createdAt)
+- [x] `POST /api/push/subscribe` — save subscription for current user
+- [x] `DELETE /api/push/subscribe` — remove subscription (unsubscribe)
+- [x] `PushService` — sends via `web-push` (integrated directly into NotificationsService)
+- [x] Generate VAPID keys (stored in env: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`)
 
 ### Frontend
-- [ ] Expose `VITE_VAPID_PUBLIC_KEY` env var to the web app
-- [ ] `usePushSubscription` hook — requests permission, subscribes via `serviceWorker.pushManager`, POSTs to API
-- [ ] Push opt-in toggle in FamilySettings notification section (alongside WhatsApp toggles)
-- [ ] Service worker push handler — `push` event → `showNotification` with title + body
-- [ ] `notificationclick` handler — focuses/opens the app when notification is tapped
+- [x] Expose `VITE_VAPID_PUBLIC_KEY` env var to the web app
+- [x] `usePushSubscription` hook — requests permission, subscribes via `serviceWorker.pushManager`, POSTs to API
+- [x] Push opt-in toggle in FamilySettings notification section (alongside WhatsApp toggles)
+- [x] Service worker push handler — `push` event → `showNotification` with title + body
+- [x] `notificationclick` handler — focuses/opens the app when notification is tapped
 
 ### Triggers (reuse existing NotificationsService)
-- [ ] Item/task assigned → push to assignee's subscriptions
-- [ ] Calendar event reminder (cron) → push to all family members with subscriptions
+- [x] Item/task assigned → push to assignee's subscriptions
+- [x] Calendar event reminder (cron) → push to all family members with subscriptions
 
 ### Notes
 - VAPID keys generated once with `npx web-push generate-vapid-keys`
@@ -193,12 +194,12 @@ Global search across all pages, items, tasks, and calendar events.
 - [ ] Debounced frontend query with TanStack Query (`useSearch` hook)
 
 ### Activity Feed
-Show a chronological log of what family members have done: checked off items, added tasks, created events, invited members.
-- [ ] `ActivityLog` Prisma model (familyId, userId, type, payload JSONB, createdAt)
-- [ ] Write activity entries on key mutations (item checked, task created, event created, member invited)
-- [ ] `GET /api/families/:id/activity` — paginated, newest first
-- [ ] `ActivityFeedPage` or sidebar widget — avatar + action + timestamp
-- [ ] Real-time feel: poll every 30s or use a simple SSE endpoint
+Implemented as Phase 13 — see below.
+- [x] `ActivityLog` Prisma model (familyId, userId, type, payload JSONB, createdAt)
+- [x] Write activity entries on key mutations (item checked, task created, event created, member invited)
+- [x] `GET /api/families/:id/activity` — paginated, newest first
+- [x] `ActivityFeedPage` — avatar + action + timestamp
+- [x] Poll every 60s for new entries
 
 ### Recurring Calendar Events
 Allow events to repeat on a schedule.
@@ -315,6 +316,8 @@ Show a chronological log of what family members have done.
 
 ## Phase 14 — Navbar Folders
 
+Status: **complete**
+
 Group pages under collapsible folders in the sidebar. Users can create folders, rename them, and drag pages in/out.
 
 ### Data model
@@ -323,24 +326,24 @@ Group pages under collapsible folders in the sidebar. Users can create folders, 
 - Add `pageOrder` int to `Page` for ordering within a folder (and at root level)
 
 ### Backend
-- [ ] Add `PageFolder` model to Prisma schema + migration
-- [ ] Add `folderId` + `pageOrder` to `Page` model + migration
-- [ ] `folders` NestJS module: `GET/POST /api/families/:fid/folders`, `PATCH/DELETE /api/families/:fid/folders/:id`
-- [ ] `PATCH /api/families/:fid/pages/:pid` — accept `folderId` + `pageOrder` to move a page
-- [ ] `PATCH /api/families/:fid/folders/reorder` — bulk-update folder order
-- [ ] `GET /api/families/:fid/pages` response includes `folderId` + `pageOrder`
+- [x] Add `PageFolder` model to Prisma schema + migration
+- [x] Add `folderId` + `sortOrder` to `Page` model + migration
+- [x] `folders` NestJS module: `GET/POST /api/families/:fid/folders`, `PATCH/DELETE /api/families/:fid/folders/:id`
+- [x] `PATCH /api/families/:fid/pages/:pid` — accept `folderId` to move a page
+- [x] `PATCH /api/families/:fid/folders/reorder` — bulk-update folder order
+- [x] `GET /api/families/:fid/pages` response includes `folderId`
 
 ### Frontend
-- [ ] `FolderItem` sidebar component — collapsible section with folder emoji + name + child pages
-- [ ] "New folder" button in sidebar (below pages list)
-- [ ] Inline rename on double-click for both folders and pages inside folders
-- [ ] Drag-and-drop (extend existing `@dnd-kit` setup):
-  - Drag a page onto a folder → assigns `folderId`, updates `pageOrder`
-  - Drag a page out of a folder → clears `folderId`
-  - Drag folders to reorder them
-- [ ] Folder collapse state persisted in Zustand `family.store` (not DB — client-only)
-- [ ] "Create page modal" gains an optional folder selector
-- [ ] Right-click context menu on folder: Rename / Delete (moves pages back to root)
+- [x] `FolderItem` sidebar component — collapsible section with folder emoji + name + child pages
+- [x] "New folder" button in sidebar
+- [x] Inline rename on double-click for folders
+- [x] Drag-and-drop (extend existing `@dnd-kit` setup):
+  - [x] Drag a page onto a folder → assigns `folderId`
+  - [x] Drag a page out of a folder → clears `folderId`
+  - [x] Drag folders to reorder them
+- [x] Folder collapse state persisted in Zustand `family.store` (not DB — client-only)
+- [x] "Create page modal" gains an optional folder selector
+- [x] Rename / Delete on folder: hover trash button for delete, double-click for rename
 
 ---
 
