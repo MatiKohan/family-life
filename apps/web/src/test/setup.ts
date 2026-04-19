@@ -80,6 +80,10 @@ i18n.use(initReactI18next).init({
           eventsComingSoon: 'Events page — coming in Phase 3.',
           loadError: 'This page may have been deleted or you may not have access.',
           pages: 'Pages',
+          addListBlock: '+ List',
+          addTextBlock: '+ Text',
+          blockTitlePlaceholder: 'Block title...',
+          textBlockPlaceholder: 'Write something...',
         },
         apartments: {
           searchParams: 'Search Filters',

@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Patch,
   Delete,
   Param,
@@ -44,7 +45,9 @@ import { CreateTaskItemDto } from './dto/create-task-item.dto';
 import { UpdateTaskItemDto } from './dto/update-task-item.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { AuthUser } from '@family-life/types';
+import { AuthUser, Block } from '@family-life/types';
+import { PutBlocksDto } from './dto/put-blocks.dto';
+import { UpdateBlockDto } from './dto/update-block.dto';
 
 @ApiTags('pages')
 @ApiBearerAuth()
@@ -232,5 +235,64 @@ export class PagesController {
     @Param('eventId') eventId: string,
   ) {
     await this.pagesService.removeEventRef(familyId, pageId, user.id, eventId);
+  }
+
+  @Put(':pageId/blocks')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async putBlocks(
+    @CurrentUser() user: AuthUser,
+    @Param('id') familyId: string,
+    @Param('pageId') pageId: string,
+    @Body() dto: PutBlocksDto,
+  ) {
+    await this.pagesService.putBlocks(familyId, pageId, user.id, dto.blocks as Block[]);
+  }
+
+  @Patch(':pageId/blocks/:blockId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async updateBlock(
+    @CurrentUser() user: AuthUser,
+    @Param('id') familyId: string,
+    @Param('pageId') pageId: string,
+    @Param('blockId') blockId: string,
+    @Body() dto: UpdateBlockDto,
+  ) {
+    await this.pagesService.updateBlock(familyId, pageId, blockId, user.id, dto);
+  }
+
+  @Post(':pageId/blocks/:blockId/items')
+  addBlockItem(
+    @CurrentUser() user: AuthUser,
+    @Param('id') familyId: string,
+    @Param('pageId') pageId: string,
+    @Param('blockId') blockId: string,
+    @Body() dto: CreateItemDto,
+  ) {
+    return this.pagesService.addBlockItem(familyId, pageId, blockId, user.id, dto.text, dto.assigneeId, dto.dueDate);
+  }
+
+  @Patch(':pageId/blocks/:blockId/items/:itemId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async updateBlockItem(
+    @CurrentUser() user: AuthUser,
+    @Param('id') familyId: string,
+    @Param('pageId') pageId: string,
+    @Param('blockId') blockId: string,
+    @Param('itemId') itemId: string,
+    @Body() dto: UpdateItemDto,
+  ) {
+    await this.pagesService.updateBlockItem(familyId, pageId, blockId, itemId, user.id, dto);
+  }
+
+  @Delete(':pageId/blocks/:blockId/items/:itemId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteBlockItem(
+    @CurrentUser() user: AuthUser,
+    @Param('id') familyId: string,
+    @Param('pageId') pageId: string,
+    @Param('blockId') blockId: string,
+    @Param('itemId') itemId: string,
+  ) {
+    await this.pagesService.deleteBlockItem(familyId, pageId, blockId, itemId, user.id);
   }
 }

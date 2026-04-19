@@ -261,6 +261,34 @@ export const handlers = [
     HttpResponse.json({ items: [], nextCursor: null }),
   ),
 
+  // Canvas blocks
+  http.put('/api/families/:fid/pages/:pid/blocks', () =>
+    new HttpResponse(null, { status: 204 }),
+  ),
+  http.patch('/api/families/:fid/pages/:pid/blocks/:bid', () =>
+    new HttpResponse(null, { status: 204 }),
+  ),
+  http.post('/api/families/:fid/pages/:pid/blocks/:bid/items', async ({ request }) => {
+    const body = (await request.json()) as { text: string };
+    return HttpResponse.json(
+      {
+        id: 'block-item-new',
+        text: body.text,
+        checked: false,
+        assigneeId: null,
+        dueDate: null,
+        createdAt: new Date().toISOString(),
+      },
+      { status: 201 },
+    );
+  }),
+  http.patch('/api/families/:fid/pages/:pid/blocks/:bid/items/:iid', () =>
+    new HttpResponse(null, { status: 204 }),
+  ),
+  http.delete('/api/families/:fid/pages/:pid/blocks/:bid/items/:iid', () =>
+    new HttpResponse(null, { status: 204 }),
+  ),
+
   // Task items
   http.post('/api/families/:familyId/pages/:pageId/task-items', async ({ request }) => {
     const body = (await request.json()) as { text: string; status: string };

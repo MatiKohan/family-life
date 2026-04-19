@@ -56,6 +56,24 @@ export interface ApartmentListing {
   seenBy: string[];     // userId[] who dismissed this listing
 }
 
+// ─── Blocks ──────────────────────────────────────────────────────────────────
+
+export interface ListBlock {
+  id: string;
+  type: 'list';
+  title?: string;
+  items: ListItem[];
+}
+
+export interface TextBlock {
+  id: string;
+  type: 'text';
+  title?: string;
+  content: string;
+}
+
+export type Block = ListBlock | TextBlock;
+
 // ─── Page ────────────────────────────────────────────────────────────────────
 
 export interface Page {
@@ -65,6 +83,7 @@ export interface Page {
   emoji: string;
   type: PageType;
   items: ListItem[];                    // for 'list' type
+  blocks?: Block[];                     // for 'list' type (canvas format)
   taskItems: TaskItem[];                // for 'tasks' type
   eventIds: string[];                   // for 'events' type
   apartmentListings: ApartmentListing[]; // for 'apartments' type

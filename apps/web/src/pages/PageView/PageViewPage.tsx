@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { usePage } from '../../hooks/usePage';
-import { ListPageView } from '../../components/ListPageView/ListPageView';
+import { CanvasPageView } from '../../components/CanvasPageView/CanvasPageView';
 import { TasksPageView } from '../../components/TasksPageView/TasksPageView';
 import { EventsPageView } from '../../components/EventsPageView/EventsPageView';
 import { ApartmentsPageView } from '../../components/ApartmentsPageView/ApartmentsPageView';
@@ -68,7 +68,7 @@ export function PageViewPage() {
   }
 
   if (page.type === 'list') {
-    return <ListPageView page={page} familyId={familyId!} />;
+    return <CanvasPageView page={page} familyId={familyId!} />;
   }
 
   if (page.type === 'tasks') {

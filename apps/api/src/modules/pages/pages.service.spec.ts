@@ -172,7 +172,17 @@ describe('PagesService', () => {
       mockPrisma.page.findFirst.mockResolvedValue(mockPage);
 
       const result = await service.getPage(FAMILY_ID, PAGE_ID, USER_ID);
-      expect(result).toEqual(mockPage);
+      // blocks is added for list pages — verify core fields match
+      expect(result).toMatchObject({
+        id: mockPage.id,
+        familyId: mockPage.familyId,
+        title: mockPage.title,
+        type: mockPage.type,
+        items: mockPage.items,
+        taskItems: mockPage.taskItems,
+      });
+      // blocks should be present for list pages
+      expect((result as { blocks?: unknown }).blocks).toBeDefined();
     });
 
     it('throws NotFoundException when page does not exist', async () => {

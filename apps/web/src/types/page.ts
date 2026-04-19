@@ -1,4 +1,5 @@
 export type PageType = 'list' | 'events' | 'tasks' | 'apartments';
+export type { Block, ListBlock, TextBlock } from '@family-life/types';
 
 export type TaskStatus = 'todo' | 'in-progress' | 'done';
 
@@ -61,6 +62,7 @@ export interface Page {
   emoji: string;
   type: PageType;
   items: ListItem[];
+  blocks?: Block[];
   taskItems: TaskItem[];
   eventIds: string[];
   apartmentListings: ApartmentListing[];

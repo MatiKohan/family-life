@@ -366,6 +366,8 @@ Status: **complete**
 
 ## Phase 16 — List Page as Canvas (Block-based)
 
+Status: **complete**
+
 Replace the single flat list with a flexible canvas: users can add multiple named lists, free text blocks, and rearrange blocks vertically.
 
 ### Concept
@@ -381,25 +383,25 @@ Each list page becomes a stack of **blocks**. A block has a `type` (`list` | `te
 - Migration strategy: wrap existing flat `items` arrays in a single `{ type: 'list', items: [...] }` block on first load (lazy migration in `getPage`)
 
 ### Backend
-- [ ] New `Block` type in `packages/types`
-- [ ] `getPage` — if `page.items` is a flat array (legacy), wrap it in a single list block before returning
-- [ ] `PUT /api/families/:fid/pages/:pid/blocks` — replace the full blocks array (optimistic whole-page save)
-- [ ] `PATCH /api/families/:fid/pages/:pid/blocks/:bid` — update a single block's title or content
-- [ ] `POST /api/families/:fid/pages/:pid/blocks/:bid/items` — add item to a list block
-- [ ] `PATCH /api/families/:fid/pages/:pid/blocks/:bid/items/:iid` — toggle/update item in a list block
-- [ ] `DELETE /api/families/:fid/pages/:pid/blocks/:bid/items/:iid` — remove item from a list block
+- [x] New `Block` type in `packages/types`
+- [x] `getPage` — if `page.items` is a flat array (legacy), wrap it in a single list block before returning
+- [x] `PUT /api/families/:fid/pages/:pid/blocks` — replace the full blocks array (optimistic whole-page save)
+- [x] `PATCH /api/families/:fid/pages/:pid/blocks/:bid` — update a single block's title or content
+- [x] `POST /api/families/:fid/pages/:pid/blocks/:bid/items` — add item to a list block
+- [x] `PATCH /api/families/:fid/pages/:pid/blocks/:bid/items/:iid` — toggle/update item in a list block
+- [x] `DELETE /api/families/:fid/pages/:pid/blocks/:bid/items/:iid` — remove item from a list block
 
 ### Frontend
-- [ ] `CanvasPageView` replaces `ListPageView` for `'list'` page type
-- [ ] `BlockRenderer` — renders a block by type (`ListBlock` | `TextBlock`)
-- [ ] `ListBlock` — existing list UI (checkbox rows, assignee, due date) with optional title header
-- [ ] `TextBlock` — contenteditable / textarea with auto-grow, renders Markdown in read mode
-- [ ] "Add block" button (bottom of canvas): opens a small picker — "List" | "Text"
-- [ ] Drag-to-reorder blocks (vertical, `@dnd-kit`)
-- [ ] Block title inline-editable (click to edit)
-- [ ] Delete block button (trash icon on block hover, with confirmation if block has items)
-- [ ] Auto-save on blur (debounced `PUT /blocks`) — no explicit save button
-- [ ] Backward compat: pages with legacy flat items load seamlessly as a single list block
+- [x] `CanvasPageView` replaces `ListPageView` for `'list'` page type
+- [x] `BlockRenderer` — renders a block by type (`ListBlock` | `TextBlock`)
+- [x] `ListBlock` — existing list UI (checkbox rows, assignee, due date) with optional title header
+- [x] `TextBlock` — contenteditable / textarea with auto-grow, renders Markdown in read mode
+- [x] "Add block" button (bottom of canvas): opens a small picker — "List" | "Text"
+- [x] Drag-to-reorder blocks (vertical, `@dnd-kit`)
+- [x] Block title inline-editable (click to edit)
+- [x] Delete block button (trash icon on block hover, with confirmation if block has items)
+- [x] Auto-save on blur (debounced `PUT /blocks`) — no explicit save button
+- [x] Backward compat: pages with legacy flat items load seamlessly as a single list block
 
 ---
 

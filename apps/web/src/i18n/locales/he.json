@@ -111,7 +111,11 @@
     "folderLabel": "תיקייה",
     "noFolder": "ללא תיקייה",
     "deleteFolder": "מחק תיקייה",
-    "folderDeleted": "התיקייה נמחקה"
+    "folderDeleted": "התיקייה נמחקה",
+    "addListBlock": "+ רשימה",
+    "addTextBlock": "+ טקסט",
+    "blockTitlePlaceholder": "כותרת בלוק...",
+    "textBlockPlaceholder": "כתוב משהו..."
   },
   "list": {
     "addItemPlaceholder": "+ הוסף פריט",

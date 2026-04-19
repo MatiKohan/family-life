@@ -111,7 +111,11 @@
     "folderLabel": "Folder",
     "noFolder": "No folder",
     "deleteFolder": "Delete folder",
-    "folderDeleted": "Folder deleted"
+    "folderDeleted": "Folder deleted",
+    "addListBlock": "+ List",
+    "addTextBlock": "+ Text",
+    "blockTitlePlaceholder": "Block title...",
+    "textBlockPlaceholder": "Write something..."
   },
   "list": {
     "addItemPlaceholder": "+ Add item",

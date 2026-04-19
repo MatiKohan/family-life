@@ -4,6 +4,9 @@ import {
   ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
+import { randomUUID } from 'crypto';
+import { Prisma } from '@prisma/client';
+import { Block, ListBlock } from '@family-life/types';
 import { PrismaService } from '../../database/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ActivityService } from '../activity/activity.service';
@@ -48,6 +51,19 @@ export class PagesService {
     });
     if (!member) throw new ForbiddenException('Not a family member');
     return member;
+  }
+
+  private normalizeBlocks(rawItems: unknown[]): Block[] {
+    if (rawItems.length === 0) {
+      return [{ id: randomUUID(), type: 'list', items: [] }];
+    }
+    const first = rawItems[0] as Record<string, unknown>;
+    if (first['type'] === 'list' || first['type'] === 'text') {
+      return rawItems as Block[];
+    }
+    // Legacy: flat ListItem array → wrap in a single list block
+    const legacyItems = (rawItems as ListItemData[]).filter(i => !i.deletedAt);
+    return [{ id: randomUUID(), type: 'list', items: legacyItems }];
   }
 
   async listPages(familyId: string, userId: string) {
@@ -100,6 +116,9 @@ export class PagesService {
     const taskItems = ((page.taskItems as TaskItemData[]) || []).filter(
       (i) => !i.deletedAt,
     );
+    const blocks = page.type === 'list'
+      ? this.normalizeBlocks(items as unknown[])
+      : undefined;
     // For events type, attach calendar events
     if (page.type === 'events') {
       const eventIds = (page.eventIds as string[]) || [];
@@ -111,7 +130,7 @@ export class PagesService {
           : [];
       return { ...page, items, taskItems, events };
     }
-    return { ...page, items, taskItems };
+    return { ...page, items, taskItems, blocks };
   }
 
   async updatePage(
@@ -513,6 +532,131 @@ export class PagesService {
     return this.prisma.page.update({
       where: { id: pageId },
       data: { taskItems: [...reordered, ...deleted] },
+    });
+  }
+
+  async putBlocks(
+    familyId: string,
+    pageId: string,
+    userId: string,
+    blocks: Block[],
+  ): Promise<void> {
+    await this.requireMember(familyId, userId);
+    const page = await this.prisma.page.findFirst({
+      where: { id: pageId, familyId, deletedAt: null },
+    });
+    if (!page) throw new NotFoundException('Page not found');
+    await this.prisma.page.update({
+      where: { id: pageId },
+      data: { items: blocks as unknown as Prisma.InputJsonValue },
+    });
+  }
+
+  async updateBlock(
+    familyId: string,
+    pageId: string,
+    blockId: string,
+    userId: string,
+    patch: { title?: string; content?: string },
+  ): Promise<void> {
+    await this.requireMember(familyId, userId);
+    const page = await this.prisma.page.findFirst({
+      where: { id: pageId, familyId, deletedAt: null },
+    });
+    if (!page) throw new NotFoundException('Page not found');
+    const blocks = this.normalizeBlocks(page.items as unknown[]);
+    const updated = blocks.map(b =>
+      b.id === blockId ? { ...b, ...patch } : b,
+    );
+    await this.prisma.page.update({
+      where: { id: pageId },
+      data: { items: updated as unknown as Prisma.InputJsonValue },
+    });
+  }
+
+  async addBlockItem(
+    familyId: string,
+    pageId: string,
+    blockId: string,
+    userId: string,
+    text: string,
+    assigneeId?: string,
+    dueDate?: string,
+  ): Promise<ListItemData> {
+    await this.requireMember(familyId, userId);
+    const page = await this.prisma.page.findFirst({
+      where: { id: pageId, familyId, deletedAt: null },
+    });
+    if (!page) throw new NotFoundException('Page not found');
+    const blocks = this.normalizeBlocks(page.items as unknown[]);
+    const newItem: ListItemData = {
+      id: randomUUID(),
+      text,
+      checked: false,
+      assigneeId: assigneeId ?? null,
+      dueDate: dueDate ?? null,
+      createdAt: new Date().toISOString(),
+    };
+    const updated = blocks.map(b => {
+      if (b.id !== blockId || b.type !== 'list') return b;
+      return { ...b, items: [...(b as ListBlock).items, newItem] };
+    });
+    await this.prisma.page.update({
+      where: { id: pageId },
+      data: { items: updated as unknown as Prisma.InputJsonValue },
+    });
+    return newItem;
+  }
+
+  async updateBlockItem(
+    familyId: string,
+    pageId: string,
+    blockId: string,
+    itemId: string,
+    userId: string,
+    patch: { text?: string; checked?: boolean; assigneeId?: string | null; dueDate?: string | null },
+  ): Promise<void> {
+    await this.requireMember(familyId, userId);
+    const page = await this.prisma.page.findFirst({
+      where: { id: pageId, familyId, deletedAt: null },
+    });
+    if (!page) throw new NotFoundException('Page not found');
+    const blocks = this.normalizeBlocks(page.items as unknown[]);
+    const updated = blocks.map(b => {
+      if (b.id !== blockId || b.type !== 'list') return b;
+      const lb = b as ListBlock;
+      return {
+        ...lb,
+        items: lb.items.map(i => i.id === itemId ? { ...i, ...patch } : i),
+      };
+    });
+    await this.prisma.page.update({
+      where: { id: pageId },
+      data: { items: updated as unknown as Prisma.InputJsonValue },
+    });
+  }
+
+  async deleteBlockItem(
+    familyId: string,
+    pageId: string,
+    blockId: string,
+    itemId: string,
+    userId: string,
+  ): Promise<void> {
+    await this.requireMember(familyId, userId);
+    const page = await this.prisma.page.findFirst({
+      where: { id: pageId, familyId, deletedAt: null },
+    });
+    if (!page) throw new NotFoundException('Page not found');
+    const blocks = this.normalizeBlocks(page.items as unknown[]);
+    const updated = blocks.map(b => {
+      if (b.id !== blockId || b.type !== 'list') return b;
+      const lb = b as ListBlock;
+      return { ...lb, items: lb.items.filter(i => i.id !== itemId) };
+    });
+    await this.prisma.page.update({
+      where: { id: pageId },
+      data: { items: updated as unknown as Prisma.InputJsonValue },
     });
   }
 }
