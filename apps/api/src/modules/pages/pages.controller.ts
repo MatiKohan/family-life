@@ -245,7 +245,12 @@ export class PagesController {
     @Param('pageId') pageId: string,
     @Body() dto: PutBlocksDto,
   ) {
-    await this.pagesService.putBlocks(familyId, pageId, user.id, dto.blocks as Block[]);
+    await this.pagesService.putBlocks(
+      familyId,
+      pageId,
+      user.id,
+      dto.blocks as Block[],
+    );
   }
 
   @Patch(':pageId/blocks/:blockId')
@@ -257,7 +262,13 @@ export class PagesController {
     @Param('blockId') blockId: string,
     @Body() dto: UpdateBlockDto,
   ) {
-    await this.pagesService.updateBlock(familyId, pageId, blockId, user.id, dto);
+    await this.pagesService.updateBlock(
+      familyId,
+      pageId,
+      blockId,
+      user.id,
+      dto,
+    );
   }
 
   @Post(':pageId/blocks/:blockId/items')
@@ -268,7 +279,15 @@ export class PagesController {
     @Param('blockId') blockId: string,
     @Body() dto: CreateItemDto,
   ) {
-    return this.pagesService.addBlockItem(familyId, pageId, blockId, user.id, dto.text, dto.assigneeId, dto.dueDate);
+    return this.pagesService.addBlockItem(
+      familyId,
+      pageId,
+      blockId,
+      user.id,
+      dto.text,
+      dto.assigneeId,
+      dto.dueDate,
+    );
   }
 
   @Patch(':pageId/blocks/:blockId/items/:itemId')
@@ -281,7 +300,14 @@ export class PagesController {
     @Param('itemId') itemId: string,
     @Body() dto: UpdateItemDto,
   ) {
-    await this.pagesService.updateBlockItem(familyId, pageId, blockId, itemId, user.id, dto);
+    await this.pagesService.updateBlockItem(
+      familyId,
+      pageId,
+      blockId,
+      itemId,
+      user.id,
+      dto,
+    );
   }
 
   @Delete(':pageId/blocks/:blockId/items/:itemId')
@@ -293,6 +319,12 @@ export class PagesController {
     @Param('blockId') blockId: string,
     @Param('itemId') itemId: string,
   ) {
-    await this.pagesService.deleteBlockItem(familyId, pageId, blockId, itemId, user.id);
+    await this.pagesService.deleteBlockItem(
+      familyId,
+      pageId,
+      blockId,
+      itemId,
+      user.id,
+    );
   }
 }

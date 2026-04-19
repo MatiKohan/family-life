@@ -1,20 +1,20 @@
+import { Block } from '@family-life/types';
 import {
+  BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
-  ForbiddenException,
-  BadRequestException,
 } from '@nestjs/common';
-import { randomUUID } from 'crypto';
 import { Prisma } from '@prisma/client';
-import { Block, ListBlock } from '@family-life/types';
+import { randomUUID } from 'crypto';
 import { PrismaService } from '../../database/prisma.service';
-import { NotificationsService } from '../notifications/notifications.service';
 import { ActivityService } from '../activity/activity.service';
-import { CreatePageDto } from './dto/create-page.dto';
-import { UpdatePageDto } from './dto/update-page.dto';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreateItemDto } from './dto/create-item.dto';
-import { UpdateItemDto } from './dto/update-item.dto';
+import { CreatePageDto } from './dto/create-page.dto';
 import { CreateTaskItemDto } from './dto/create-task-item.dto';
+import { UpdateItemDto } from './dto/update-item.dto';
+import { UpdatePageDto } from './dto/update-page.dto';
 import { UpdateTaskItemDto } from './dto/update-task-item.dto';
 
 // Types for internal use
@@ -62,7 +62,9 @@ export class PagesService {
       return rawItems as Block[];
     }
     // Legacy: flat ListItem array → wrap in a single list block
-    const legacyItems = (rawItems as ListItemData[]).filter(i => !i.deletedAt);
+    const legacyItems = (rawItems as ListItemData[]).filter(
+      (i) => !i.deletedAt,
+    );
     return [{ id: randomUUID(), type: 'list', items: legacyItems }];
   }
 
@@ -116,9 +118,10 @@ export class PagesService {
     const taskItems = ((page.taskItems as TaskItemData[]) || []).filter(
       (i) => !i.deletedAt,
     );
-    const blocks = page.type === 'list'
-      ? this.normalizeBlocks(items as unknown[])
-      : undefined;
+    const blocks =
+      page.type === 'list'
+        ? this.normalizeBlocks(items as unknown[])
+        : undefined;
     // For events type, attach calendar events
     if (page.type === 'events') {
       const eventIds = (page.eventIds as string[]) || [];
@@ -565,7 +568,7 @@ export class PagesService {
     });
     if (!page) throw new NotFoundException('Page not found');
     const blocks = this.normalizeBlocks(page.items as unknown[]);
-    const updated = blocks.map(b =>
+    const updated = blocks.map((b) =>
       b.id === blockId ? { ...b, ...patch } : b,
     );
     await this.prisma.page.update({
@@ -597,9 +600,9 @@ export class PagesService {
       dueDate: dueDate ?? null,
       createdAt: new Date().toISOString(),
     };
-    const updated = blocks.map(b => {
+    const updated = blocks.map((b) => {
       if (b.id !== blockId || b.type !== 'list') return b;
-      return { ...b, items: [...(b as ListBlock).items, newItem] };
+      return { ...b, items: [...b.items, newItem] };
     });
     await this.prisma.page.update({
       where: { id: pageId },
@@ -614,7 +617,12 @@ export class PagesService {
     blockId: string,
     itemId: string,
     userId: string,
-    patch: { text?: string; checked?: boolean; assigneeId?: string | null; dueDate?: string | null },
+    patch: {
+      text?: string;
+      checked?: boolean;
+      assigneeId?: string | null;
+      dueDate?: string | null;
+    },
   ): Promise<void> {
     await this.requireMember(familyId, userId);
     const page = await this.prisma.page.findFirst({
@@ -622,12 +630,11 @@ export class PagesService {
     });
     if (!page) throw new NotFoundException('Page not found');
     const blocks = this.normalizeBlocks(page.items as unknown[]);
-    const updated = blocks.map(b => {
+    const updated = blocks.map((b) => {
       if (b.id !== blockId || b.type !== 'list') return b;
-      const lb = b as ListBlock;
       return {
-        ...lb,
-        items: lb.items.map(i => i.id === itemId ? { ...i, ...patch } : i),
+        ...b,
+        items: b.items.map((i) => (i.id === itemId ? { ...i, ...patch } : i)),
       };
     });
     await this.prisma.page.update({
@@ -649,10 +656,9 @@ export class PagesService {
     });
     if (!page) throw new NotFoundException('Page not found');
     const blocks = this.normalizeBlocks(page.items as unknown[]);
-    const updated = blocks.map(b => {
+    const updated = blocks.map((b) => {
       if (b.id !== blockId || b.type !== 'list') return b;
-      const lb = b as ListBlock;
-      return { ...lb, items: lb.items.filter(i => i.id !== itemId) };
+      return { ...b, items: b.items.filter((i) => i.id !== itemId) };
     });
     await this.prisma.page.update({
       where: { id: pageId },
