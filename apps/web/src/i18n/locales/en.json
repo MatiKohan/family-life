@@ -105,7 +105,11 @@
     "loadError": "Failed to load page",
     "createError": "Failed to create page. Please try again.",
     "creating": "Creating...",
-    "pages": "Pages"
+    "pages": "Pages",
+    "newFolder": "New folder",
+    "folderName": "Folder name",
+    "deleteFolder": "Delete folder",
+    "folderDeleted": "Folder deleted"
   },
   "list": {
     "addItemPlaceholder": "+ Add item",

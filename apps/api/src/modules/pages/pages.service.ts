@@ -52,7 +52,14 @@ export class PagesService {
     await this.requireMember(familyId, userId);
     return this.prisma.page.findMany({
       where: { familyId, deletedAt: null },
-      select: { id: true, title: true, emoji: true, type: true },
+      select: {
+        id: true,
+        title: true,
+        emoji: true,
+        type: true,
+        sortOrder: true,
+        folderId: true,
+      },
       orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
     });
   }
@@ -118,7 +125,11 @@ export class PagesService {
     if (!page) throw new NotFoundException('Page not found');
     return this.prisma.page.update({
       where: { id: pageId },
-      data: { title: dto.title, emoji: dto.emoji },
+      data: {
+        title: dto.title,
+        emoji: dto.emoji,
+        ...(dto.folderId !== undefined ? { folderId: dto.folderId } : {}),
+      },
     });
   }
 

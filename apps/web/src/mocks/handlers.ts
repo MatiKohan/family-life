@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw';
 import type { AuthUser } from '@family-life/types';
-import { PageSummary, Page } from '../types/page';
+import { PageSummary, Page, FolderSummary } from '../types/page';
 import { CalendarEvent } from '../types/calendar';
 
 export const mockUser: AuthUser = {
@@ -11,9 +11,11 @@ export const mockUser: AuthUser = {
 };
 
 export const mockPageSummaries: PageSummary[] = [
-  { id: 'page-1', title: 'Groceries', emoji: '🛒', type: 'list' },
-  { id: 'page-2', title: 'Tasks', emoji: '✅', type: 'list' },
+  { id: 'page-1', title: 'Groceries', emoji: '🛒', type: 'list', folderId: null },
+  { id: 'page-2', title: 'Tasks', emoji: '✅', type: 'list', folderId: null },
 ];
+
+export const mockFolders: FolderSummary[] = [];
 
 export const mockPage: Page = {
   id: 'page-1',
@@ -127,6 +129,39 @@ export const handlers = [
     HttpResponse.json({ accessToken: 'new-mock-token', user: mockUser }),
   ),
   http.post('/api/auth/logout', () => new HttpResponse(null, { status: 204 })),
+
+  // Folders
+  http.get('/api/families/:familyId/folders', () =>
+    HttpResponse.json(mockFolders),
+  ),
+  http.post('/api/families/:familyId/folders', async ({ request }) => {
+    const body = (await request.json()) as { name: string; emoji?: string };
+    const newFolder: FolderSummary = {
+      id: 'folder-new',
+      name: body.name,
+      emoji: body.emoji ?? '📁',
+      sortOrder: 0,
+      pages: [],
+    };
+    return HttpResponse.json(newFolder, { status: 201 });
+  }),
+  http.patch('/api/families/:familyId/folders/reorder', () =>
+    new HttpResponse(null, { status: 204 }),
+  ),
+  http.patch('/api/families/:familyId/folders/:folderId', async ({ request, params }) => {
+    const body = (await request.json()) as { name?: string; emoji?: string };
+    const updated: FolderSummary = {
+      id: params.folderId as string,
+      name: body.name ?? 'Folder',
+      emoji: body.emoji ?? '📁',
+      sortOrder: 0,
+      pages: [],
+    };
+    return HttpResponse.json(updated);
+  }),
+  http.delete('/api/families/:familyId/folders/:folderId', () =>
+    new HttpResponse(null, { status: 204 }),
+  ),
 
   // Pages
   http.get('/api/families/:familyId/pages', () =>

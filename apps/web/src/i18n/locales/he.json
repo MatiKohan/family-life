@@ -105,7 +105,11 @@
     "loadError": "טעינת הדף נכשלה",
     "createError": "יצירת הדף נכשלה. אנא נסה שוב.",
     "creating": "יוצר...",
-    "pages": "דפים"
+    "pages": "דפים",
+    "newFolder": "תיקייה חדשה",
+    "folderName": "שם תיקייה",
+    "deleteFolder": "מחק תיקייה",
+    "folderDeleted": "התיקייה נמחקה"
   },
   "list": {
     "addItemPlaceholder": "+ הוסף פריט",

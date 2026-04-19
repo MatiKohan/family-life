@@ -100,7 +100,14 @@ describe('PagesService', () => {
       });
       expect(mockPrisma.page.findMany).toHaveBeenCalledWith({
         where: { familyId: FAMILY_ID, deletedAt: null },
-        select: { id: true, title: true, emoji: true, type: true },
+        select: {
+          id: true,
+          title: true,
+          emoji: true,
+          type: true,
+          sortOrder: true,
+          folderId: true,
+        },
         orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
       });
       expect(result).toEqual(pages);
