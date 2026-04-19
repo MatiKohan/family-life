@@ -15,6 +15,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { ApartmentsModule } from './modules/apartments/apartments.module';
 import { PushModule } from './modules/push/push.module';
 import { ActivityModule } from './modules/activity/activity.module';
+import { FoldersModule } from './modules/folders/folders.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { ActivityModule } from './modules/activity/activity.module';
     ApartmentsModule,
     PushModule,
     ActivityModule,
+    FoldersModule,
   ],
   providers: [
     {

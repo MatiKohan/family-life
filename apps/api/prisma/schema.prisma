@@ -31,28 +31,43 @@ model Family {
   members   FamilyMember[]
   invites   FamilyInvite[]
   events    CalendarEvent[]
+  pages        Page[]
+  folders      PageFolder[]
+  activityLogs ActivityLog[]
+}
+
+model PageFolder {
+  id        String   @id @default(cuid())
+  familyId  String
+  name      String
+  emoji     String   @default("📁")
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  family    Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
   pages     Page[]
   activityLogs ActivityLog[]
 }
 
 model Page {
-  id                String    @id @default(cuid())
+  id                String      @id @default(cuid())
   familyId          String
   title             String
-  emoji             String    @default("📄")
+  emoji             String      @default("📄")
   type              String
-  sortOrder         Int       @default(0)
-  items             Json      @default("[]")
-  taskItems         Json      @default("[]")
-  eventIds          Json      @default("[]")
-  metadata          Json      @default("{}")
-  apartmentListings Json      @default("[]")
+  sortOrder         Int         @default(0)
+  folderId          String?
+  items             Json        @default("[]")
+  taskItems         Json        @default("[]")
+  eventIds          Json        @default("[]")
+  metadata          Json        @default("{}")
+  apartmentListings Json        @default("[]")
   lastSyncedAt      DateTime?
   createdBy         String
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
   deletedAt         DateTime?
-  family            Family    @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  family            Family      @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  folder            PageFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
 }
 
 model CalendarEvent {
@@ -118,6 +133,19 @@ model PushSubscription {
   auth      String
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  familyId  String
+  userId    String
+  type      String
+  payload   Json     @default("{}")
+  createdAt DateTime @default(now())
+  family    Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([familyId, createdAt(sort: Desc)])
 }
 
 model NotificationLog {

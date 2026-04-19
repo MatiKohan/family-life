@@ -3,7 +3,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { http, HttpResponse } from 'msw';
 import { server } from '../../mocks/server';
-import { ActivityFeedPage, formatActivity, timeAgo } from './ActivityFeedPage';
+import { ActivityFeedPage } from './ActivityFeedPage';
+import { formatActivity, timeAgo } from './activityFeed.utils';
 import { useAuthStore } from '../../store/auth.store';
 import type { ActivityLog, ActivityFeedResponse } from '@family-life/types';
 

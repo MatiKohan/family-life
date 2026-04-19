@@ -76,4 +76,14 @@ export interface PageSummary {
   title: string;
   emoji: string;
   type: PageType;
+  sortOrder?: number;
+  folderId?: string | null;
+}
+
+export interface FolderSummary {
+  id: string;
+  name: string;
+  emoji: string;
+  sortOrder: number;
+  pages: PageSummary[];
 }
