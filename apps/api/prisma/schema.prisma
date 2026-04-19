@@ -45,7 +45,6 @@ model PageFolder {
   createdAt DateTime @default(now())
   family    Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
   pages     Page[]
-  activityLogs ActivityLog[]
 }
 
 model Page {
@@ -159,16 +158,3 @@ model NotificationLog {
   createdAt DateTime @default(now())
 }
 
-model ActivityLog {
-  id        String   @id @default(cuid())
-  familyId  String
-  userId    String
-  type      String
-  payload   Json     @default("{}")
-  createdAt DateTime @default(now())
-
-  family    Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([familyId, createdAt(sort: Desc)])
-}

@@ -5,7 +5,7 @@ import { PrismaService } from '../../database/prisma.service';
 export class ActivityService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async log(data: {
+  log(data: {
     familyId: string;
     userId: string;
     type: string;
