@@ -1,3 +1,5 @@
+import { Block } from '@family-life/types';
+
 export type PageType = 'list' | 'events' | 'tasks' | 'apartments';
 export type { Block, ListBlock, TextBlock } from '@family-life/types';
 
