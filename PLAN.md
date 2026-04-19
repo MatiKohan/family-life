@@ -311,6 +311,95 @@ Show a chronological log of what family members have done.
 
 ---
 
+## Phase 14 — Navbar Folders
+
+Group pages under collapsible folders in the sidebar. Users can create folders, rename them, and drag pages in/out.
+
+### Data model
+- New `PageFolder` Prisma model: `id`, `familyId`, `name`, `emoji?`, `order` (int), `createdAt`
+- Add `folderId?` (nullable FK) to `Page` model — pages without a folder appear at the root level
+- Add `pageOrder` int to `Page` for ordering within a folder (and at root level)
+
+### Backend
+- [ ] Add `PageFolder` model to Prisma schema + migration
+- [ ] Add `folderId` + `pageOrder` to `Page` model + migration
+- [ ] `folders` NestJS module: `GET/POST /api/families/:fid/folders`, `PATCH/DELETE /api/families/:fid/folders/:id`
+- [ ] `PATCH /api/families/:fid/pages/:pid` — accept `folderId` + `pageOrder` to move a page
+- [ ] `PATCH /api/families/:fid/folders/reorder` — bulk-update folder order
+- [ ] `GET /api/families/:fid/pages` response includes `folderId` + `pageOrder`
+
+### Frontend
+- [ ] `FolderItem` sidebar component — collapsible section with folder emoji + name + child pages
+- [ ] "New folder" button in sidebar (below pages list)
+- [ ] Inline rename on double-click for both folders and pages inside folders
+- [ ] Drag-and-drop (extend existing `@dnd-kit` setup):
+  - Drag a page onto a folder → assigns `folderId`, updates `pageOrder`
+  - Drag a page out of a folder → clears `folderId`
+  - Drag folders to reorder them
+- [ ] Folder collapse state persisted in Zustand `family.store` (not DB — client-only)
+- [ ] "Create page modal" gains an optional folder selector
+- [ ] Right-click context menu on folder: Rename / Delete (moves pages back to root)
+
+---
+
+## Phase 15 — List Page: Drag-to-Reorder Items
+
+Add drag-and-drop reordering to the list page item rows (grocery/shopping lists).
+
+> **Note:** The plan already lists "drag-to-reorder" as done for list pages, but on inspection this may only be implemented for tasks. This phase audits and fills the gap.
+
+### Backend
+- [ ] Audit `PagesService` — verify `reorderItems` endpoint exists and handles list-type pages
+- [ ] `PATCH /api/families/:fid/pages/:pid/items/reorder` — accept `{ orderedIds: string[] }`, update `order` on each item
+- [ ] Ensure `getPage` returns items sorted by `order` for list pages
+
+### Frontend
+- [ ] Wrap list item rows in `@dnd-kit` `<SortableContext>` (vertical list strategy)
+- [ ] Drag handle icon on each row (visible on hover / always visible on mobile)
+- [ ] Optimistic reorder in TanStack Query cache on drag end
+- [ ] `useMutation` calls reorder endpoint after drop
+
+---
+
+## Phase 16 — List Page as Canvas (Block-based)
+
+Replace the single flat list with a flexible canvas: users can add multiple named lists, free text blocks, and rearrange blocks vertically.
+
+### Concept
+Each list page becomes a stack of **blocks**. A block has a `type` (`list` | `text`) and optional `title`. Users can add, remove, reorder, and rename blocks. This keeps backward compatibility — existing single-list pages become a canvas with one unnamed list block.
+
+### Data model
+- New `Block` shape stored in the `items` JSONB column:
+  ```ts
+  type Block =
+    | { id: string; type: 'list';  title?: string; items: ListItem[] }
+    | { id: string; type: 'text';  title?: string; content: string }
+  ```
+- Migration strategy: wrap existing flat `items` arrays in a single `{ type: 'list', items: [...] }` block on first load (lazy migration in `getPage`)
+
+### Backend
+- [ ] New `Block` type in `packages/types`
+- [ ] `getPage` — if `page.items` is a flat array (legacy), wrap it in a single list block before returning
+- [ ] `PUT /api/families/:fid/pages/:pid/blocks` — replace the full blocks array (optimistic whole-page save)
+- [ ] `PATCH /api/families/:fid/pages/:pid/blocks/:bid` — update a single block's title or content
+- [ ] `POST /api/families/:fid/pages/:pid/blocks/:bid/items` — add item to a list block
+- [ ] `PATCH /api/families/:fid/pages/:pid/blocks/:bid/items/:iid` — toggle/update item in a list block
+- [ ] `DELETE /api/families/:fid/pages/:pid/blocks/:bid/items/:iid` — remove item from a list block
+
+### Frontend
+- [ ] `CanvasPageView` replaces `ListPageView` for `'list'` page type
+- [ ] `BlockRenderer` — renders a block by type (`ListBlock` | `TextBlock`)
+- [ ] `ListBlock` — existing list UI (checkbox rows, assignee, due date) with optional title header
+- [ ] `TextBlock` — contenteditable / textarea with auto-grow, renders Markdown in read mode
+- [ ] "Add block" button (bottom of canvas): opens a small picker — "List" | "Text"
+- [ ] Drag-to-reorder blocks (vertical, `@dnd-kit`)
+- [ ] Block title inline-editable (click to edit)
+- [ ] Delete block button (trash icon on block hover, with confirmation if block has items)
+- [ ] Auto-save on blur (debounced `PUT /blocks`) — no explicit save button
+- [ ] Backward compat: pages with legacy flat items load seamlessly as a single list block
+
+---
+
 ## Backlog / Future ideas
 
 - [ ] Photo/media pages
