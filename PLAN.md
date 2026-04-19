@@ -349,20 +349,18 @@ Group pages under collapsible folders in the sidebar. Users can create folders, 
 
 ## Phase 15 — List Page: Drag-to-Reorder Items
 
-Add drag-and-drop reordering to the list page item rows (grocery/shopping lists).
-
-> **Note:** The plan already lists "drag-to-reorder" as done for list pages, but on inspection this may only be implemented for tasks. This phase audits and fills the gap.
+Status: **complete**
 
 ### Backend
-- [ ] Audit `PagesService` — verify `reorderItems` endpoint exists and handles list-type pages
-- [ ] `PATCH /api/families/:fid/pages/:pid/items/reorder` — accept `{ orderedIds: string[] }`, update `order` on each item
-- [ ] Ensure `getPage` returns items sorted by `order` for list pages
+- [x] `PagesService.reorderItems()` exists and handles list-type pages
+- [x] `PATCH /api/families/:fid/pages/:pid/items/reorder` — accepts `{ itemIds: string[] }`, reorders by array position
+- [x] `getPage` returns items in stored order
 
 ### Frontend
-- [ ] Wrap list item rows in `@dnd-kit` `<SortableContext>` (vertical list strategy)
-- [ ] Drag handle icon on each row (visible on hover / always visible on mobile)
-- [ ] Optimistic reorder in TanStack Query cache on drag end
-- [ ] `useMutation` calls reorder endpoint after drop
+- [x] `ListPageView` uses `@dnd-kit` `SortableContext` with vertical list strategy
+- [x] Drag handle icon on each row (visible on hover)
+- [x] Optimistic reorder in TanStack Query cache on drag end
+- [x] `useMutation` calls reorder endpoint after drop
 
 ---
 
