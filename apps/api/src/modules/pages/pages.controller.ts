@@ -271,6 +271,24 @@ export class PagesController {
     );
   }
 
+  @Patch(':pageId/blocks/:blockId/items/reorder')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async reorderBlockItems(
+    @CurrentUser() user: AuthUser,
+    @Param('id') familyId: string,
+    @Param('pageId') pageId: string,
+    @Param('blockId') blockId: string,
+    @Body() dto: ReorderItemsDto,
+  ) {
+    await this.pagesService.reorderBlockItems(
+      familyId,
+      pageId,
+      blockId,
+      user.id,
+      dto.itemIds,
+    );
+  }
+
   @Post(':pageId/blocks/:blockId/items')
   addBlockItem(
     @CurrentUser() user: AuthUser,

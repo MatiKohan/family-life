@@ -3,8 +3,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CreatePageModal } from '../../components/CreatePageModal/CreatePageModal';
 import { usePages } from '../../hooks/usePages';
+import { useFolders } from '../../hooks/useFolders';
 import { useFamily } from '../../hooks/useFamily';
 import { useAuthStore } from '../../store/auth.store';
+import { useFamilyStore } from '../../store/family.store';
 import { PageSummary, PageType } from '../../types/page';
 
 function greeting(t: (k: string) => string): string {
@@ -61,8 +63,10 @@ export function FamilyHomePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: pages, isLoading } = usePages(id);
+  const { data: folders } = useFolders(id);
   const { data: family } = useFamily(id);
   const user = useAuthStore((s) => s.user);
+  const { collapsedFolderIds, toggleFolder } = useFamilyStore();
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   const firstName = user?.name?.split(' ')[0] ?? '';
@@ -131,20 +135,70 @@ export function FamilyHomePage() {
             </button>
           </div>
 
-          {/* Grid */}
           {isLoading ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
               {[1, 2, 3, 4].map((i) => <SkeletonCard key={i} />)}
             </div>
           ) : pages && pages.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-              {pages.map((page) => (
-                <PageCard
-                  key={page.id}
-                  page={page}
-                  onClick={() => navigate(`/family/${id}/pages/${page.id}`)}
-                />
-              ))}
+            <div className="space-y-5">
+              {/* Folders */}
+              {folders?.map((folder) => {
+                const isCollapsed = collapsedFolderIds.includes(folder.id);
+                return (
+                  <div key={folder.id}>
+                    <button
+                      onClick={() => toggleFolder(folder.id)}
+                      className="flex items-center gap-1.5 mb-2 w-full text-start"
+                    >
+                      <svg
+                        className={`w-3 h-3 text-gray-400 transition-transform shrink-0 ${isCollapsed ? '-rotate-90' : ''}`}
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                      </svg>
+                      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                        {folder.emoji} {folder.name}
+                      </span>
+                    </button>
+                    {!isCollapsed && folder.pages.length > 0 && (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                        {folder.pages.map((page) => (
+                          <PageCard
+                            key={page.id}
+                            page={page}
+                            onClick={() => navigate(`/family/${id}/pages/${page.id}`)}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+
+              {/* Ungrouped pages */}
+              {(() => {
+                const folderPageIds = new Set(folders?.flatMap((f) => f.pages.map((p) => p.id)) ?? []);
+                const ungrouped = pages.filter((p) => !folderPageIds.has(p.id));
+                if (ungrouped.length === 0) return null;
+                return (
+                  <div>
+                    {folders && folders.length > 0 && (
+                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+                        {t('pages.pages')}
+                      </p>
+                    )}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                      {ungrouped.map((page) => (
+                        <PageCard
+                          key={page.id}
+                          page={page}
+                          onClick={() => navigate(`/family/${id}/pages/${page.id}`)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-12 text-center">

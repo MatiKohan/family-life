@@ -263,7 +263,7 @@ function FolderItem({
             />
           ) : (
             <span
-              className="truncate font-medium flex-1 text-left"
+              className="truncate font-medium flex-1 text-start"
               onDoubleClick={(e) => {
                 e.stopPropagation();
                 setIsRenaming(true);

@@ -643,6 +643,32 @@ export class PagesService {
     });
   }
 
+  async reorderBlockItems(
+    familyId: string,
+    pageId: string,
+    blockId: string,
+    userId: string,
+    itemIds: string[],
+  ): Promise<void> {
+    await this.requireMember(familyId, userId);
+    const page = await this.prisma.page.findFirst({
+      where: { id: pageId, familyId, deletedAt: null },
+    });
+    if (!page) throw new NotFoundException('Page not found');
+    const blocks = this.normalizeBlocks(page.items as unknown[]);
+    const updated = blocks.map((b) => {
+      if (b.id !== blockId || b.type !== 'list') return b;
+      const sorted = itemIds
+        .map((id) => b.items.find((i) => i.id === id))
+        .filter((i): i is ListItemData => i !== undefined);
+      return { ...b, items: sorted };
+    });
+    await this.prisma.page.update({
+      where: { id: pageId },
+      data: { items: updated as unknown as Prisma.InputJsonValue },
+    });
+  }
+
   async deleteBlockItem(
     familyId: string,
     pageId: string,

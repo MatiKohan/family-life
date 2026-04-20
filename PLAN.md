@@ -344,6 +344,8 @@ Group pages under collapsible folders in the sidebar. Users can create folders, 
 - [x] Folder collapse state persisted in Zustand `family.store` (not DB — client-only)
 - [x] "Create page modal" gains an optional folder selector
 - [x] Rename / Delete on folder: hover trash button for delete, double-click for rename
+- [x] Fix: folder name RTL alignment (`text-start` instead of hardcoded `text-left`)
+- [x] Mobile: folders shown in `FamilyHomePage` as collapsible sections (shared collapse state with desktop sidebar)
 
 ---
 
@@ -390,6 +392,7 @@ Each list page becomes a stack of **blocks**. A block has a `type` (`list` | `te
 - [x] `POST /api/families/:fid/pages/:pid/blocks/:bid/items` — add item to a list block
 - [x] `PATCH /api/families/:fid/pages/:pid/blocks/:bid/items/:iid` — toggle/update item in a list block
 - [x] `DELETE /api/families/:fid/pages/:pid/blocks/:bid/items/:iid` — remove item from a list block
+- [x] `PATCH /api/families/:fid/pages/:pid/blocks/:bid/items/reorder` — reorder items within a list block
 
 ### Frontend
 - [x] `CanvasPageView` replaces `ListPageView` for `'list'` page type
