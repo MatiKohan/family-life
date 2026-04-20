@@ -239,7 +239,9 @@ describe('CalendarService', () => {
 
       // Should include at least the first instance (2026-05-01) and the next (2026-05-08)
       expect(result.length).toBeGreaterThan(1);
-      const startDates = result.map((ev) => (ev as { startAt: string }).startAt);
+      const startDates = result.map(
+        (ev) => (ev as { startAt: string }).startAt,
+      );
       expect(startDates.some((d) => d.startsWith('2026-05-01'))).toBe(true);
       expect(startDates.some((d) => d.startsWith('2026-05-08'))).toBe(true);
     });
@@ -261,7 +263,9 @@ describe('CalendarService', () => {
         '2026-05-31',
       );
 
-      const startDates = result.map((ev) => (ev as { startAt: string }).startAt);
+      const startDates = result.map(
+        (ev) => (ev as { startAt: string }).startAt,
+      );
       expect(startDates.some((d) => d.startsWith('2026-05-08'))).toBe(false);
     });
   });
@@ -284,16 +288,11 @@ describe('CalendarService', () => {
       prismaMock.calendarEvent.update.mockResolvedValue(recurringEvent);
       prismaMock.calendarEvent.create.mockResolvedValue(overrideEvent);
 
-      const result = await service.updateEvent(
-        FAMILY_ID,
-        EVENT_ID,
-        USER_ID,
-        {
-          title: 'Override Title',
-          instanceDate: '2026-05-08',
-          editMode: 'this',
-        },
-      );
+      const result = await service.updateEvent(FAMILY_ID, EVENT_ID, USER_ID, {
+        title: 'Override Title',
+        instanceDate: '2026-05-08',
+        editMode: 'this',
+      });
 
       // Should add instanceDate to exceptions on base event
       expect(prismaMock.calendarEvent.update).toHaveBeenCalledWith(
@@ -324,15 +323,10 @@ describe('CalendarService', () => {
       const updated = { ...mockEvent, title: 'All Updated' };
       prismaMock.calendarEvent.update.mockResolvedValue(updated);
 
-      const result = await service.updateEvent(
-        FAMILY_ID,
-        EVENT_ID,
-        USER_ID,
-        {
-          title: 'All Updated',
-          editMode: 'all',
-        },
-      );
+      const result = await service.updateEvent(FAMILY_ID, EVENT_ID, USER_ID, {
+        title: 'All Updated',
+        editMode: 'all',
+      });
 
       expect(prismaMock.calendarEvent.update).toHaveBeenCalledWith(
         expect.objectContaining({

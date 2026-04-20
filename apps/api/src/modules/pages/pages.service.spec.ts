@@ -666,12 +666,10 @@ describe('PagesService', () => {
       const updatedPage = { ...page, items: [item2, item1] };
       mockPrisma.page.update.mockResolvedValue(updatedPage);
 
-      const result = await service.reorderItems(
-        FAMILY_ID,
-        PAGE_ID,
-        USER_ID,
-        ['item-2', 'item-1'],
-      );
+      const result = await service.reorderItems(FAMILY_ID, PAGE_ID, USER_ID, [
+        'item-2',
+        'item-1',
+      ]);
 
       expect(mockPrisma.page.update).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -682,7 +680,8 @@ describe('PagesService', () => {
         }),
       );
       // Verify order: item2 comes before item1
-      const updatedItems = mockPrisma.page.update.mock.calls[0][0].data.items as typeof item1[];
+      const updatedItems = mockPrisma.page.update.mock.calls[0][0].data
+        .items as (typeof item1)[];
       expect(updatedItems[0].id).toBe('item-2');
       expect(updatedItems[1].id).toBe('item-1');
       expect(result).toEqual(updatedPage);
@@ -727,7 +726,8 @@ describe('PagesService', () => {
           where: { id: PAGE_ID },
         }),
       );
-      const updatedTaskItems = mockPrisma.page.update.mock.calls[0][0].data.taskItems as typeof task1[];
+      const updatedTaskItems = mockPrisma.page.update.mock.calls[0][0].data
+        .taskItems as (typeof task1)[];
       expect(updatedTaskItems[0].id).toBe('task-2');
       expect(updatedTaskItems[1].id).toBe('task-1');
       expect(result).toEqual(updatedPage);

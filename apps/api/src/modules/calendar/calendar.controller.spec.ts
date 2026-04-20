@@ -42,9 +42,7 @@ describe('CalendarController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [CalendarController],
-      providers: [
-        { provide: CalendarService, useValue: mockCalendarService },
-      ],
+      providers: [{ provide: CalendarService, useValue: mockCalendarService }],
     })
       .overrideGuard(JwtAuthGuard)
       .useValue({ canActivate: () => true })
@@ -149,12 +147,7 @@ describe('CalendarController', () => {
     it('passes the instance query param to calendarService.deleteEvent', async () => {
       mockCalendarService.deleteEvent.mockResolvedValue(undefined);
 
-      await controller.deleteEvent(
-        mockUser,
-        FAMILY_ID,
-        EVENT_ID,
-        '2026-05-08',
-      );
+      await controller.deleteEvent(mockUser, FAMILY_ID, EVENT_ID, '2026-05-08');
 
       expect(mockCalendarService.deleteEvent).toHaveBeenCalledWith(
         FAMILY_ID,
