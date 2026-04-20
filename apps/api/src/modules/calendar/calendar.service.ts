@@ -282,7 +282,8 @@ export class CalendarService {
     if (!event) throw new NotFoundException('Event not found');
 
     const resetReminder =
-      fields.startAt !== undefined || fields.reminderMinutesBefore !== undefined;
+      fields.startAt !== undefined ||
+      fields.reminderMinutesBefore !== undefined;
 
     return this.prisma.calendarEvent.update({
       where: { id: eventId },
