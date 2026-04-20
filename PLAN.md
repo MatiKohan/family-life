@@ -202,12 +202,18 @@ Implemented as Phase 13 — see below.
 - [x] Poll every 60s for new entries
 
 ### Recurring Calendar Events
-Allow events to repeat on a schedule.
-- [ ] Add `recurrence` field to `CalendarEvent` (JSONB: `{ freq: 'weekly' | 'monthly' | 'yearly', until?: date }`)
-- [ ] On create/update, store recurrence rule (no instance expansion in DB — expand at query time)
-- [ ] `CalendarService.listEvents` expands recurring instances within the requested date range
-- [ ] UI: recurrence picker in the event form (None / Daily / Weekly / Monthly / Yearly + optional end date)
-- [ ] Editing a recurring event: "this event only" vs "all future events"
+
+Status: **complete**
+
+- [x] Add `recurrence Json?` to `CalendarEvent` Prisma schema (migration: `add_event_recurrence`)
+- [x] `RecurrenceRule` type in `packages/types` (`freq`, `until?`, `exceptions?[]`)
+- [x] `CalendarService.listEvents` expands recurring instances within the queried date range at query time (no extra DB rows)
+- [x] `createEvent` accepts optional `recurrence` field
+- [x] `updateEvent` supports `editMode: 'this' | 'all' | 'future'` + `instanceDate` — editing a single instance adds it to `exceptions` and creates a standalone override; "future" cuts the series and creates a new one
+- [x] `deleteEvent` accepts optional `?instance=YYYY-MM-DD` — deletes single instance by adding to `exceptions`
+- [x] UI: recurrence picker in `CreateEventModal` (None / Daily / Weekly / Monthly / Yearly + optional end date)
+- [x] `EventDetailModal`: recurrence badge (🔁) in read view; edit/delete show a choice dialog — "This event only" vs "All events in series"
+- [x] Edit form pre-populates recurrence picker from existing event data; sends updated recurrence in PATCH body
 
 ### Shared Notes Page
 Decided against a separate notes page type. Notes are supported via **text blocks** inside the existing "Lists & Notes" canvas page (Phase 16). Changes made:

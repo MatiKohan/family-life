@@ -191,7 +191,21 @@
     "reminder_60": "שעה לפני",
     "reminder_120": "שעתיים לפני",
     "reminder_1440": "יום לפני",
-    "reminder_2880": "יומיים לפני"
+    "reminder_2880": "יומיים לפני",
+    "recurrence": "חזרה",
+    "recurrenceNone": "לא חוזר",
+    "recurrenceDaily": "יומי",
+    "recurrenceWeekly": "שבועי",
+    "recurrenceMonthly": "חודשי",
+    "recurrenceYearly": "שנתי",
+    "recurrenceUntil": "עד",
+    "recurrenceLabel": "חוזר {{freq}}",
+    "editRecurring": "עריכת אירוע חוזר",
+    "editThisOnly": "אירוע זה בלבד",
+    "editAllEvents": "כל האירועים בסדרה",
+    "deleteRecurring": "מחיקת אירוע חוזר",
+    "deleteThisOnly": "אירוע זה בלבד",
+    "deleteAllEvents": "כל האירועים בסדרה"
   },
   "apartments": {
     "searchParams": "פרמטרי חיפוש",

@@ -191,7 +191,21 @@
     "reminder_60": "1 hour before",
     "reminder_120": "2 hours before",
     "reminder_1440": "1 day before",
-    "reminder_2880": "2 days before"
+    "reminder_2880": "2 days before",
+    "recurrence": "Repeat",
+    "recurrenceNone": "Does not repeat",
+    "recurrenceDaily": "Daily",
+    "recurrenceWeekly": "Weekly",
+    "recurrenceMonthly": "Monthly",
+    "recurrenceYearly": "Yearly",
+    "recurrenceUntil": "Until",
+    "recurrenceLabel": "Repeats {{freq}}",
+    "editRecurring": "Edit recurring event",
+    "editThisOnly": "This event only",
+    "editAllEvents": "All events in series",
+    "deleteRecurring": "Delete recurring event",
+    "deleteThisOnly": "This event only",
+    "deleteAllEvents": "All events in series"
   },
   "apartments": {
     "searchParams": "Search Filters",

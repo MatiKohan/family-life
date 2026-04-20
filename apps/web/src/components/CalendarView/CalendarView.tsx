@@ -123,6 +123,8 @@ function CreateEventModal({ familyId, initialDate, onClose, onCreated }: CreateE
   const [endAt, setEndAt] = useState(defaultEnd);
   const [isAllDay, setIsAllDay] = useState(false);
   const [reminderMinutesBefore, setReminderMinutesBefore] = useState<number | null>(null);
+  const [recurrenceFreq, setRecurrenceFreq] = useState<string>('none');
+  const [recurrenceUntil, setRecurrenceUntil] = useState('');
 
   const createMutation = useMutation({
     mutationFn: (req: CreateEventRequest) =>
@@ -142,6 +144,10 @@ function CreateEventModal({ familyId, initialDate, onClose, onCreated }: CreateE
     const trimmed = title.trim();
     if (!trimmed) return;
 
+    const recurrence = recurrenceFreq !== 'none'
+      ? { freq: recurrenceFreq as 'daily' | 'weekly' | 'monthly' | 'yearly', ...(recurrenceUntil ? { until: recurrenceUntil } : {}) }
+      : undefined;
+
     const req: CreateEventRequest = {
       title: trimmed,
       description: description.trim() || undefined,
@@ -153,6 +159,7 @@ function CreateEventModal({ familyId, initialDate, onClose, onCreated }: CreateE
         : new Date(endAt).toISOString(),
       isAllDay,
       reminderMinutesBefore: reminderMinutesBefore ?? undefined,
+      recurrence,
     };
 
     createMutation.mutate(req);
@@ -271,6 +278,36 @@ function CreateEventModal({ familyId, initialDate, onClose, onCreated }: CreateE
             </select>
           </div>
 
+          {/* Recurrence */}
+          <div>
+            <label htmlFor="createRecurrenceFreq" className="block text-sm font-medium text-gray-700 mb-1">
+              {t('calendar.recurrence')}
+            </label>
+            <select
+              id="createRecurrenceFreq"
+              value={recurrenceFreq}
+              onChange={(e) => setRecurrenceFreq(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            >
+              <option value="none">{t('calendar.recurrenceNone')}</option>
+              <option value="daily">{t('calendar.recurrenceDaily')}</option>
+              <option value="weekly">{t('calendar.recurrenceWeekly')}</option>
+              <option value="monthly">{t('calendar.recurrenceMonthly')}</option>
+              <option value="yearly">{t('calendar.recurrenceYearly')}</option>
+            </select>
+            {recurrenceFreq !== 'none' && (
+              <div className="mt-2">
+                <label className="block text-xs text-gray-500 mb-1">{t('calendar.recurrenceUntil')}</label>
+                <input
+                  type="date"
+                  value={recurrenceUntil}
+                  onChange={(e) => setRecurrenceUntil(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                />
+              </div>
+            )}
+          </div>
+
           {/* Actions */}
           <div className="flex justify-end gap-3 pt-2">
             <button
@@ -315,31 +352,19 @@ function EventDetailModal({ event, familyId, onClose }: EventDetailModalProps) {
   const [endAt, setEndAt] = useState(toLocalDateTimeString(new Date(event.endAt)));
   const [isAllDay, setIsAllDay] = useState(event.isAllDay);
   const [reminderMinutesBefore, setReminderMinutesBefore] = useState<number | null>(event.reminderMinutesBefore);
+  const [recurrenceFreq, setRecurrenceFreq] = useState<string>(event.recurrence?.freq ?? 'none');
+  const [recurrenceUntil, setRecurrenceUntil] = useState(event.recurrence?.until ?? '');
+  const [showDeleteChoice, setShowDeleteChoice] = useState(false);
+  const [showEditChoice, setShowEditChoice] = useState(false);
 
-  const updateMutation = useMutation({
-    mutationFn: (patch: Partial<CreateEventRequest>) =>
-      apiRequest<CalendarEvent>(`/families/${familyId}/calendar/${event.id}`, {
-        method: 'PATCH',
-        body: JSON.stringify(patch),
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['calendar', familyId] });
-      onClose();
-    },
-  });
+  const isRecurringInstance = !!(event.recurrenceBaseId || event.recurrence);
 
-  const deleteMutation = useMutation({
-    mutationFn: () =>
-      apiRequest(`/families/${familyId}/calendar/${event.id}`, { method: 'DELETE' }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['calendar', familyId] });
-      onClose();
-    },
-  });
-
-  function handleSave(e: React.FormEvent) {
-    e.preventDefault();
-    updateMutation.mutate({
+  async function submitEditWithMode(editMode: 'this' | 'all') {
+    const baseId = event.recurrenceBaseId ?? event.id;
+    const recurrence = recurrenceFreq !== 'none'
+      ? { freq: recurrenceFreq as 'daily' | 'weekly' | 'monthly' | 'yearly', ...(recurrenceUntil ? { until: recurrenceUntil } : {}) }
+      : null;
+    const body: Record<string, unknown> = {
       title: title.trim(),
       description: description.trim() || undefined,
       startAt: isAllDay
@@ -350,12 +375,52 @@ function EventDetailModal({ event, familyId, onClose }: EventDetailModalProps) {
         : new Date(endAt).toISOString(),
       isAllDay,
       reminderMinutesBefore,
+      recurrence,
+    };
+    if (isRecurringInstance && editMode === 'this' && event.instanceDate) {
+      body.instanceDate = event.instanceDate;
+      body.editMode = 'this';
+    }
+    await apiRequest<CalendarEvent>(`/families/${familyId}/calendar/${baseId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
     });
+    queryClient.invalidateQueries({ queryKey: ['calendar', familyId] });
+    setEditing(false);
+    onClose();
   }
 
-  function handleDelete() {
-    if (!window.confirm(t('calendar.confirmDelete'))) return;
-    deleteMutation.mutate();
+  function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    if (isRecurringInstance) {
+      setShowEditChoice(true);
+      return;
+    }
+    void submitEditWithMode('all');
+  }
+
+  async function handleEditModeChoice(mode: 'this' | 'all') {
+    setShowEditChoice(false);
+    await submitEditWithMode(mode);
+  }
+
+  function handleDeleteClick() {
+    if (isRecurringInstance) {
+      setShowDeleteChoice(true);
+    } else {
+      void confirmDelete(false);
+    }
+  }
+
+  async function confirmDelete(instanceOnly: boolean) {
+    setShowDeleteChoice(false);
+    const baseId = event.recurrenceBaseId ?? event.id;
+    const url = instanceOnly && event.instanceDate
+      ? `/families/${familyId}/calendar/${baseId}?instance=${event.instanceDate}`
+      : `/families/${familyId}/calendar/${baseId}`;
+    await apiRequest(url, { method: 'DELETE' });
+    queryClient.invalidateQueries({ queryKey: ['calendar', familyId] });
+    onClose();
   }
 
   const startFormatted = event.isAllDay
@@ -410,13 +475,19 @@ function EventDetailModal({ event, familyId, onClose }: EventDetailModalProps) {
                   })}
                 </p>
               )}
+              {event.recurrence && (
+                <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                  <span>🔁</span>
+                  <span>{t(`calendar.recurrence${event.recurrence.freq.charAt(0).toUpperCase() + event.recurrence.freq.slice(1)}`)}</span>
+                  {event.recurrence.until && <span>· {t('calendar.recurrenceUntil')} {event.recurrence.until}</span>}
+                </div>
+              )}
             </div>
 
             <div className="flex items-center justify-between">
               <button
-                onClick={handleDelete}
-                disabled={deleteMutation.isPending}
-                className="text-sm text-red-500 hover:text-red-700 transition-colors disabled:opacity-50"
+                onClick={handleDeleteClick}
+                className="text-sm text-red-500 hover:text-red-700 transition-colors"
               >
                 {t('calendar.deleteEvent')}
               </button>
@@ -516,6 +587,34 @@ function EventDetailModal({ event, familyId, onClose }: EventDetailModalProps) {
                   ))}
                 </select>
               </div>
+              <div>
+                <label htmlFor="editRecurrenceFreq" className="block text-sm font-medium text-gray-700 mb-1">
+                  {t('calendar.recurrence')}
+                </label>
+                <select
+                  id="editRecurrenceFreq"
+                  value={recurrenceFreq}
+                  onChange={(e) => setRecurrenceFreq(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                >
+                  <option value="none">{t('calendar.recurrenceNone')}</option>
+                  <option value="daily">{t('calendar.recurrenceDaily')}</option>
+                  <option value="weekly">{t('calendar.recurrenceWeekly')}</option>
+                  <option value="monthly">{t('calendar.recurrenceMonthly')}</option>
+                  <option value="yearly">{t('calendar.recurrenceYearly')}</option>
+                </select>
+                {recurrenceFreq !== 'none' && (
+                  <div className="mt-2">
+                    <label className="block text-xs text-gray-500 mb-1">{t('calendar.recurrenceUntil')}</label>
+                    <input
+                      type="date"
+                      value={recurrenceUntil}
+                      onChange={(e) => setRecurrenceUntil(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    />
+                  </div>
+                )}
+              </div>
               <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="button"
@@ -526,16 +625,73 @@ function EventDetailModal({ event, familyId, onClose }: EventDetailModalProps) {
                 </button>
                 <button
                   type="submit"
-                  disabled={updateMutation.isPending}
                   className="px-4 py-2 text-sm font-medium bg-brand-600 text-white rounded-lg hover:bg-brand-700 disabled:opacity-50 transition-colors"
                 >
-                  {updateMutation.isPending ? t('common.loading') : t('calendar.save')}
+                  {t('calendar.save')}
                 </button>
               </div>
             </form>
           </>
         )}
       </div>
+
+      {/* Delete recurring choice dialog */}
+      {showDeleteChoice && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
+            <h3 className="text-base font-semibold text-gray-900 mb-4">{t('calendar.deleteRecurring')}</h3>
+            <div className="space-y-2">
+              <button
+                onClick={() => void confirmDelete(true)}
+                className="w-full px-4 py-2.5 text-sm font-medium text-left text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                {t('calendar.deleteThisOnly')}
+              </button>
+              <button
+                onClick={() => void confirmDelete(false)}
+                className="w-full px-4 py-2.5 text-sm font-medium text-left text-red-600 border border-red-100 rounded-lg hover:bg-red-50 transition-colors"
+              >
+                {t('calendar.deleteAllEvents')}
+              </button>
+            </div>
+            <button
+              onClick={() => setShowDeleteChoice(false)}
+              className="mt-3 w-full px-4 py-2 text-sm text-gray-500 hover:text-gray-700"
+            >
+              {t('common.cancel')}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Edit recurring choice dialog */}
+      {showEditChoice && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
+            <h3 className="text-base font-semibold text-gray-900 mb-4">{t('calendar.editRecurring')}</h3>
+            <div className="space-y-2">
+              <button
+                onClick={() => void handleEditModeChoice('this')}
+                className="w-full px-4 py-2.5 text-sm font-medium text-left text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                {t('calendar.editThisOnly')}
+              </button>
+              <button
+                onClick={() => void handleEditModeChoice('all')}
+                className="w-full px-4 py-2.5 text-sm font-medium text-left text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                {t('calendar.editAllEvents')}
+              </button>
+            </div>
+            <button
+              onClick={() => setShowEditChoice(false)}
+              className="mt-3 w-full px-4 py-2 text-sm text-gray-500 hover:text-gray-700"
+            >
+              {t('common.cancel')}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

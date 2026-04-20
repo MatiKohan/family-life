@@ -7,7 +7,11 @@ import {
   Min,
   MinLength,
   MaxLength,
+  ValidateNested,
+  IsIn,
 } from 'class-validator';
+import { Type } from 'class-transformer';
+import { RecurrenceDto } from './recurrence.dto';
 
 export class UpdateEventDto {
   @IsOptional()
@@ -37,4 +41,17 @@ export class UpdateEventDto {
   @IsInt()
   @Min(0)
   reminderMinutesBefore?: number | null;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => RecurrenceDto)
+  recurrence?: RecurrenceDto | null;
+
+  @IsOptional()
+  @IsDateString()
+  instanceDate?: string;
+
+  @IsOptional()
+  @IsIn(['this', 'all', 'future'])
+  editMode?: 'this' | 'all' | 'future';
 }

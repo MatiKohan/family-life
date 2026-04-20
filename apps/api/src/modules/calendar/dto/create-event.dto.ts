@@ -7,7 +7,10 @@ import {
   Min,
   MinLength,
   MaxLength,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
+import { RecurrenceDto } from './recurrence.dto';
 
 export class CreateEventDto {
   @IsString()
@@ -34,4 +37,9 @@ export class CreateEventDto {
   @IsInt()
   @Min(1)
   reminderMinutesBefore?: number;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => RecurrenceDto)
+  recurrence?: RecurrenceDto;
 }

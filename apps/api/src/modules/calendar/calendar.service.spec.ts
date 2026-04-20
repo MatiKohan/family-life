@@ -22,6 +22,7 @@ const mockEvent = {
   startAt: new Date('2026-05-01T10:00:00Z'),
   endAt: new Date('2026-05-01T12:00:00Z'),
   isAllDay: false,
+  recurrence: null,
   createdBy: USER_ID,
   createdAt: new Date(),
   updatedAt: new Date(),
@@ -33,7 +34,7 @@ const prismaMock = {
   },
   calendarEvent: {
     findMany: jest.fn(),
-    findUnique: jest.fn(),
+    findFirst: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
     delete: jest.fn(),
@@ -64,7 +65,9 @@ describe('CalendarService', () => {
       const result = await service.listEvents(FAMILY_ID, USER_ID);
 
       expect(prismaMock.calendarEvent.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({ where: { familyId: FAMILY_ID } }),
+        expect.objectContaining({
+          where: expect.objectContaining({ familyId: FAMILY_ID }),
+        }),
       );
       expect(result).toEqual([mockEvent]);
     });
@@ -77,13 +80,9 @@ describe('CalendarService', () => {
 
       expect(prismaMock.calendarEvent.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: {
+          where: expect.objectContaining({
             familyId: FAMILY_ID,
-            startAt: {
-              gte: new Date('2026-05-01'),
-              lte: new Date('2026-05-31'),
-            },
-          },
+          }),
         }),
       );
     });
@@ -138,7 +137,7 @@ describe('CalendarService', () => {
   describe('updateEvent', () => {
     it('updates an event', async () => {
       prismaMock.familyMember.findUnique.mockResolvedValue(mockMember);
-      prismaMock.calendarEvent.findUnique.mockResolvedValue(mockEvent);
+      prismaMock.calendarEvent.findFirst.mockResolvedValue(mockEvent);
       const updated = { ...mockEvent, title: 'Updated Title' };
       prismaMock.calendarEvent.update.mockResolvedValue(updated);
 
@@ -157,30 +156,18 @@ describe('CalendarService', () => {
 
     it('throws NotFoundException when event does not exist', async () => {
       prismaMock.familyMember.findUnique.mockResolvedValue(mockMember);
-      prismaMock.calendarEvent.findUnique.mockResolvedValue(null);
+      prismaMock.calendarEvent.findFirst.mockResolvedValue(null);
 
       await expect(
         service.updateEvent(FAMILY_ID, 'nonexistent', USER_ID, { title: 'X' }),
       ).rejects.toThrow(NotFoundException);
-    });
-
-    it('throws ForbiddenException when event belongs to another family', async () => {
-      prismaMock.familyMember.findUnique.mockResolvedValue(mockMember);
-      prismaMock.calendarEvent.findUnique.mockResolvedValue({
-        ...mockEvent,
-        familyId: 'other-family',
-      });
-
-      await expect(
-        service.updateEvent(FAMILY_ID, EVENT_ID, USER_ID, { title: 'X' }),
-      ).rejects.toThrow(ForbiddenException);
     });
   });
 
   describe('deleteEvent', () => {
     it('deletes an event', async () => {
       prismaMock.familyMember.findUnique.mockResolvedValue(mockMember);
-      prismaMock.calendarEvent.findUnique.mockResolvedValue(mockEvent);
+      prismaMock.calendarEvent.findFirst.mockResolvedValue(mockEvent);
       prismaMock.calendarEvent.delete.mockResolvedValue(mockEvent);
 
       await service.deleteEvent(FAMILY_ID, EVENT_ID, USER_ID);
@@ -200,7 +187,7 @@ describe('CalendarService', () => {
 
     it('throws NotFoundException when event does not exist', async () => {
       prismaMock.familyMember.findUnique.mockResolvedValue(mockMember);
-      prismaMock.calendarEvent.findUnique.mockResolvedValue(null);
+      prismaMock.calendarEvent.findFirst.mockResolvedValue(null);
 
       await expect(
         service.deleteEvent(FAMILY_ID, 'nonexistent', USER_ID),

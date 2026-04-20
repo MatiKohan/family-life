@@ -10,6 +10,12 @@ export interface CalendarEvent {
   createdBy: string;
   createdAt: string;
   updatedAt: string;
+  recurrence?: {
+    freq: 'daily' | 'weekly' | 'monthly' | 'yearly';
+    until?: string;
+  } | null;
+  recurrenceBaseId?: string;
+  instanceDate?: string;
 }
 
 export interface CreateEventRequest {
@@ -19,4 +25,8 @@ export interface CreateEventRequest {
   endAt: string;
   isAllDay?: boolean;
   reminderMinutesBefore?: number | null;
+  recurrence?: {
+    freq: 'daily' | 'weekly' | 'monthly' | 'yearly';
+    until?: string;
+  } | null;
 }

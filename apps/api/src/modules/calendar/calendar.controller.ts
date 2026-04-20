@@ -61,7 +61,8 @@ export class CalendarController {
     @CurrentUser() user: AuthUser,
     @Param('id') familyId: string,
     @Param('eventId') eventId: string,
+    @Query('instance') instance?: string,
   ) {
-    await this.calendarService.deleteEvent(familyId, eventId, user.id);
+    await this.calendarService.deleteEvent(familyId, eventId, user.id, instance);
   }
 }
