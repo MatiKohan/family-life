@@ -210,12 +210,10 @@ Allow events to repeat on a schedule.
 - [ ] Editing a recurring event: "this event only" vs "all future events"
 
 ### Shared Notes Page
-A freeform text/markdown page for anything that doesn't fit a structured type.
-- [ ] Add `'notes'` to `PageType` in `packages/types`
-- [ ] `content` field stored as plain text (Markdown) in the page JSONB `items` column (single-entry array)
-- [ ] `NotesPageView` component — rendered Markdown (read mode) + textarea (edit mode)
-- [ ] Auto-save on blur / debounced after typing stops
-- [ ] "Notes" option in `CreatePageModal`
+Decided against a separate notes page type. Notes are supported via **text blocks** inside the existing "Lists & Notes" canvas page (Phase 16). Changes made:
+- [x] Renamed "List" page type display → "Lists & Notes" (i18n: en + he)
+- [x] Renamed "+ Text" block button → "+ Notes" in the canvas (i18n: en + he)
+- [x] No new page type needed — text blocks already provide freeform note-taking per block
 
 ---
 
