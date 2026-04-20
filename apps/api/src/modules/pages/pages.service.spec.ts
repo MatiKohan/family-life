@@ -639,4 +639,355 @@ describe('PagesService', () => {
       });
     });
   });
+
+  // --- reorderItems ---
+
+  describe('reorderItems', () => {
+    it('reorders items by the given itemIds array', async () => {
+      mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
+      const item1 = {
+        id: 'item-1',
+        text: 'First',
+        checked: false,
+        assigneeId: null,
+        dueDate: null,
+        createdAt: '',
+      };
+      const item2 = {
+        id: 'item-2',
+        text: 'Second',
+        checked: false,
+        assigneeId: null,
+        dueDate: null,
+        createdAt: '',
+      };
+      const page = makeListPage({ items: [item1, item2] });
+      mockPrisma.page.findFirst.mockResolvedValue(page);
+      const updatedPage = { ...page, items: [item2, item1] };
+      mockPrisma.page.update.mockResolvedValue(updatedPage);
+
+      const result = await service.reorderItems(
+        FAMILY_ID,
+        PAGE_ID,
+        USER_ID,
+        ['item-2', 'item-1'],
+      );
+
+      expect(mockPrisma.page.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: PAGE_ID },
+          data: expect.objectContaining({
+            items: expect.arrayContaining([item2, item1]),
+          }),
+        }),
+      );
+      // Verify order: item2 comes before item1
+      const updatedItems = mockPrisma.page.update.mock.calls[0][0].data.items as typeof item1[];
+      expect(updatedItems[0].id).toBe('item-2');
+      expect(updatedItems[1].id).toBe('item-1');
+      expect(result).toEqual(updatedPage);
+    });
+  });
+
+  // --- reorderTaskItems ---
+
+  describe('reorderTaskItems', () => {
+    it('reorders task items by the given taskItemIds array', async () => {
+      mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
+      const task1 = {
+        id: 'task-1',
+        text: 'First task',
+        assigneeId: null,
+        status: 'todo',
+        dueDate: null,
+        createdAt: '',
+      };
+      const task2 = {
+        id: 'task-2',
+        text: 'Second task',
+        assigneeId: null,
+        status: 'todo',
+        dueDate: null,
+        createdAt: '',
+      };
+      const page = makeListPage({ type: 'tasks', taskItems: [task1, task2] });
+      mockPrisma.page.findFirst.mockResolvedValue(page);
+      const updatedPage = { ...page, taskItems: [task2, task1] };
+      mockPrisma.page.update.mockResolvedValue(updatedPage);
+
+      const result = await service.reorderTaskItems(
+        FAMILY_ID,
+        PAGE_ID,
+        USER_ID,
+        ['task-2', 'task-1'],
+      );
+
+      expect(mockPrisma.page.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: PAGE_ID },
+        }),
+      );
+      const updatedTaskItems = mockPrisma.page.update.mock.calls[0][0].data.taskItems as typeof task1[];
+      expect(updatedTaskItems[0].id).toBe('task-2');
+      expect(updatedTaskItems[1].id).toBe('task-1');
+      expect(result).toEqual(updatedPage);
+    });
+  });
+
+  // --- putBlocks ---
+
+  describe('putBlocks', () => {
+    it('saves the blocks array to page items', async () => {
+      mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
+      const page = makeListPage();
+      mockPrisma.page.findFirst.mockResolvedValue(page);
+      mockPrisma.page.update.mockResolvedValue(page);
+
+      const blocks = [
+        { id: 'block-1', type: 'list' as const, items: [] },
+        { id: 'block-2', type: 'text' as const, content: 'Some text' },
+      ];
+
+      await service.putBlocks(FAMILY_ID, PAGE_ID, USER_ID, blocks);
+
+      expect(mockPrisma.page.update).toHaveBeenCalledWith({
+        where: { id: PAGE_ID },
+        data: { items: blocks },
+      });
+    });
+
+    it('throws NotFoundException when page does not exist', async () => {
+      mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
+      mockPrisma.page.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.putBlocks(FAMILY_ID, PAGE_ID, USER_ID, []),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  // --- updateBlock ---
+
+  describe('updateBlock', () => {
+    it("updates a block's title and content by blockId", async () => {
+      mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
+      const blocks = [
+        { id: 'block-1', type: 'list' as const, items: [], title: 'Old Title' },
+      ];
+      const page = makeListPage({ items: blocks });
+      mockPrisma.page.findFirst.mockResolvedValue(page);
+      mockPrisma.page.update.mockResolvedValue(page);
+
+      await service.updateBlock(FAMILY_ID, PAGE_ID, 'block-1', USER_ID, {
+        title: 'New Title',
+      });
+
+      expect(mockPrisma.page.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: PAGE_ID },
+          data: expect.objectContaining({
+            items: expect.arrayContaining([
+              expect.objectContaining({ id: 'block-1', title: 'New Title' }),
+            ]),
+          }),
+        }),
+      );
+    });
+
+    it('throws NotFoundException when page does not exist', async () => {
+      mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
+      mockPrisma.page.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.updateBlock(FAMILY_ID, PAGE_ID, 'block-1', USER_ID, {
+          title: 'X',
+        }),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  // --- addBlockItem ---
+
+  describe('addBlockItem', () => {
+    it('adds a new item to a list block', async () => {
+      mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
+      const blocks = [{ id: 'block-1', type: 'list' as const, items: [] }];
+      const page = makeListPage({ items: blocks });
+      mockPrisma.page.findFirst.mockResolvedValue(page);
+      mockPrisma.page.update.mockResolvedValue(page);
+
+      const result = await service.addBlockItem(
+        FAMILY_ID,
+        PAGE_ID,
+        'block-1',
+        USER_ID,
+        'New block item',
+      );
+
+      expect(mockPrisma.page.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: PAGE_ID },
+          data: expect.objectContaining({
+            items: expect.arrayContaining([
+              expect.objectContaining({
+                id: 'block-1',
+                items: expect.arrayContaining([
+                  expect.objectContaining({
+                    text: 'New block item',
+                    checked: false,
+                  }),
+                ]),
+              }),
+            ]),
+          }),
+        }),
+      );
+      expect(result).toMatchObject({ text: 'New block item', checked: false });
+    });
+
+    it('throws NotFoundException when page does not exist', async () => {
+      mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
+      mockPrisma.page.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.addBlockItem(FAMILY_ID, PAGE_ID, 'block-1', USER_ID, 'Text'),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  // --- updateBlockItem ---
+
+  describe('updateBlockItem', () => {
+    it('toggles the checked state of an item inside a block', async () => {
+      mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
+      const blockItem = {
+        id: ITEM_ID,
+        text: 'Block task',
+        checked: false,
+        assigneeId: null,
+        dueDate: null,
+        createdAt: '',
+      };
+      const blocks = [
+        { id: 'block-1', type: 'list' as const, items: [blockItem] },
+      ];
+      const page = makeListPage({ items: blocks });
+      mockPrisma.page.findFirst.mockResolvedValue(page);
+      mockPrisma.page.update.mockResolvedValue(page);
+
+      await service.updateBlockItem(
+        FAMILY_ID,
+        PAGE_ID,
+        'block-1',
+        ITEM_ID,
+        USER_ID,
+        { checked: true },
+      );
+
+      expect(mockPrisma.page.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: PAGE_ID },
+          data: expect.objectContaining({
+            items: expect.arrayContaining([
+              expect.objectContaining({
+                id: 'block-1',
+                items: expect.arrayContaining([
+                  expect.objectContaining({ id: ITEM_ID, checked: true }),
+                ]),
+              }),
+            ]),
+          }),
+        }),
+      );
+    });
+
+    it('throws NotFoundException when page does not exist', async () => {
+      mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
+      mockPrisma.page.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.updateBlockItem(
+          FAMILY_ID,
+          PAGE_ID,
+          'block-1',
+          ITEM_ID,
+          USER_ID,
+          { checked: true },
+        ),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  // --- deleteBlockItem ---
+
+  describe('deleteBlockItem', () => {
+    it('removes an item from a block by itemId', async () => {
+      mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
+      const blockItem = {
+        id: ITEM_ID,
+        text: 'Remove me',
+        checked: false,
+        assigneeId: null,
+        dueDate: null,
+        createdAt: '',
+      };
+      const otherItem = {
+        id: 'item-other',
+        text: 'Keep me',
+        checked: false,
+        assigneeId: null,
+        dueDate: null,
+        createdAt: '',
+      };
+      const blocks = [
+        {
+          id: 'block-1',
+          type: 'list' as const,
+          items: [blockItem, otherItem],
+        },
+      ];
+      const page = makeListPage({ items: blocks });
+      mockPrisma.page.findFirst.mockResolvedValue(page);
+      mockPrisma.page.update.mockResolvedValue(page);
+
+      await service.deleteBlockItem(
+        FAMILY_ID,
+        PAGE_ID,
+        'block-1',
+        ITEM_ID,
+        USER_ID,
+      );
+
+      expect(mockPrisma.page.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: PAGE_ID },
+          data: expect.objectContaining({
+            items: expect.arrayContaining([
+              expect.objectContaining({
+                id: 'block-1',
+                items: expect.not.arrayContaining([
+                  expect.objectContaining({ id: ITEM_ID }),
+                ]),
+              }),
+            ]),
+          }),
+        }),
+      );
+    });
+
+    it('throws NotFoundException when page does not exist', async () => {
+      mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
+      mockPrisma.page.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.deleteBlockItem(
+          FAMILY_ID,
+          PAGE_ID,
+          'block-1',
+          ITEM_ID,
+          USER_ID,
+        ),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
 });

@@ -93,13 +93,15 @@ Status: **partially done**
 
 ## Phase 6 — Test Coverage
 
-Status: **needs attention**
+Status: **complete**
 
-- [ ] `pages.service.spec.ts` — add coverage for item creation, reordering, task status
-- [ ] `calendar.service.spec.ts` — add unit tests
+- [x] `pages.service.spec.ts` — added reorderItems, reorderTaskItems, putBlocks, updateBlock, addBlockItem, updateBlockItem, deleteBlockItem
+- [x] `calendar.service.spec.ts` — added recurrence expansion, editMode 'this'/'all', deleteEvent with instanceDate
+- [x] `pages.controller.spec.ts` — new file covering listPages, createPage, deletePage, addItem, updateItem
+- [x] `calendar.controller.spec.ts` — new file covering listEvents, createEvent, updateEvent, deleteEvent
+- [x] Web component tests for ListPageView, TasksPageView, CanvasPageView — already covered
+- [x] Sidebar component tests — new file with 13 cases (render, active page, navigation, loading, modal)
 - [ ] E2E: full user journey (register → create family → add items → calendar → invite)
-- [ ] Web component tests for ListPageView, TasksPageView, Sidebar
-- [ ] API controller tests (pages, calendar)
 
 ---
 
@@ -417,3 +419,4 @@ Each list page becomes a stack of **blocks**. A block has a `type` (`list` | `te
 - [ ] Photo/media pages
 - [ ] Budget tracking page type
 - [ ] Dark mode
+- [ ] Calendar sync — ICS subscribe URL (`GET /api/families/:id/calendar.ics`) for read-only subscription in Google/Apple/Outlook; optionally extend to two-way Google Calendar sync via OAuth calendar scope
