@@ -517,7 +517,7 @@ export function TasksPageView({ page, familyId }: Props) {
 
   // Add task
   const addMutation = useMutation({
-    mutationFn: ({ text, recurrence }: { text: string; recurrence?: { freq: 'daily' | 'weekly' | 'monthly' } }) =>
+    mutationFn: ({ text, recurrence }: { text: string; recurrence?: { freq: 'daily' | 'bi-daily' | 'weekly' | 'monthly' } }) =>
       apiRequest<TaskItem>(`/families/${familyId}/pages/${page.id}/task-items`, {
         method: 'POST',
         body: JSON.stringify({ text, status: 'todo', recurrence: recurrence ?? null }),
