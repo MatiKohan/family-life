@@ -204,6 +204,14 @@ export const handlers = [
     new HttpResponse(null, { status: 204 }),
   ),
 
+  // Calendar token
+  http.get('/api/families/:familyId/calendar-token', () =>
+    HttpResponse.json({ token: 'mock-calendar-token' }),
+  ),
+  http.post('/api/families/:familyId/calendar-token/regenerate', () =>
+    HttpResponse.json({ token: 'new-mock-token' }),
+  ),
+
   // Calendar events
   http.get('/api/families/:familyId/calendar', () =>
     HttpResponse.json(mockCalendarEvents),

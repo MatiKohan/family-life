@@ -7,6 +7,7 @@ import { useUpdateMyMember } from '../../hooks/useUpdateMyMember';
 import { useUpdateMemberRole } from '../../hooks/useUpdateMemberRole';
 import { useUpdateFamily } from '../../hooks/useUpdateFamily';
 import { usePushSubscription } from '../../hooks/usePushSubscription';
+import { useCalendarToken } from '../../hooks/useCalendarToken';
 import { InviteModal } from '../../components/InviteModal/InviteModal';
 import type { FamilyRole } from '../../types/family';
 
@@ -34,6 +35,8 @@ export function FamilySettingsPage() {
   const updateFamily = useUpdateFamily(id!);
 
   const { isSupported: pushSupported, permission: pushPermission, isSubscribed, isLoading: pushLoading, subscribe, unsubscribe } = usePushSubscription();
+  const { token: calendarToken, isLoading: calendarTokenLoading, regenerate } = useCalendarToken(id!);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const currentMember = family?.members.find((m) => m.user.id === currentUser?.id);
   const canInvite = currentMember?.role === 'OWNER' || currentMember?.role === 'ADMIN';
@@ -202,6 +205,67 @@ export function FamilySettingsPage() {
               );
             })}
           </ul>
+        </div>
+
+        {/* Calendar subscription */}
+        <div>
+          <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">
+            {t('calendar.subscribeTitle')}
+          </h2>
+          <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
+            <p className="text-sm text-gray-500">{t('calendar.subscribeHint')}</p>
+            {calendarTokenLoading ? (
+              <div className="h-8 bg-gray-100 rounded animate-pulse w-48" />
+            ) : calendarToken ? (
+              <>
+                <div className="flex flex-wrap gap-2">
+                  <a
+                    href={`https://calendar.google.com/calendar/r?cid=webcal://${window.location.host}/api/families/${id}/calendar.ics?token=${calendarToken}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-brand-600 rounded-lg hover:bg-brand-700 transition-colors"
+                  >
+                    {t('calendar.addToGoogle')}
+                  </a>
+                  <a
+                    href={`webcal://${window.location.host}/api/families/${id}/calendar.ics?token=${calendarToken}`}
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    {t('calendar.addToApple')}
+                  </a>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void navigator.clipboard
+                        .writeText(
+                          `webcal://${window.location.host}/api/families/${id}/calendar.ics?token=${calendarToken}`,
+                        )
+                        .then(() => {
+                          setLinkCopied(true);
+                          setTimeout(() => setLinkCopied(false), 2000);
+                        });
+                    }}
+                    className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    {linkCopied ? t('calendar.linkCopied') : t('calendar.copyLink')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (window.confirm(t('calendar.regenerateConfirm'))) {
+                        regenerate.mutate();
+                      }
+                    }}
+                    className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    {t('calendar.regenerateToken')}
+                  </button>
+                </div>
+              </>
+            ) : null}
+          </div>
         </div>
 
         {/* My notifications */}

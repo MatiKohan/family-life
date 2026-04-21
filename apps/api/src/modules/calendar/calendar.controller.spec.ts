@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CalendarController } from './calendar.controller';
 import { CalendarService } from './calendar.service';
+import { IcsService } from './ics.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AuthUser } from '@family-life/types';
 
@@ -36,13 +37,22 @@ const mockCalendarService = {
   deleteEvent: jest.fn(),
 };
 
+const mockIcsService = {
+  getOrCreateToken: jest.fn(),
+  regenerateToken: jest.fn(),
+  generateIcs: jest.fn(),
+};
+
 describe('CalendarController', () => {
   let controller: CalendarController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [CalendarController],
-      providers: [{ provide: CalendarService, useValue: mockCalendarService }],
+      providers: [
+        { provide: CalendarService, useValue: mockCalendarService },
+        { provide: IcsService, useValue: mockIcsService },
+      ],
     })
       .overrideGuard(JwtAuthGuard)
       .useValue({ canActivate: () => true })

@@ -23,17 +23,18 @@ model User {
 }
 
 model Family {
-  id        String          @id @default(cuid())
-  name      String
-  emoji     String          @default("🏠")
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
-  members   FamilyMember[]
-  invites   FamilyInvite[]
-  events    CalendarEvent[]
-  pages        Page[]
-  folders      PageFolder[]
-  activityLogs ActivityLog[]
+  id            String          @id @default(cuid())
+  name          String
+  emoji         String          @default("🏠")
+  calendarToken String?         @unique
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  members       FamilyMember[]
+  invites       FamilyInvite[]
+  events        CalendarEvent[]
+  pages         Page[]
+  folders       PageFolder[]
+  activityLogs  ActivityLog[]
 }
 
 model PageFolder {

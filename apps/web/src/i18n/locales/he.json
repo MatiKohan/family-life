@@ -222,7 +222,15 @@
     "editAllEvents": "כל האירועים בסדרה",
     "deleteRecurring": "מחיקת אירוע חוזר",
     "deleteThisOnly": "אירוע זה בלבד",
-    "deleteAllEvents": "כל האירועים בסדרה"
+    "deleteAllEvents": "כל האירועים בסדרה",
+    "subscribeTitle": "הוסף ליומן",
+    "subscribeHint": "קבל את כל אירועי המשפחה בתוכנת היומן שלך — מתעדכן אוטומטית.",
+    "addToGoogle": "הוסף ל-Google Calendar",
+    "addToApple": "הוסף ל-Apple Calendar",
+    "copyLink": "העתק קישור",
+    "linkCopied": "הועתק!",
+    "regenerateToken": "אפס קישור",
+    "regenerateConfirm": "פעולה זו תבטל את קישור המנוי הנוכחי. להמשיך?"
   },
   "apartments": {
     "searchParams": "פרמטרי חיפוש",

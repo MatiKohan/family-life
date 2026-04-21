@@ -222,7 +222,15 @@
     "editAllEvents": "All events in series",
     "deleteRecurring": "Delete recurring event",
     "deleteThisOnly": "This event only",
-    "deleteAllEvents": "All events in series"
+    "deleteAllEvents": "All events in series",
+    "subscribeTitle": "Subscribe to Calendar",
+    "subscribeHint": "Get all family events in your calendar app — updates automatically.",
+    "addToGoogle": "Add to Google Calendar",
+    "addToApple": "Add to Apple Calendar",
+    "copyLink": "Copy link",
+    "linkCopied": "Copied!",
+    "regenerateToken": "Reset link",
+    "regenerateConfirm": "This will invalidate the current subscription link. Continue?"
   },
   "apartments": {
     "searchParams": "Search Filters",
