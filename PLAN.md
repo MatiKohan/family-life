@@ -98,7 +98,7 @@ Status: **complete**
 - [x] `calendar.controller.spec.ts` — new file covering listEvents, createEvent, updateEvent, deleteEvent
 - [x] Web component tests for ListPageView, TasksPageView, CanvasPageView — already covered
 - [x] Sidebar component tests — new file with 13 cases (render, active page, navigation, loading, modal)
-- [ ] E2E: full user journey (register → create family → add items → calendar → invite)
+- [x] E2E: full user journey (register → create family → add items → calendar → invite)
 
 ---
 
@@ -186,11 +186,15 @@ Complement WhatsApp with native browser push notifications. Works for any family
 Core UX improvements that cut across all page types.
 
 ### Search
+
+Status: **complete**
+
 Global search across all pages, items, tasks, and calendar events.
-- [ ] `GET /api/families/:id/search?q=` — query across Page titles, list items, task items, event titles
-- [ ] Search bar in the sidebar / header (visible on all routes)
-- [ ] Results grouped by type (Pages, Items, Events) with links to the source
-- [ ] Debounced frontend query with TanStack Query (`useSearch` hook)
+- [x] `GET /api/families/:id/search?q=` — query across Page titles, list items, task items, event titles
+- [x] Search bar in the sidebar (desktop) + magnifier icon in mobile header (expands inline)
+- [x] Results grouped by type (Pages, Items, Tasks, Events) with links to the source
+- [x] Debounced frontend query with TanStack Query (`useSearch` hook)
+- [x] CI now runs on all branches (not just main)
 
 ### Activity Feed
 Implemented as Phase 13 — see below.
