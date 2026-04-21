@@ -112,8 +112,11 @@ describe('CanvasPageView', () => {
     const user = userEvent.setup();
     renderView();
 
+    // Click the list picker toggle first
     const addListBtn = screen.getByRole('button', { name: /\+ list/i });
     await user.click(addListBtn);
+    // Select "Simple list" from the dropdown
+    await user.click(screen.getByRole('button', { name: /simple list/i }));
 
     // A new block should appear — check there are now 2 add-item inputs (one per list block)
     const addInputs = screen.getAllByPlaceholderText(/\+ add item/i);

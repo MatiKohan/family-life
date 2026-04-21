@@ -102,6 +102,8 @@ export function CanvasPageView({ page, familyId }: Props) {
   const [blocks, setBlocks] = useState<Block[]>(page.blocks ?? []);
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleValue, setTitleValue] = useState(page.title);
+  const [showListPicker, setShowListPicker] = useState(false);
+  const listPickerRef = useRef<HTMLDivElement>(null);
 
   // Keep blocks in sync when page prop updates (but don't overwrite while editing)
   const isLocalEdit = useRef(false);
@@ -114,6 +116,18 @@ export function CanvasPageView({ page, familyId }: Props) {
   useEffect(() => {
     if (!editingTitle) setTitleValue(page.title);
   }, [page.title, editingTitle]);
+
+  // Close list picker when clicking outside
+  useEffect(() => {
+    if (!showListPicker) return;
+    function handleClickOutside(e: globalThis.MouseEvent) {
+      if (listPickerRef.current && !listPickerRef.current.contains(e.target as Node)) {
+        setShowListPicker(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showListPicker]);
 
   // Debounced save for block structure changes
   const saveDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -143,10 +157,10 @@ export function CanvasPageView({ page, familyId }: Props) {
     scheduleSave(newBlocks);
   }
 
-  function addBlock(type: 'list' | 'text') {
+  function addBlock(type: 'list' | 'text', variant?: 'simple' | 'categorized') {
     const newBlock: Block =
       type === 'list'
-        ? { id: crypto.randomUUID(), type: 'list', title: undefined, items: [] }
+        ? { id: crypto.randomUUID(), type: 'list', title: undefined, items: [], ...(variant ? { variant } : {}) }
         : { id: crypto.randomUUID(), type: 'text', title: undefined, content: '' };
     updateBlocks([...blocks, newBlock]);
   }
@@ -258,13 +272,33 @@ export function CanvasPageView({ page, familyId }: Props) {
 
         {/* Add block buttons */}
         <div className="flex gap-2 pt-2">
-          <button
-            type="button"
-            onClick={() => addBlock('list')}
-            className="text-sm text-gray-500 hover:text-brand-600 font-medium px-3 py-1.5 rounded-lg border border-gray-200 hover:border-brand-300 hover:bg-brand-50 transition-colors"
-          >
-            {t('pages.addListBlock')}
-          </button>
+          <div className="relative" ref={listPickerRef}>
+            <button
+              type="button"
+              onClick={() => setShowListPicker((v) => !v)}
+              className="text-sm text-gray-500 hover:text-brand-600 font-medium px-3 py-1.5 rounded-lg border border-gray-200 hover:border-brand-300 hover:bg-brand-50 transition-colors"
+            >
+              {t('pages.addListBlock')} ▾
+            </button>
+            {showListPicker && (
+              <div className="absolute bottom-full mb-1 start-0 bg-white border border-gray-200 rounded-xl shadow-lg py-1 z-10 min-w-[180px]">
+                <button
+                  type="button"
+                  onClick={() => { addBlock('list', 'simple'); setShowListPicker(false); }}
+                  className="w-full text-start px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                >
+                  <span>📋</span> {t('list.simpleList')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { addBlock('list', 'categorized'); setShowListPicker(false); }}
+                  className="w-full text-start px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                >
+                  <span>🗂️</span> {t('list.categorizedList')}
+                </button>
+              </div>
+            )}
+          </div>
           <button
             type="button"
             onClick={() => addBlock('text')}

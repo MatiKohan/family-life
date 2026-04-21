@@ -8,6 +8,7 @@ export interface ListItem {
   dueDate: string | null;
   createdAt: string;
   deletedAt?: string | null;
+  category?: string;
 }
 
 export interface TaskItem {
@@ -64,6 +65,7 @@ export interface ListBlock {
   type: 'list';
   title?: string;
   items: ListItem[];
+  variant?: 'simple' | 'categorized';
 }
 
 export interface TextBlock {

@@ -141,7 +141,13 @@
     "clearAll": "נקה הכל",
     "clearConfirm": "למחוק את כל הפריטים?",
     "clearChecked": "נקה מסומנים",
-    "clearCheckedConfirm": "למחוק את כל הפריטים המסומנים?"
+    "clearCheckedConfirm": "למחוק את כל הפריטים המסומנים?",
+    "resetAll": "אפס הכל",
+    "addCategory": "+ הוסף קטגוריה",
+    "categoryPlaceholder": "שם קטגוריה...",
+    "uncategorized": "כללי",
+    "simpleList": "רשימה פשוטה",
+    "categorizedList": "רשימה לפי קטגוריות"
   },
   "tasks": {
     "todo": "לביצוע",

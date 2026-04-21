@@ -24,6 +24,7 @@ export interface ListItem {
   assigneeId: string | null;
   dueDate: string | null;
   createdAt: string;
+  category?: string;
 }
 
 export interface ApartmentSearchParams {

@@ -141,7 +141,13 @@
     "clearAll": "Clear all",
     "clearConfirm": "Remove all items?",
     "clearChecked": "Clear checked",
-    "clearCheckedConfirm": "Remove all checked items?"
+    "clearCheckedConfirm": "Remove all checked items?",
+    "resetAll": "Reset all",
+    "addCategory": "+ Add category",
+    "categoryPlaceholder": "Category name...",
+    "uncategorized": "General",
+    "simpleList": "Simple list",
+    "categorizedList": "List by categories"
   },
   "tasks": {
     "todo": "To do",

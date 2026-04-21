@@ -150,6 +150,12 @@ i18n.use(initReactI18next).init({
           overdue: 'overdue',
           deleteItem: 'Delete item',
           editTitle: 'Edit title',
+          resetAll: 'Reset all',
+          addCategory: '+ Add category',
+          categoryPlaceholder: 'Category name...',
+          uncategorized: 'General',
+          simpleList: 'Simple list',
+          categorizedList: 'List by categories',
         },
         calendar: {
           title: 'Calendar',
