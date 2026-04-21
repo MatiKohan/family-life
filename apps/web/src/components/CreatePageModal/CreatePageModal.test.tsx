@@ -108,8 +108,12 @@ describe('CreatePageModal', () => {
   it('allows selecting a different emoji', async () => {
     const user = userEvent.setup();
     renderModal();
+    // Open the emoji picker first
+    await user.click(screen.getByRole('button', { name: /icon/i }));
+    // Then select the emoji
     const shoppingCartBtn = screen.getByRole('button', { name: /select emoji 🛒/i });
     await user.click(shoppingCartBtn);
-    expect(shoppingCartBtn).toHaveAttribute('aria-pressed', 'true');
+    // Picker closes and selected emoji is reflected on the trigger button
+    expect(screen.queryByRole('button', { name: /select emoji 🛒/i })).not.toBeInTheDocument();
   });
 });

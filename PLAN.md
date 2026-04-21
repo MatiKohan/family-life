@@ -69,7 +69,7 @@ Notify family members via WhatsApp (Twilio) for key events.
 
 ## Phase 5 — Polish & Missing Features
 
-Status: **partially done**
+Status: **complete**
 
 ### Type system fix
 - [x] Add `'tasks'` to `PageType` union in `packages/types/src/page.types.ts`
@@ -81,10 +81,7 @@ Status: **partially done**
 
 ### Event editing
 - [x] Full edit dialog for existing calendar events
-- [ ] Link/unlink events from an Events page
-
-### Offline mutations
-- [ ] Queue failed POST/PATCH/DELETE mutations when offline and replay on reconnect
+- [x] Link/unlink events from an Events page
 
 ### Dev-mode security
 - [x] Remove / gate dev preset credentials in LoginPage (`?dev` query param) — do not ship to production
@@ -413,6 +410,17 @@ Each list page becomes a stack of **blocks**. A block has a `type` (`list` | `te
 - [x] Delete block button (trash icon on block hover, with confirmation if block has items)
 - [x] Auto-save on blur (debounced `PUT /blocks`) — no explicit save button
 - [x] Backward compat: pages with legacy flat items load seamlessly as a single list block
+
+---
+
+## Phase 17 — Offline Mutation Queue
+
+Queue failed POST/PATCH/DELETE mutations when offline and replay on reconnect.
+
+- [ ] Detect offline state via `navigator.onLine` + `online`/`offline` events
+- [ ] Use TanStack Query `networkMode: 'offlineFirst'` + `onlineManager` to pause mutations when offline
+- [ ] Show offline indicator in the UI (banner or status dot)
+- [ ] Replay queued mutations automatically on reconnect
 
 ---
 

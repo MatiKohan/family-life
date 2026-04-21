@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { apiRequest } from '../../lib/api-client';
@@ -6,10 +6,24 @@ import { useFolders } from '../../hooks/useFolders';
 import { PageSummary, PageType } from '../../types/page';
 
 const PAGE_EMOJIS = [
-  '📝', '📋', '🛒', '🛍️', '🎁', '🏠', '🍕', '🍽️', '📅', '✅',
-  '🎯', '🎨', '✈️', '🚗', '🚀', '🌟', '🏖️', '🏕️', '🎵', '📚',
-  '💪', '🏋️', '🧹', '🌿', '💊', '🏥', '🐾', '🎉', '🎂', '💰',
-  '💻', '🔧', '⚽', '🎮', '👶', '🌍', '🏡', '🎓', '🧺', '🌅',
+  // General
+  '📝', '📋', '✅', '🎯', '📅', '🌟', '💰', '🔧', '💻', '📚',
+  // Food & Kitchen
+  '🍕', '🍽️', '🛒', '🥗', '🍜', '🍣', '🥘', '🍳', '🧁', '🎂',
+  '🍷', '☕', '🧇', '🥩', '🫕',
+  // Trips & Travel
+  '✈️', '🏖️', '🏕️', '🗺️', '🧳', '🚂', '🚢', '🏔️', '🌍', '🗼',
+  '🏝️', '⛺', '🚗', '🛵', '🎒',
+  // Home & Family
+  '🏠', '🏡', '👶', '🐾', '🧹', '🛋️', '🪴', '🔑', '🧺', '🪟',
+  // Health & Fitness
+  '💪', '🏋️', '🏃', '🧘', '🩺', '💊', '🏥', '🥦', '🚴', '🩹',
+  // Fun & Hobbies
+  '🎵', '🎨', '🎮', '⚽', '🎬', '📸', '🎭', '🎸', '🎲', '🏄',
+  // Events & Social
+  '🎉', '🎁', '🛍️', '🎓', '🌅', '🕯️', '🥂', '💌', '🎪', '🚀',
+  // Nature & Outdoors
+  '🌿', '🌸', '🌳', '🌊', '⛰️', '🦋', '🌻', '🍂', '❄️', '🌈',
 ];
 
 interface Props {
@@ -23,10 +37,28 @@ export function CreatePageModal({ familyId, onClose, onCreated }: Props) {
   const queryClient = useQueryClient();
   const [title, setTitle] = useState('');
   const [emoji, setEmoji] = useState('📝');
+  const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
   const [type, setType] = useState<PageType>('list');
   const [folderId, setFolderId] = useState<string | null>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
   const { data: folders } = useFolders(familyId);
+
+  const handleEmojiSelect = useCallback((e: string) => {
+    setEmoji(e);
+    setEmojiPickerOpen(false);
+  }, []);
+
+  useEffect(() => {
+    if (!emojiPickerOpen) return;
+    function handleClick(e: MouseEvent) {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(e.target as Node)) {
+        setEmojiPickerOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [emojiPickerOpen]);
 
   useEffect(() => {
     titleInputRef.current?.focus();
@@ -46,18 +78,6 @@ export function CreatePageModal({ familyId, onClose, onCreated }: Props) {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
-  // Android hardware back button
-  useEffect(() => {
-    history.pushState({ modal: 'create-page' }, '');
-    function handlePopState() {
-      onClose();
-    }
-    window.addEventListener('popstate', handlePopState);
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-      if (history.state?.modal === 'create-page') history.back();
-    };
-  }, [onClose]);
 
   const mutation = useMutation({
     mutationFn: () =>
@@ -101,23 +121,36 @@ export function CreatePageModal({ familyId, onClose, onCreated }: Props) {
             {/* Emoji selector */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">{t('family.icon')}</label>
-              <div className="grid grid-cols-10 gap-1">
-                {PAGE_EMOJIS.map((e) => (
-                  <button
-                    key={e}
-                    type="button"
-                    onClick={() => setEmoji(e)}
-                    className={`text-xl p-1.5 rounded-lg transition-colors ${
-                      emoji === e
-                        ? 'bg-brand-100 ring-2 ring-brand-500'
-                        : 'hover:bg-gray-100'
-                    }`}
-                    aria-label={`Select emoji ${e}`}
-                    aria-pressed={emoji === e}
-                  >
-                    {e}
-                  </button>
-                ))}
+              <div ref={emojiPickerRef} className="relative inline-block">
+                <button
+                  type="button"
+                  onClick={() => setEmojiPickerOpen((o) => !o)}
+                  className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                  aria-label={t('family.icon')}
+                >
+                  <span className="text-2xl leading-none">{emoji}</span>
+                  <span className="text-gray-500">▾</span>
+                </button>
+                {emojiPickerOpen && (
+                  <div className="absolute top-full mt-1 start-0 z-10 bg-white border border-gray-200 rounded-xl shadow-lg p-2 w-64">
+                    <div className="grid grid-cols-8 gap-0.5 max-h-48 overflow-y-auto">
+                      {PAGE_EMOJIS.map((e) => (
+                        <button
+                          key={e}
+                          type="button"
+                          onClick={() => handleEmojiSelect(e)}
+                          className={`text-xl p-1.5 rounded-lg transition-colors ${
+                            emoji === e ? 'bg-brand-100 ring-2 ring-brand-500' : 'hover:bg-gray-100'
+                          }`}
+                          aria-label={`Select emoji ${e}`}
+                          aria-pressed={emoji === e}
+                        >
+                          {e}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -177,11 +210,29 @@ export function CreatePageModal({ familyId, onClose, onCreated }: Props) {
                   </div>
                 </button>
 
+                {/* Events type */}
+                <button
+                  type="button"
+                  onClick={() => setType('events')}
+                  className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-colors ${
+                    type === 'events'
+                      ? 'border-brand-500 bg-brand-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  aria-pressed={type === 'events'}
+                >
+                  <span className="text-2xl">📅</span>
+                  <div className="text-center">
+                    <div className="text-sm font-semibold text-gray-900">{t('pages.eventsType')}</div>
+                    <div className="text-xs text-gray-500 mt-0.5">{t('pages.eventsTypeDesc')}</div>
+                  </div>
+                </button>
+
                 {/* Apartments type */}
                 <button
                   type="button"
                   onClick={() => setType('apartments')}
-                  className={`col-span-2 flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-colors ${
+                  className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-colors ${
                     type === 'apartments'
                       ? 'border-brand-500 bg-brand-50'
                       : 'border-gray-200 hover:border-gray-300'

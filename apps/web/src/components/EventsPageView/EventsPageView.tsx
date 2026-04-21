@@ -137,6 +137,16 @@ export function EventsPageView({ page, familyId }: EventsPageViewProps) {
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
+  const unlinkMutation = useMutation({
+    mutationFn: (eventId: string) =>
+      apiRequest(`/families/${familyId}/pages/${page.id}/event-refs/${eventId}`, {
+        method: 'DELETE',
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pages', familyId, page.id] });
+    },
+  });
+
   // Events come from page.events if the server includes them,
   // otherwise we fall back to fetching by eventIds from the family calendar.
   const linkedEvents: CalendarEvent[] = page.events ?? [];
@@ -223,6 +233,20 @@ export function EventsPageView({ page, familyId }: EventsPageViewProps) {
                     <p className="text-xs text-gray-400 mt-1 truncate">{ev.description}</p>
                   )}
                 </div>
+
+                {/* Unlink button */}
+                <button
+                  type="button"
+                  onClick={() => unlinkMutation.mutate(ev.id)}
+                  disabled={unlinkMutation.isPending}
+                  className="shrink-0 text-gray-300 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-30"
+                  aria-label={t('calendar.unlinkEvent')}
+                  title={t('calendar.unlinkEvent')}
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                  </svg>
+                </button>
               </div>
             );
           })}
