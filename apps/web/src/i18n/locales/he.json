@@ -156,7 +156,15 @@
     "deleteTask": "מחק משימה",
     "statusTodo": "לביצוע",
     "statusInProgress": "בתהליך",
-    "statusDone": "הושלם"
+    "statusDone": "הושלם",
+    "recurrence": "חזרה",
+    "recurrenceNone": "לא חוזר",
+    "recurrenceDaily": "יומי",
+    "recurrenceBiDaily": "כל יומיים",
+    "recurrenceWeekly": "שבועי",
+    "recurrenceMonthly": "חודשי",
+    "dueToday": "מגיע היום",
+    "nextDue": "מגיע בתאריך"
   },
   "calendar": {
     "title": "לוח שנה",

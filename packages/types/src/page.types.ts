@@ -18,6 +18,7 @@ export interface TaskItem {
   dueDate: string | null;
   createdAt: string;
   deletedAt?: string | null;
+  recurrence?: { freq: 'daily' | 'bi-daily' | 'weekly' | 'monthly'; nextDue: string } | null;
 }
 
 // ─── Apartments ───────────────────────────────────────────────────────────────

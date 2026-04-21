@@ -35,7 +35,23 @@ type TaskItemData = {
   dueDate: string | null;
   createdAt: string;
   deletedAt?: string | null;
+  recurrence?: {
+    freq: 'daily' | 'bi-daily' | 'weekly' | 'monthly';
+    nextDue: string;
+  } | null;
 };
+
+function advanceRecurrence(
+  freq: 'daily' | 'bi-daily' | 'weekly' | 'monthly',
+  fromDate: string,
+): string {
+  const d = new Date(fromDate + 'T00:00:00');
+  if (freq === 'daily') d.setDate(d.getDate() + 1);
+  else if (freq === 'bi-daily') d.setDate(d.getDate() + 2);
+  else if (freq === 'weekly') d.setDate(d.getDate() + 7);
+  else d.setMonth(d.getMonth() + 1);
+  return d.toISOString().slice(0, 10);
+}
 
 @Injectable()
 export class PagesService {
@@ -324,6 +340,15 @@ export class PagesService {
       assigneeId: dto.assigneeId ?? null,
       status: dto.status ?? 'todo',
       dueDate: dto.dueDate ?? null,
+      recurrence: dto.recurrence
+        ? {
+            freq: dto.recurrence.freq,
+            nextDue:
+              dto.recurrence.nextDue ??
+              dto.dueDate ??
+              new Date().toISOString().slice(0, 10),
+          }
+        : null,
       createdAt: new Date().toISOString(),
     };
     const result = await this.prisma.page.update({
@@ -373,16 +398,27 @@ export class PagesService {
       dto.assigneeId != null &&
       dto.assigneeId !== existingTaskItem?.assigneeId &&
       dto.assigneeId !== userId;
-    const taskItems = (page.taskItems as TaskItemData[]).map((item) =>
-      item.id === itemId
-        ? {
-            ...item,
-            ...Object.fromEntries(
-              Object.entries(dto).filter(([, v]) => v !== undefined),
-            ),
-          }
-        : item,
-    );
+    const taskItems = (page.taskItems as TaskItemData[]).map((item) => {
+      if (item.id !== itemId) return item;
+      const patched: TaskItemData = {
+        ...item,
+        ...Object.fromEntries(
+          Object.entries(dto).filter(([, v]) => v !== undefined),
+        ),
+      };
+      // Advance nextDue when a recurring task is marked done — cron resets to todo when due
+      if (patched.status === 'done' && patched.recurrence) {
+        const nextDue = advanceRecurrence(
+          patched.recurrence.freq,
+          patched.recurrence.nextDue,
+        );
+        return {
+          ...patched,
+          recurrence: { ...patched.recurrence, nextDue },
+        };
+      }
+      return patched;
+    });
     const result = await this.prisma.page.update({
       where: { id: pageId },
       data: { taskItems },

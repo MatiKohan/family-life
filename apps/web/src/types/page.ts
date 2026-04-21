@@ -14,6 +14,7 @@ export interface TaskItem {
   status: TaskStatus;
   dueDate: string | null;
   createdAt: string;
+  recurrence?: { freq: 'daily' | 'bi-daily' | 'weekly' | 'monthly'; nextDue: string } | null;
 }
 
 export interface ListItem {

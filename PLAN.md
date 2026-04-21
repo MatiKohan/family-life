@@ -254,6 +254,8 @@ Plan dinners for the week. Optionally generate a shopping list from planned meal
 
 ## Phase 11 — Recurring Tasks
 
+Status: **complete**
+
 Some chores repeat on a schedule (water plants, change filter, pay rent). These are maintenance tasks, not calendar events.
 
 ### Data model
@@ -261,16 +263,16 @@ Some chores repeat on a schedule (water plants, change filter, pay rent). These 
 - When a recurring task is marked done, server auto-resets status to `'todo'` and advances `nextDue`
 
 ### Backend
-- [ ] Extend `TaskItem` type in `packages/types` with optional `recurrence` field
-- [ ] `UpdateTaskItemDto` accepts optional `recurrence`
-- [ ] In `PagesService.updateTaskItem`: if item is marked `done` and has recurrence → reset to `todo`, advance `nextDue`
-- [ ] Cron (daily) that scans all task items with `nextDue <= today` and sets them back to `todo` if still `done`
-- [ ] `GET` page response includes `nextDue` so frontend can show "due today" / "overdue" badges
+- [x] Extend `TaskItem` type in `packages/types` with optional `recurrence` field
+- [x] `CreateTaskItemDto` and `UpdateTaskItemDto` accept optional `recurrence` (via `RecurringTaskDto`)
+- [x] In `PagesService.updateTaskItem`: if item is marked `done` and has recurrence → advance `nextDue` (status stays `done` until the cron fires)
+- [x] Cron (daily) via `RecurringTaskScheduler` — resets any items where `nextDue <= today` and status is `done`
 
 ### Frontend
-- [ ] Recurrence picker on task item create/edit (None / Daily / Weekly / Monthly)
-- [ ] "Due today" / "Overdue" badge on task cards in `TasksPageView`
-- [ ] Overdue tasks float to the top of the Todo column
+- [x] Recurrence picker in add-task form (None / Daily / Weekly / Monthly)
+- [x] 🔁 recurrence label on task cards
+- [x] "Due today" (yellow) / "Overdue" (red) badges on task cards
+- [x] Overdue recurring tasks float to top of Todo column
 
 ---
 

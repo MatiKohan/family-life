@@ -156,7 +156,15 @@
     "deleteTask": "Delete task",
     "statusTodo": "Todo",
     "statusInProgress": "In Progress",
-    "statusDone": "Done"
+    "statusDone": "Done",
+    "recurrence": "Repeat",
+    "recurrenceNone": "Does not repeat",
+    "recurrenceDaily": "Daily",
+    "recurrenceBiDaily": "Every 2 days",
+    "recurrenceWeekly": "Weekly",
+    "recurrenceMonthly": "Monthly",
+    "dueToday": "Due today",
+    "nextDue": "Next due"
   },
   "calendar": {
     "title": "Calendar",

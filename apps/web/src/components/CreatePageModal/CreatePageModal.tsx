@@ -46,6 +46,19 @@ export function CreatePageModal({ familyId, onClose, onCreated }: Props) {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
+  // Android hardware back button
+  useEffect(() => {
+    history.pushState({ modal: 'create-page' }, '');
+    function handlePopState() {
+      onClose();
+    }
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      if (history.state?.modal === 'create-page') history.back();
+    };
+  }, [onClose]);
+
   const mutation = useMutation({
     mutationFn: () =>
       apiRequest<PageSummary>(`/families/${familyId}/pages`, {
@@ -66,17 +79,25 @@ export function CreatePageModal({ familyId, onClose, onCreated }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 sm:p-4"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
-        <form onSubmit={handleSubmit}>
+      <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-xl w-full max-w-md flex flex-col max-h-[90dvh]">
+        <form onSubmit={handleSubmit} className="flex flex-col min-h-0">
           {/* Header */}
-          <div className="px-6 pt-6 pb-4">
+          <div className="px-6 pt-6 pb-4 flex items-center justify-between shrink-0">
             <h2 className="text-lg font-semibold text-gray-900">{t('pages.createTitle')}</h2>
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 transition-colors text-2xl leading-none -mr-1"
+              aria-label={t('common.close')}
+            >
+              ×
+            </button>
           </div>
 
-          <div className="px-6 space-y-5">
+          <div className="px-6 space-y-5 overflow-y-auto flex-1">
             {/* Emoji selector */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">{t('family.icon')}</label>
@@ -197,10 +218,11 @@ export function CreatePageModal({ familyId, onClose, onCreated }: Props) {
                 </select>
               </div>
             )}
+          <div className="pb-2" />
           </div>
 
           {/* Footer */}
-          <div className="px-6 py-5 flex justify-end gap-3">
+          <div className="px-6 py-5 flex justify-end gap-3 shrink-0 border-t border-gray-100">
             <button
               type="button"
               onClick={onClose}

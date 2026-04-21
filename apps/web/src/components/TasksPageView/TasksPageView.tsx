@@ -354,8 +354,23 @@ function TaskCard({ task, members, onStatusChange, onAssign, onDueDateChange, on
         </button>
       </div>
 
-      {/* Row 2: due date + assignee */}
-      <div className="flex items-center justify-end gap-2 mt-2">
+      {/* Row 2: recurrence badges + due date + assignee */}
+      <div className="flex items-center justify-end gap-2 mt-2 flex-wrap">
+        {task.recurrence && (
+          <span className="text-xs text-gray-400 shrink-0">
+            🔁 {t(`tasks.recurrence${task.recurrence.freq.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join('')}`)}
+          </span>
+        )}
+        {task.recurrence?.nextDue && task.recurrence.nextDue < new Date().toISOString().slice(0, 10) && (
+          <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-600 shrink-0">
+            {t('tasks.overdue')}
+          </span>
+        )}
+        {task.recurrence?.nextDue && task.recurrence.nextDue === new Date().toISOString().slice(0, 10) && (
+          <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700 shrink-0">
+            {t('tasks.dueToday')}
+          </span>
+        )}
         <DueDateBadge dueDate={task.dueDate} onDateChange={onDueDateChange} />
         {members.length > 0 && (
           <AssigneeCircle
@@ -472,6 +487,7 @@ export function TasksPageView({ page, familyId }: Props) {
   const members = familyData?.members ?? [];
 
   const [newTaskText, setNewTaskText] = useState('');
+  const [newTaskRecurrence, setNewTaskRecurrence] = useState<'none' | 'daily' | 'bi-daily' | 'weekly' | 'monthly'>('none');
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleValue, setTitleValue] = useState(page.title);
   const addInputRef = useRef<HTMLInputElement>(null);
@@ -479,7 +495,18 @@ export function TasksPageView({ page, familyId }: Props) {
   const cacheKey = ['pages', familyId, page.id];
   const taskItems = page.taskItems ?? [];
 
-  const todoTasks = taskItems.filter((t) => t.status === 'todo');
+  const today = new Date().toISOString().slice(0, 10);
+  const todoTasks = taskItems
+    .filter((t) => t.status === 'todo')
+    .sort((a, b) => {
+      const score = (item: TaskItem) => {
+        if (!item.recurrence?.nextDue) return 0;
+        if (item.recurrence.nextDue < today) return -2;
+        if (item.recurrence.nextDue === today) return -1;
+        return 0;
+      };
+      return score(a) - score(b);
+    });
   const inProgressTasks = taskItems.filter((t) => t.status === 'in-progress');
   const doneTasks = taskItems.filter((t) => t.status === 'done');
 
@@ -490,12 +517,12 @@ export function TasksPageView({ page, familyId }: Props) {
 
   // Add task
   const addMutation = useMutation({
-    mutationFn: (text: string) =>
+    mutationFn: ({ text, recurrence }: { text: string; recurrence?: { freq: 'daily' | 'weekly' | 'monthly' } }) =>
       apiRequest<TaskItem>(`/families/${familyId}/pages/${page.id}/task-items`, {
         method: 'POST',
-        body: JSON.stringify({ text, status: 'todo' }),
+        body: JSON.stringify({ text, status: 'todo', recurrence: recurrence ?? null }),
       }),
-    onMutate: async (text) => {
+    onMutate: async ({ text }) => {
       await queryClient.cancelQueries({ queryKey: cacheKey });
       const previous = queryClient.getQueryData<Page>(cacheKey);
       const optimisticTask: TaskItem = {
@@ -517,6 +544,7 @@ export function TasksPageView({ page, familyId }: Props) {
     },
     onSuccess: () => {
       setNewTaskText('');
+      setNewTaskRecurrence('none');
       queryClient.invalidateQueries({ queryKey: cacheKey });
     },
   });
@@ -641,7 +669,10 @@ export function TasksPageView({ page, familyId }: Props) {
     e.preventDefault();
     const text = newTaskText.trim();
     if (!text) return;
-    addMutation.mutate(text);
+    addMutation.mutate({
+      text,
+      recurrence: newTaskRecurrence !== 'none' ? { freq: newTaskRecurrence } : undefined,
+    });
   }
 
   function handleTitleBlur() {
@@ -664,29 +695,43 @@ export function TasksPageView({ page, familyId }: Props) {
   }
 
   const addTaskInput = (
-    <form onSubmit={handleAddTask} className="flex items-center gap-2 mb-1">
-      <input
-        ref={addInputRef}
-        type="text"
-        value={newTaskText}
-        onChange={(e) => setNewTaskText(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') handleAddTask(e);
-        }}
-        placeholder={t('tasks.addTaskPlaceholder')}
-        className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent placeholder-gray-400 min-h-[44px]"
-        aria-label={t('tasks.addTaskPlaceholder')}
-        disabled={addMutation.isPending}
-      />
-      {newTaskText.trim() && (
-        <button
-          type="submit"
+    <form onSubmit={handleAddTask} className="flex flex-col gap-1.5 mb-1">
+      <div className="flex items-center gap-2">
+        <input
+          ref={addInputRef}
+          type="text"
+          value={newTaskText}
+          onChange={(e) => setNewTaskText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') handleAddTask(e);
+          }}
+          placeholder={t('tasks.addTaskPlaceholder')}
+          className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent placeholder-gray-400 min-h-[44px]"
+          aria-label={t('tasks.addTaskPlaceholder')}
           disabled={addMutation.isPending}
-          className="text-xs text-brand-600 font-medium px-3 py-2 min-h-[44px] hover:bg-brand-50 rounded-lg transition-colors border border-brand-200"
-        >
-          {t('tasks.addTask')}
-        </button>
-      )}
+        />
+        {newTaskText.trim() && (
+          <button
+            type="submit"
+            disabled={addMutation.isPending}
+            className="text-xs text-brand-600 font-medium px-3 py-2 min-h-[44px] hover:bg-brand-50 rounded-lg transition-colors border border-brand-200"
+          >
+            {t('tasks.addTask')}
+          </button>
+        )}
+      </div>
+      <select
+        value={newTaskRecurrence}
+        onChange={(e) => setNewTaskRecurrence(e.target.value as typeof newTaskRecurrence)}
+        aria-label={t('tasks.recurrence')}
+        className="text-xs px-2 py-1 border border-gray-200 rounded-lg text-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-400 bg-white"
+      >
+        <option value="none">{t('tasks.recurrenceNone')}</option>
+        <option value="daily">{t('tasks.recurrenceDaily')}</option>
+        <option value="bi-daily">{t('tasks.recurrenceBiDaily')}</option>
+        <option value="weekly">{t('tasks.recurrenceWeekly')}</option>
+        <option value="monthly">{t('tasks.recurrenceMonthly')}</option>
+      </select>
     </form>
   );
 
