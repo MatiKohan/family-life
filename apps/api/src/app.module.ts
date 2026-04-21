@@ -16,6 +16,7 @@ import { ApartmentsModule } from './modules/apartments/apartments.module';
 import { PushModule } from './modules/push/push.module';
 import { ActivityModule } from './modules/activity/activity.module';
 import { FoldersModule } from './modules/folders/folders.module';
+import { SearchModule } from './modules/search/search.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { FoldersModule } from './modules/folders/folders.module';
     PushModule,
     ActivityModule,
     FoldersModule,
+    SearchModule,
   ],
   providers: [
     {

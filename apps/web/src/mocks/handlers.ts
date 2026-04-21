@@ -256,6 +256,18 @@ export const handlers = [
     new HttpResponse(null, { status: 204 }),
   ),
 
+  // Search
+  http.get('/api/families/:familyId/search', ({ request }) => {
+    const url = new URL(request.url);
+    const q = url.searchParams.get('q') ?? '';
+    return HttpResponse.json({
+      pages: q ? [{ id: 'p1', title: `Page matching ${q}`, emoji: '📋', type: 'list' }] : [],
+      items: [],
+      tasks: [],
+      events: [],
+    });
+  }),
+
   // Activity feed
   http.get('/api/families/:familyId/activity', () =>
     HttpResponse.json({ items: [], nextCursor: null }),

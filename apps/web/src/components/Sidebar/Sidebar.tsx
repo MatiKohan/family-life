@@ -25,6 +25,7 @@ import { usePages } from '../../hooks/usePages';
 import { useFolders } from '../../hooks/useFolders';
 import { CreatePageModal } from '../CreatePageModal/CreatePageModal';
 import { LanguageSwitcher } from '../LanguageSwitcher/LanguageSwitcher';
+import { SearchBar } from '../SearchBar/SearchBar';
 import { PageSummary, FolderSummary } from '../../types/page';
 import { apiRequest } from '../../lib/api-client';
 import { useFamilyStore } from '../../store/family.store';
@@ -561,6 +562,11 @@ export function Sidebar({ familyId, onClose }: SidebarProps) {
         ) : (
           <div className="h-10 bg-gray-100 rounded-lg animate-pulse" />
         )}
+      </div>
+
+      {/* Search */}
+      <div className="px-4 pb-3">
+        <SearchBar familyId={familyId} />
       </div>
 
       {/* Pages section */}

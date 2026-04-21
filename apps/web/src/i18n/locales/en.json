@@ -285,6 +285,15 @@
     "minAgo": "{{count}} min ago",
     "hoursAgo": "{{count}} hours ago"
   },
+  "search": {
+    "placeholder": "Search...",
+    "pages": "Pages",
+    "items": "Items",
+    "tasks": "Tasks",
+    "events": "Events",
+    "noResults": "No results for \"{{q}}\"",
+    "searching": "Searching..."
+  },
   "notifications": {
     "myNotifications": "My Notifications",
     "whatsappPhone": "WhatsApp phone",

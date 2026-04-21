@@ -273,27 +273,21 @@ Some chores repeat on a schedule (water plants, change filter, pay rent). These 
 
 ---
 
-## Phase 12 — Packing Lists Page
+## Phase 12 — Canvas List Enhancements
 
-Reusable checklists for trips and outings. Check items off, then reset for next time.
+Status: **complete**
 
-### Data model
-- Add `'packing-list'` to `PageType`
-- Items stored as JSONB same as list pages (`items` array with `checked`, `category?`, `assigneeId?`)
-- Page-level `lastPackedAt` timestamp (in page metadata JSONB)
+Progress tracking and categorized grouping for list blocks in canvas pages.
 
-### Backend
-- [ ] Add `'packing-list'` to `PageType` in `packages/types`
-- [ ] Reuse existing item CRUD endpoints (same shape as list pages)
-- [ ] `POST /api/families/:fid/pages/:pid/packing-list/reset` — unchecks all items, sets `lastPackedAt`
-- [ ] Items can have an optional `category` string (e.g. "Clothes", "Toiletries", "Kids") for grouping
-
-### Frontend
-- [ ] `PackingListPageView` — items grouped by category, collapsible sections
-- [ ] Progress bar: "12 / 20 packed"
-- [ ] "Reset list" button with confirmation → unchecks everything
-- [ ] "Last packed: 3 days ago" subtitle
-- [ ] "Packing List" option in `CreatePageModal`
+### List block improvements
+- [x] Progress bar on each list block — shows checked/total count, thin brand-colored bar
+- [x] Reset button (↺) — unchecks all items in one tap, appears when any item is checked
+- [x] List type picker — clicking "+ List ▾" opens a dropdown: "Simple list" | "List by categories"
+- [x] `variant: 'simple' | 'categorized'` field added to `ListBlock` type
+- [x] `category?: string` field added to `ListItem` type + backend `CreateItemDto`
+- [x] Categorized list view — items grouped by category into collapsible sections, each with its own add-item input
+- [x] "+ Add category" inline input to create new category sections
+- [x] i18n: English + Hebrew for all new labels
 
 ---
 

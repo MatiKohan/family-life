@@ -285,6 +285,15 @@
     "minAgo": "לפני {{count}} דקות",
     "hoursAgo": "לפני {{count}} שעות"
   },
+  "search": {
+    "placeholder": "חיפוש...",
+    "pages": "דפים",
+    "items": "פריטים",
+    "tasks": "משימות",
+    "events": "אירועים",
+    "noResults": "אין תוצאות עבור \"{{q}}\"",
+    "searching": "מחפש..."
+  },
   "notifications": {
     "myNotifications": "ההתראות שלי",
     "whatsappPhone": "מספר וואטסאפ",

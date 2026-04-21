@@ -206,6 +206,15 @@ i18n.use(initReactI18next).init({
           openMenu: 'Open menu',
           closeMenu: 'Close menu',
         },
+        search: {
+          placeholder: 'Search...',
+          pages: 'Pages',
+          items: 'Items',
+          tasks: 'Tasks',
+          events: 'Events',
+          noResults: 'No results for "{{q}}"',
+          searching: 'Searching...',
+        },
         activity: {
           title: 'Activity',
           empty: 'No activity yet',
