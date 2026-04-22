@@ -9,6 +9,7 @@ import { LanguageSwitcher } from '../LanguageSwitcher/LanguageSwitcher';
 import { SearchBar } from '../SearchBar/SearchBar';
 import { apiRequest } from '../../lib/api-client';
 import { OfflineBanner } from '../OfflineBanner/OfflineBanner';
+import { useRealtimeEvents } from '../../hooks/useRealtimeEvents';
 
 /**
  * FamilyShell provides the sidebar + mobile bottom nav layout for all family routes.
@@ -21,6 +22,8 @@ export function FamilyShell() {
   const { data: family, isLoading, isError } = useFamily(id);
   const navigate = useNavigate();
   const clearActiveFamily = useFamilyStore((s) => s.clearActiveFamily);
+
+  useRealtimeEvents(id ?? '');
 
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 

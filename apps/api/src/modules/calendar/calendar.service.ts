@@ -6,6 +6,7 @@ import {
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { ActivityService } from '../activity/activity.service';
+import { RealtimeService } from '../realtime/realtime.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 
@@ -84,6 +85,7 @@ export class CalendarService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly activityService: ActivityService,
+    private readonly realtimeService: RealtimeService,
   ) {}
 
   private async requireMember(userId: string, familyId: string) {
@@ -159,6 +161,7 @@ export class CalendarService {
       payload: { eventId: event.id, title: event.title },
     });
 
+    this.realtimeService.emit(familyId, 'calendar');
     return event;
   }
 
@@ -203,7 +206,7 @@ export class CalendarService {
         ? new Date(fields.endAt)
         : new Date(instanceStart.getTime() + duration);
 
-      return this.prisma.calendarEvent.create({
+      const created = await this.prisma.calendarEvent.create({
         data: {
           familyId,
           title: fields.title ?? baseEvent.title,
@@ -218,6 +221,8 @@ export class CalendarService {
           createdBy: userId,
         },
       });
+      this.realtimeService.emit(familyId, 'calendar');
+      return created;
     }
 
     if (instanceDate && editMode === 'future') {
@@ -254,7 +259,7 @@ export class CalendarService {
         : new Date(newStart.getTime() + duration);
       const newRule = recurrence ?? rule;
 
-      return this.prisma.calendarEvent.create({
+      const created = await this.prisma.calendarEvent.create({
         data: {
           familyId,
           title: fields.title ?? baseEvent.title,
@@ -273,6 +278,8 @@ export class CalendarService {
           } as unknown as Prisma.InputJsonValue,
         },
       });
+      this.realtimeService.emit(familyId, 'calendar');
+      return created;
     }
 
     // Edit all / standalone event
@@ -285,7 +292,7 @@ export class CalendarService {
       fields.startAt !== undefined ||
       fields.reminderMinutesBefore !== undefined;
 
-    return this.prisma.calendarEvent.update({
+    const updated = await this.prisma.calendarEvent.update({
       where: { id: eventId },
       data: {
         ...(fields.title !== undefined && { title: fields.title }),
@@ -309,6 +316,8 @@ export class CalendarService {
         }),
       },
     });
+    this.realtimeService.emit(familyId, 'calendar');
+    return updated;
   }
 
   async deleteEvent(
@@ -337,10 +346,12 @@ export class CalendarService {
           } as unknown as Prisma.InputJsonValue,
         },
       });
+      this.realtimeService.emit(familyId, 'calendar');
       return;
     }
 
     // Delete entire event / series
     await this.prisma.calendarEvent.delete({ where: { id: eventId } });
+    this.realtimeService.emit(familyId, 'calendar');
   }
 }

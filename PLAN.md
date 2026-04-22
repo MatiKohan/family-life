@@ -410,6 +410,30 @@ Queue failed POST/PATCH/DELETE mutations when offline and replay on reconnect.
 
 ---
 
+## Phase 18 — Real-Time Updates
+
+Status: **complete**
+
+When one family member makes a change, all other connected members see it instantly without refreshing.
+
+### Backend
+- [x] `RealtimeService` — in-memory RxJS `Subject`, family-keyed, emits typed events
+- [x] `GET /api/families/:id/stream?token=` — SSE endpoint, JWT auth via query param (EventSource can't send headers)
+- [x] `X-Accel-Buffering: no` header for Railway/Nginx proxy compatibility
+- [x] `RealtimeModule` exported and imported into `PagesModule` + `CalendarModule`
+- [x] `PagesService` emits `'pages'` after: addItem, updateItem, deleteItem, putBlocks, updateBlock, addBlockItem, updateBlockItem, deleteBlockItem
+- [x] `CalendarService` emits `'calendar'` after: createEvent, updateEvent, deleteEvent
+
+### Frontend
+- [x] `useRealtimeEvents(familyId)` hook — opens `EventSource`, invalidates TanStack Query cache on each event
+- [x] `'pages'` event → invalidates `['pages', familyId]` + `['page']`
+- [x] `'calendar'` event → invalidates `['calendarEvents', familyId]`
+- [x] `'activity'` event → invalidates `['activity', familyId]`
+- [x] Wired into `FamilyShell` — active on all family routes
+- [x] Auto-reconnects natively on connection drop
+
+---
+
 ## Backlog / Future ideas
 
 - [ ] Photo/media pages

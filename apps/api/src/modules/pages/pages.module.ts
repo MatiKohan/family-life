@@ -5,9 +5,10 @@ import { RecurringTaskScheduler } from './recurring-task.scheduler';
 import { PrismaModule } from '../../database/prisma.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { ActivityModule } from '../activity/activity.module';
+import { RealtimeModule } from '../realtime/realtime.module';
 
 @Module({
-  imports: [PrismaModule, NotificationsModule, ActivityModule],
+  imports: [PrismaModule, NotificationsModule, ActivityModule, RealtimeModule],
   controllers: [PagesController],
   providers: [PagesService, RecurringTaskScheduler],
   exports: [PagesService],

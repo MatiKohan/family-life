@@ -10,6 +10,7 @@ import { randomUUID } from 'crypto';
 import { PrismaService } from '../../database/prisma.service';
 import { ActivityService } from '../activity/activity.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { RealtimeService } from '../realtime/realtime.service';
 import { CreateItemDto } from './dto/create-item.dto';
 import { CreatePageDto } from './dto/create-page.dto';
 import { CreateTaskItemDto } from './dto/create-task-item.dto';
@@ -59,6 +60,7 @@ export class PagesService {
     private readonly prisma: PrismaService,
     private readonly notificationsService: NotificationsService,
     private readonly activityService: ActivityService,
+    private readonly realtimeService: RealtimeService,
   ) {}
 
   private async requireMember(familyId: string, userId: string) {
@@ -211,6 +213,7 @@ export class PagesService {
       where: { id: pageId },
       data: { items: [...items, newItem] },
     });
+    this.realtimeService.emit(familyId, 'pages');
     void this.activityService.log({
       familyId,
       userId,
@@ -268,6 +271,7 @@ export class PagesService {
       where: { id: pageId },
       data: { items },
     });
+    this.realtimeService.emit(familyId, 'pages');
     if (dto.checked === true && !existingItem?.checked) {
       const updatedItem = items.find((i) => i.id === itemId);
       void this.activityService.log({
@@ -316,7 +320,12 @@ export class PagesService {
         ? { ...item, deletedAt: new Date().toISOString() }
         : item,
     );
-    return this.prisma.page.update({ where: { id: pageId }, data: { items } });
+    const result = await this.prisma.page.update({
+      where: { id: pageId },
+      data: { items },
+    });
+    this.realtimeService.emit(familyId, 'pages');
+    return result;
   }
 
   // Task items
@@ -589,6 +598,7 @@ export class PagesService {
       where: { id: pageId },
       data: { items: blocks as unknown as Prisma.InputJsonValue },
     });
+    this.realtimeService.emit(familyId, 'pages');
   }
 
   async updateBlock(
@@ -611,6 +621,7 @@ export class PagesService {
       where: { id: pageId },
       data: { items: updated as unknown as Prisma.InputJsonValue },
     });
+    this.realtimeService.emit(familyId, 'pages');
   }
 
   async addBlockItem(
@@ -644,6 +655,7 @@ export class PagesService {
       where: { id: pageId },
       data: { items: updated as unknown as Prisma.InputJsonValue },
     });
+    this.realtimeService.emit(familyId, 'pages');
     return newItem;
   }
 
@@ -677,6 +689,7 @@ export class PagesService {
       where: { id: pageId },
       data: { items: updated as unknown as Prisma.InputJsonValue },
     });
+    this.realtimeService.emit(familyId, 'pages');
   }
 
   async reorderBlockItems(
@@ -726,5 +739,6 @@ export class PagesService {
       where: { id: pageId },
       data: { items: updated as unknown as Prisma.InputJsonValue },
     });
+    this.realtimeService.emit(familyId, 'pages');
   }
 }

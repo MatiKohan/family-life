@@ -17,6 +17,7 @@ import { PushModule } from './modules/push/push.module';
 import { ActivityModule } from './modules/activity/activity.module';
 import { FoldersModule } from './modules/folders/folders.module';
 import { SearchModule } from './modules/search/search.module';
+import { RealtimeModule } from './modules/realtime/realtime.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { SearchModule } from './modules/search/search.module';
     ActivityModule,
     FoldersModule,
     SearchModule,
+    RealtimeModule,
   ],
   providers: [
     {
