@@ -54,14 +54,21 @@ describe('UsersService', () => {
       mockPrisma.user.findUnique
         .mockResolvedValueOnce(null)
         .mockResolvedValueOnce(existingByEmail);
-      mockPrisma.user.update.mockResolvedValue({ ...existingByEmail, googleId: profile.googleId });
+      mockPrisma.user.update.mockResolvedValue({
+        ...existingByEmail,
+        googleId: profile.googleId,
+      });
 
       const result = await service.findOrCreate(profile);
 
       expect(mockPrisma.user.create).not.toHaveBeenCalled();
       expect(mockPrisma.user.update).toHaveBeenCalledWith({
         where: { id: 'user-1' },
-        data: { googleId: profile.googleId, name: profile.name, avatarUrl: profile.avatarUrl },
+        data: {
+          googleId: profile.googleId,
+          name: profile.name,
+          avatarUrl: profile.avatarUrl,
+        },
       });
       expect(result.id).toBe('user-1');
     });

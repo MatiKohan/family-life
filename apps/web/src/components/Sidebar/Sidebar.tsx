@@ -29,6 +29,7 @@ import { SearchBar } from '../SearchBar/SearchBar';
 import { PageSummary, FolderSummary } from '../../types/page';
 import { apiRequest } from '../../lib/api-client';
 import { useFamilyStore } from '../../store/family.store';
+import { useAuthStore } from '../../store/auth.store';
 
 interface SidebarProps {
   familyId: string;
@@ -314,6 +315,8 @@ function FolderItem({
 export function Sidebar({ familyId, onClose }: SidebarProps) {
   const { t } = useTranslation();
   const { data: family } = useFamily(familyId);
+  const clearSession = useAuthStore((s) => s.clearSession);
+  const user = useAuthStore((s) => s.user);
   const { data: pages, isLoading: pagesLoading } = usePages(familyId);
   const { data: folders } = useFolders(familyId);
   const queryClient = useQueryClient();
@@ -544,6 +547,15 @@ export function Sidebar({ familyId, onClose }: SidebarProps) {
     }
   }
 
+  async function handleLogout() {
+    try {
+      await apiRequest('/auth/logout', { method: 'POST' });
+    } finally {
+      clearSession();
+      navigate('/login');
+    }
+  }
+
   function handlePageCreated(page: PageSummary) {
     setShowCreateModal(false);
     navigate(`/family/${familyId}/pages/${page.id}`);
@@ -723,9 +735,27 @@ export function Sidebar({ familyId, onClose }: SidebarProps) {
         </button>
       </div>
 
-      {/* Language switcher */}
-      <div className="px-3 py-4 border-t border-gray-100">
+      {/* User row */}
+      <div className="px-3 py-3 border-t border-gray-100 flex items-center gap-2">
+        {user?.avatarUrl ? (
+          <img src={user.avatarUrl} alt={user.name} className="w-7 h-7 rounded-full shrink-0" />
+        ) : (
+          <div className="w-7 h-7 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-xs font-semibold shrink-0">
+            {user?.name?.[0]?.toUpperCase()}
+          </div>
+        )}
+        <span className="text-sm text-gray-700 truncate flex-1">{user?.name}</span>
         <LanguageSwitcher />
+        <button
+          onClick={handleLogout}
+          className="shrink-0 text-gray-400 hover:text-gray-700 transition-colors p-1 rounded"
+          aria-label={t('auth.signOut')}
+          title={t('auth.signOut')}
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+        </button>
       </div>
     </aside>
   );

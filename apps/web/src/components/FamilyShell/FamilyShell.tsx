@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Navigate, useParams, Outlet } from 'react-router-dom';
+import { Navigate, useParams, Outlet, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/auth.store';
 import { useFamilyStore } from '../../store/family.store';
 import { useFamily } from '../../hooks/useFamily';
@@ -7,6 +7,7 @@ import { SidebarWithDrawer } from '../Sidebar/Sidebar';
 import { BottomNav } from '../BottomNav/BottomNav';
 import { LanguageSwitcher } from '../LanguageSwitcher/LanguageSwitcher';
 import { SearchBar } from '../SearchBar/SearchBar';
+import { apiRequest } from '../../lib/api-client';
 
 /**
  * FamilyShell provides the sidebar + mobile bottom nav layout for all family routes.
@@ -15,11 +16,21 @@ import { SearchBar } from '../SearchBar/SearchBar';
 export function FamilyShell() {
   const { id } = useParams<{ id: string }>();
   const user = useAuthStore((s) => s.user);
+  const clearSession = useAuthStore((s) => s.clearSession);
   const { data: family, isLoading, isError } = useFamily(id);
-
+  const navigate = useNavigate();
   const clearActiveFamily = useFamilyStore((s) => s.clearActiveFamily);
 
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+
+  async function handleLogout() {
+    try {
+      await apiRequest('/auth/logout', { method: 'POST' });
+    } finally {
+      clearSession();
+      navigate('/login');
+    }
+  }
 
   if (!id) return <Navigate to="/" replace />;
   if (isError) {
@@ -73,6 +84,16 @@ export function FamilyShell() {
                 {user?.avatarUrl && (
                   <img src={user.avatarUrl} alt={user.name} className="w-7 h-7 rounded-full" />
                 )}
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="text-gray-500 hover:text-gray-700 p-1"
+                  aria-label="Sign out"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                </button>
               </div>
             </>
           )}
