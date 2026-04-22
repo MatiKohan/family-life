@@ -40,8 +40,8 @@ export class RealtimeController {
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('X-Accel-Buffering', 'no'); // for Nginx/Railway
 
-    return this.realtimeService.streamForFamily(familyId).pipe(
-      map((event) => ({ data: { type: event.type } }) as MessageEvent),
-    );
+    return this.realtimeService
+      .streamForFamily(familyId)
+      .pipe(map((event) => ({ data: { type: event.type } }) as MessageEvent));
   }
 }
