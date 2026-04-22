@@ -302,6 +302,9 @@
     "noResults": "אין תוצאות עבור \"{{q}}\"",
     "searching": "מחפש..."
   },
+  "offline": {
+    "banner": "אין חיבור לאינטרנט — השינויים יסונכרנו כשתתחבר מחדש"
+  },
   "notifications": {
     "myNotifications": "ההתראות שלי",
     "whatsappPhone": "מספר וואטסאפ",

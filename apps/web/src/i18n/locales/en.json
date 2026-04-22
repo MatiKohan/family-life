@@ -302,6 +302,9 @@
     "noResults": "No results for \"{{q}}\"",
     "searching": "Searching..."
   },
+  "offline": {
+    "banner": "You're offline — changes will sync when you reconnect"
+  },
   "notifications": {
     "myNotifications": "My Notifications",
     "whatsappPhone": "WhatsApp phone",

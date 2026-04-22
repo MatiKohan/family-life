@@ -10,7 +10,7 @@ Status as of 2026-04-03. The app is functionally complete for core features. Rem
 - [x] NestJS monorepo (Turborepo + pnpm workspaces)
 - [x] PostgreSQL + Prisma ORM (User, Family, FamilyMember, FamilyInvite, Page, CalendarEvent)
 - [x] JWT auth (15m access token + 7d HTTP-only refresh cookie)
-- [x] Google OAuth2 login
+- [x] Google OAuth2 login (with automatic account merging for existing password users)
 - [x] Role-based access (OWNER / ADMIN / MEMBER) enforced in all service methods
 - [x] Docker multi-stage builds (API + Web)
 - [x] Vercel + Railway deployment config
@@ -427,4 +427,4 @@ Queue failed POST/PATCH/DELETE mutations when offline and replay on reconnect.
 - [ ] Photo/media pages
 - [ ] Budget tracking page type
 - [ ] Dark mode
-- [ ] Calendar sync — ICS subscribe URL (`GET /api/families/:id/calendar.ics`) for read-only subscription in Google/Apple/Outlook; optionally extend to two-way Google Calendar sync via OAuth calendar scope
+- [x] Calendar sync — ICS subscribe URL (`GET /api/families/:id/calendar.ics`) token-based, no JWT; webcal:// link for Apple Calendar, Google Calendar deep link; token regeneration in FamilySettings

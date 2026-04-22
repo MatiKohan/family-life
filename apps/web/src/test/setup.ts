@@ -223,6 +223,9 @@ i18n.use(initReactI18next).init({
           noResults: 'No results for "{{q}}"',
           searching: 'Searching...',
         },
+        offline: {
+          banner: "You're offline — changes will sync when you reconnect",
+        },
         activity: {
           title: 'Activity',
           empty: 'No activity yet',

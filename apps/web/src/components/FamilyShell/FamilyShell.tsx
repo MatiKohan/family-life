@@ -8,6 +8,7 @@ import { BottomNav } from '../BottomNav/BottomNav';
 import { LanguageSwitcher } from '../LanguageSwitcher/LanguageSwitcher';
 import { SearchBar } from '../SearchBar/SearchBar';
 import { apiRequest } from '../../lib/api-client';
+import { OfflineBanner } from '../OfflineBanner/OfflineBanner';
 
 /**
  * FamilyShell provides the sidebar + mobile bottom nav layout for all family routes.
@@ -45,6 +46,7 @@ export function FamilyShell() {
 
       {/* Main area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-auto">
+        <OfflineBanner />
         {/* Top bar (mobile only) */}
         <header className="md:hidden flex items-center gap-3 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3 border-b border-gray-200 bg-white sticky top-0 z-30">
           {mobileSearchOpen ? (
