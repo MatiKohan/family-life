@@ -165,7 +165,7 @@ export function LoginPage() {
 
         <div className="mt-4 text-center">
           <a
-            href="/api/auth/google"
+            href={`${import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : '/api'}/auth/google`}
             className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"
           >
             {t('auth.signInWithGoogle')}

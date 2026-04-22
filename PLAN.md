@@ -104,41 +104,27 @@ Status: **complete**
 
 ## Phase 7 — Apartments page type
 
-New page type for tracking apartment listings (rent or buy) from yad2.co.il.
+Status: **complete**
 
-### Data source strategy
-**Apify managed scraper** (recommended) — calls the published yad2 actor via Apify API.
-- No anti-bot complexity, no proxy management
-- Returns structured JSON (rooms, price, location, floor, images, amenities, listing URL)
-- ~$5/1k results; personal/family use fits free tier
-- Requires `APIFY_TOKEN` env var
-
-### Search params (user-configured per page)
-- Deal type: rent | buy
-- Rooms: min / max
-- Location: city / area (yad2 area codes)
-- Price: max (₪/month for rent, ₪ total for buy)
-- Floor: min / max (optional)
-- Keywords: free text (optional)
+New page type for tracking apartment listings (rent or buy) from yad2.co.il via Apify scraper.
 
 ### Backend
-- [ ] Add `'apartments'` to `PageType` in `packages/types`
-- [ ] New `ApartmentListing` type in `packages/types` (id, title, price, rooms, floor, area, city, url, imageUrl, foundAt)
-- [ ] New `ApartmentSearch` type for search params stored on the Page
-- [ ] `apartments` NestJS module with `ApartmentsService` (fetch from Apify, diff against stored, save new)
-- [ ] Add `@nestjs/schedule` (also needed for Phase 4 event reminders) — daily cron at configurable time
-- [ ] Store listings as JSONB `items` on the `Page` (consistent with list/task pages)
-- [ ] Store search params as JSONB `metadata` column on `Page` (add to schema)
+- [x] `'apartments'` in `PageType`, `ApartmentListing` + `ApartmentSearchParams` types in `packages/types`
+- [x] `apartments` NestJS module — `ApartmentsService`, `ApartmentsController`, `ApartmentsScheduler`
+- [x] Apify yad2 provider with dev-mode mock listings (when `APIFY_TOKEN` not set)
+- [x] Daily cron sync at 8 AM across all apartments pages
+- [x] `POST /apartments/sync` — manual sync trigger
+- [x] `PATCH /apartments/search-params` — save search params to `metadata` JSONB
+- [x] `PATCH /apartments/:listingId/seen` — mark listing seen per user
+- [x] Listings stored in `apartmentListings` JSONB on `Page`, `lastSyncedAt` timestamp
 
 ### Frontend
-- [ ] `ApartmentsPageView` component — card grid layout (image, price, rooms, location, link to yad2)
-- [ ] Search params form in `CreatePageModal` when type = apartments
-- [ ] "Last synced" timestamp + manual "Sync now" button
-- [ ] Mark listings as seen/archived (per user)
-
-### Future
-- [ ] WhatsApp notification when new listings found (via existing NotificationsService)
-- [ ] Support additional sources (Homeless.co.il, Facebook Marketplace)
+- [x] `ApartmentsPageView` — card grid (image, price, rooms, floor, location, yad2 link)
+- [x] Search params form (deal type, rooms, price, city, area, floor, amenity toggles)
+- [x] "Last synced" timestamp + manual "Sync now" button
+- [x] Mark listings as seen (dims card, persists per user)
+- [x] "Apartments" option in `CreatePageModal`
+- [x] Full i18n: English + Hebrew
 
 ---
 
@@ -413,12 +399,14 @@ Each list page becomes a stack of **blocks**. A block has a `type` (`list` | `te
 
 ## Phase 17 — Offline Mutation Queue
 
+Status: **complete**
+
 Queue failed POST/PATCH/DELETE mutations when offline and replay on reconnect.
 
-- [ ] Detect offline state via `navigator.onLine` + `online`/`offline` events
-- [ ] Use TanStack Query `networkMode: 'offlineFirst'` + `onlineManager` to pause mutations when offline
-- [ ] Show offline indicator in the UI (banner or status dot)
-- [ ] Replay queued mutations automatically on reconnect
+- [x] Detect offline state via `navigator.onLine` + `online`/`offline` events
+- [x] Use TanStack Query `networkMode: 'offlineFirst'` + `onlineManager` to pause mutations when offline
+- [x] Show offline indicator in the UI (amber banner at top of app)
+- [x] Replay queued mutations automatically on reconnect
 
 ---
 
