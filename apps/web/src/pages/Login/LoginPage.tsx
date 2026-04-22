@@ -7,7 +7,7 @@ import { AuthUser } from '@family-life/types';
 
 type Mode = 'login' | 'register';
 
-const DEV_PRESET = { email: 'dev@example.com', password: 'password123', name: 'Dev User' };
+const DEV_PRESET = { email: 'matikohan@gmail.com', password: 'password123', name: 'matias kohan' };
 
 interface AuthResponse {
   accessToken: string;
