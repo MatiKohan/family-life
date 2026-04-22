@@ -39,6 +39,8 @@ coverage/
 # OS
 .DS_Store
 Thumbs.db
+*.swp
+*.swo
 
 # Claude local settings (contains secrets)
 .claude/settings.local.json
