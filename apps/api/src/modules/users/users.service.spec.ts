@@ -33,17 +33,40 @@ describe('UsersService', () => {
   };
 
   describe('findOrCreate', () => {
-    it('returns existing user without creating', async () => {
+    it('returns existing user by googleId and updates name/avatar', async () => {
       const existing = { id: 'user-1', ...profile };
       mockPrisma.user.findUnique.mockResolvedValue(existing);
+      mockPrisma.user.update.mockResolvedValue(existing);
 
       const result = await service.findOrCreate(profile);
 
       expect(mockPrisma.user.create).not.toHaveBeenCalled();
+      expect(mockPrisma.user.update).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+        data: { name: profile.name, avatarUrl: profile.avatarUrl },
+      });
       expect(result.id).toBe('user-1');
     });
 
-    it('creates user when not found', async () => {
+    it('links googleId to existing email account and updates name/avatar', async () => {
+      const existingByEmail = { id: 'user-1', ...profile, googleId: null };
+      // First call (by googleId) returns null, second call (by email) returns existing
+      mockPrisma.user.findUnique
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce(existingByEmail);
+      mockPrisma.user.update.mockResolvedValue({ ...existingByEmail, googleId: profile.googleId });
+
+      const result = await service.findOrCreate(profile);
+
+      expect(mockPrisma.user.create).not.toHaveBeenCalled();
+      expect(mockPrisma.user.update).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+        data: { googleId: profile.googleId, name: profile.name, avatarUrl: profile.avatarUrl },
+      });
+      expect(result.id).toBe('user-1');
+    });
+
+    it('creates user when not found by googleId or email', async () => {
       mockPrisma.user.findUnique.mockResolvedValue(null);
       mockPrisma.user.create.mockResolvedValue({ id: 'user-2', ...profile });
 

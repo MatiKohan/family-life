@@ -14,14 +14,36 @@ export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findOrCreate(profile: GoogleProfile): Promise<AuthUser> {
-    const existing = await this.prisma.user.findUnique({
+    // 1. Already linked to this Google account
+    const byGoogleId = await this.prisma.user.findUnique({
       where: { googleId: profile.googleId },
     });
-
-    if (existing) {
-      return this.toAuthUser(existing);
+    if (byGoogleId) {
+      // Keep name and avatar up to date from Google
+      const updated = await this.prisma.user.update({
+        where: { id: byGoogleId.id },
+        data: { name: profile.name, avatarUrl: profile.avatarUrl },
+      });
+      return this.toAuthUser(updated);
     }
 
+    // 2. Existing password account with the same email — link and update
+    const byEmail = await this.prisma.user.findUnique({
+      where: { email: profile.email },
+    });
+    if (byEmail) {
+      const linked = await this.prisma.user.update({
+        where: { id: byEmail.id },
+        data: {
+          googleId: profile.googleId,
+          name: profile.name,
+          avatarUrl: profile.avatarUrl,
+        },
+      });
+      return this.toAuthUser(linked);
+    }
+
+    // 3. Brand new user
     const user = await this.prisma.user.create({
       data: {
         googleId: profile.googleId,
@@ -30,7 +52,6 @@ export class UsersService {
         avatarUrl: profile.avatarUrl,
       },
     });
-
     return this.toAuthUser(user);
   }
 
