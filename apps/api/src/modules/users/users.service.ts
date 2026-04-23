@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { AuthUser } from '@family-life/types';
 
@@ -110,6 +110,29 @@ export class UsersService {
       where: { id: userId },
       data: { refreshTokenHash: null },
     });
+  }
+
+  async deleteAccount(userId: string): Promise<void> {
+    // Check if user is the sole OWNER of any family
+    const ownedFamilies = await this.prisma.familyMember.findMany({
+      where: { userId, role: 'OWNER' },
+      include: {
+        family: {
+          include: { members: { where: { role: 'OWNER' } } },
+        },
+      },
+    });
+
+    const soloOwned = ownedFamilies.filter(
+      (m) => m.family.members.length === 1,
+    );
+    if (soloOwned.length > 0) {
+      throw new BadRequestException(
+        'You are the sole owner of one or more families. Transfer ownership or delete the family before deleting your account.',
+      );
+    }
+
+    await this.prisma.user.delete({ where: { id: userId } });
   }
 
   private toAuthUser(user: {

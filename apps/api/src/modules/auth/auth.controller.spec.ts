@@ -1,6 +1,7 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
+import { ThrottlerModule } from '@nestjs/throttler';
 import cookieParser from 'cookie-parser';
 import request from 'supertest';
 import { PrismaModule } from '../../database/prisma.module';
@@ -41,6 +42,10 @@ describe('AuthController (integration)', () => {
             }),
           ],
         }),
+        ThrottlerModule.forRoot([
+          { name: 'short', ttl: 60000, limit: 5 },
+          { name: 'medium', ttl: 60000, limit: 10 },
+        ]),
         PrismaModule,
         AuthModule,
       ],
@@ -74,5 +79,9 @@ describe('AuthController (integration)', () => {
 
   it('POST /api/auth/logout — no token → 401', async () => {
     await request(app.getHttpServer()).post('/api/auth/logout').expect(401);
+  });
+
+  it('DELETE /api/auth/me — no token → 401', async () => {
+    await request(app.getHttpServer()).delete('/api/auth/me').expect(401);
   });
 });

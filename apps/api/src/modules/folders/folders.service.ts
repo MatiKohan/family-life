@@ -88,10 +88,9 @@ export class FoldersService {
       where: { id: folderId, familyId },
     });
     if (!folder) throw new NotFoundException('Folder not found');
-    // Move all pages in this folder back to root
-    await this.prisma.page.updateMany({
+    // Delete all pages in this folder
+    await this.prisma.page.deleteMany({
       where: { folderId, familyId },
-      data: { folderId: null },
     });
     await this.prisma.pageFolder.delete({ where: { id: folderId } });
   }

@@ -5,11 +5,13 @@ import {
   DndContext,
   DragEndEvent,
   DragOverEvent,
+  DragStartEvent,
   PointerSensor,
   TouchSensor,
   closestCenter,
   useSensor,
   useSensors,
+  useDroppable,
 } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -312,6 +314,29 @@ function FolderItem({
   );
 }
 
+const ROOT_DROP_ZONE_ID = 'root-drop-zone';
+
+function RootDropZone({ visible }: { visible: boolean }) {
+  const { t } = useTranslation();
+  const { setNodeRef, isOver } = useDroppable({
+    id: ROOT_DROP_ZONE_ID,
+    data: { type: 'root-zone' },
+  });
+
+  if (!visible) return null;
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={`mt-2 px-3 py-2 border-2 border-dashed rounded-lg text-xs text-center transition-colors ${
+        isOver ? 'border-brand-400 bg-brand-50 text-brand-600' : 'border-gray-200 text-gray-400'
+      }`}
+    >
+      {t('pages.dropToRemoveFromFolder')}
+    </div>
+  );
+}
+
 export function Sidebar({ familyId, onClose }: SidebarProps) {
   const { t } = useTranslation();
   const { data: family } = useFamily(familyId);
@@ -330,6 +355,8 @@ export function Sidebar({ familyId, onClose }: SidebarProps) {
   const [overFolderId, setOverFolderId] = useState<string | null>(null);
   const [showNewFolder, setShowNewFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
+  const [folderToDelete, setFolderToDelete] = useState<FolderSummary | null>(null);
+  const [isDraggingFolderPage, setIsDraggingFolderPage] = useState(false);
   const newFolderInputRef = useRef<HTMLInputElement>(null);
 
   // Sync local state from server when not dragging
@@ -413,6 +440,12 @@ export function Sidebar({ familyId, onClose }: SidebarProps) {
   const deleteFolderMutation = useMutation({
     mutationFn: (folderId: string) =>
       apiRequest(`/families/${familyId}/folders/${folderId}`, { method: 'DELETE' }),
+    onSuccess: (_data, folderId) => {
+      const deletedFolder = localFolders.find((f) => f.id === folderId);
+      if (deletedFolder && activePageId && deletedFolder.pages.some((p) => p.id === activePageId)) {
+        navigate(`/family/${familyId}`);
+      }
+    },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['pages', familyId] });
       queryClient.invalidateQueries({ queryKey: ['folders', familyId] });
@@ -436,8 +469,13 @@ export function Sidebar({ familyId, onClose }: SidebarProps) {
   }
 
   function handleDeleteFolder(folder: FolderSummary) {
-    if (!window.confirm(`${t('pages.deleteFolder')} "${folder.name}"?`)) return;
-    deleteFolderMutation.mutate(folder.id);
+    setFolderToDelete(folder);
+  }
+
+  function confirmDeleteFolder() {
+    if (!folderToDelete) return;
+    deleteFolderMutation.mutate(folderToDelete.id);
+    setFolderToDelete(null);
   }
 
   function handleRenameFolder(folder: FolderSummary, newName: string) {
@@ -478,11 +516,27 @@ export function Sidebar({ familyId, onClose }: SidebarProps) {
     }
   }
 
+  function handleDragStart(event: DragStartEvent) {
+    setIsDragging(true);
+    const data = event.active.data.current as { type?: string; folderId?: string | null } | undefined;
+    setIsDraggingFolderPage(data?.type === 'page' && data.folderId != null);
+  }
+
   function handleDragEnd(event: DragEndEvent) {
     setIsDragging(false);
     setOverFolderId(null);
+    setIsDraggingFolderPage(false);
     const { active, over } = event;
     if (!over || active.id === over.id) return;
+
+    // Drop onto root zone — move page to root
+    if (over.id === ROOT_DROP_ZONE_ID) {
+      const activeData = active.data.current as { type?: string; folderId?: string | null } | undefined;
+      if (activeData?.type === 'page' && activeData.folderId != null) {
+        movePageToFolderMutation.mutate({ pageId: active.id as string, folderId: null });
+      }
+      return;
+    }
 
     const activeData = active.data.current as { type?: string; folderId?: string | null } | undefined;
     const overData = over.data.current as { type?: string; folderId?: string | null } | undefined;
@@ -628,12 +682,13 @@ export function Sidebar({ familyId, onClose }: SidebarProps) {
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
-              onDragStart={() => setIsDragging(true)}
+              onDragStart={handleDragStart}
               onDragOver={handleDragOver}
               onDragEnd={handleDragEnd}
               onDragCancel={() => {
                 setIsDragging(false);
                 setOverFolderId(null);
+                setIsDraggingFolderPage(false);
               }}
             >
               {/* Folders */}
@@ -675,6 +730,8 @@ export function Sidebar({ familyId, onClose }: SidebarProps) {
                   </ul>
                 </SortableContext>
               )}
+
+              <RootDropZone visible={isDraggingFolderPage} />
             </DndContext>
           </nav>
         )}
@@ -770,6 +827,36 @@ export function Sidebar({ familyId, onClose }: SidebarProps) {
           onClose={() => setShowCreateModal(false)}
           onCreated={handlePageCreated}
         />
+      )}
+
+      {folderToDelete && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setFolderToDelete(null); }}
+        >
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4">
+            <h2 className="text-lg font-semibold text-gray-900">{t('pages.deleteFolderConfirmTitle')}</h2>
+            <p className="text-sm text-gray-600">
+              {t('pages.deleteFolderConfirmBody', { name: folderToDelete.name })}
+            </p>
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setFolderToDelete(null)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteFolder}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+              >
+                {t('common.delete')}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

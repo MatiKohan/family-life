@@ -7,6 +7,10 @@ const mockPrisma = {
     findUnique: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
+    delete: jest.fn(),
+  },
+  familyMember: {
+    findMany: jest.fn(),
   },
 };
 
@@ -83,6 +87,60 @@ describe('UsersService', () => {
         data: profile,
       });
       expect(result.id).toBe('user-2');
+    });
+  });
+
+  describe('deleteAccount', () => {
+    it('deletes the user when they are not a sole owner of any family', async () => {
+      mockPrisma.familyMember.findMany.mockResolvedValue([]);
+      mockPrisma.user.delete.mockResolvedValue({});
+
+      await service.deleteAccount('user-1');
+
+      expect(mockPrisma.user.delete).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+      });
+    });
+
+    it('deletes the user when they are an owner but there are other owners in the family', async () => {
+      mockPrisma.familyMember.findMany.mockResolvedValue([
+        {
+          userId: 'user-1',
+          role: 'OWNER',
+          family: {
+            id: 'family-1',
+            members: [
+              { userId: 'user-1', role: 'OWNER' },
+              { userId: 'user-2', role: 'OWNER' },
+            ],
+          },
+        },
+      ]);
+      mockPrisma.user.delete.mockResolvedValue({});
+
+      await service.deleteAccount('user-1');
+
+      expect(mockPrisma.user.delete).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+      });
+    });
+
+    it('throws BadRequestException when user is the sole owner of a family', async () => {
+      mockPrisma.familyMember.findMany.mockResolvedValue([
+        {
+          userId: 'user-1',
+          role: 'OWNER',
+          family: {
+            id: 'family-1',
+            members: [{ userId: 'user-1', role: 'OWNER' }],
+          },
+        },
+      ]);
+
+      await expect(service.deleteAccount('user-1')).rejects.toThrow(
+        'You are the sole owner of one or more families. Transfer ownership or delete the family before deleting your account.',
+      );
+      expect(mockPrisma.user.delete).not.toHaveBeenCalled();
     });
   });
 

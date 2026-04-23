@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { ScheduleModule } from '@nestjs/schedule';
 import { HealthModule } from './modules/health/health.module';
 import { PrismaModule } from './database/prisma.module';
@@ -25,7 +24,18 @@ import { RealtimeModule } from './modules/realtime/realtime.module';
       isGlobal: true,
       envFilePath: [`.env.${process.env.NODE_ENV ?? 'development'}`, '.env'],
     }),
-    ThrottlerModule.forRoot([{ ttl: 60000, limit: 60 }]),
+    ThrottlerModule.forRoot([
+      {
+        name: 'short',
+        ttl: 60000,
+        limit: 5,
+      },
+      {
+        name: 'medium',
+        ttl: 60000,
+        limit: 10,
+      },
+    ]),
     ScheduleModule.forRoot(),
     PrismaModule,
     HealthModule,
@@ -43,11 +53,6 @@ import { RealtimeModule } from './modules/realtime/realtime.module';
     SearchModule,
     RealtimeModule,
   ],
-  providers: [
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
-  ],
+  providers: [],
 })
 export class AppModule {}

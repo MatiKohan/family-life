@@ -1,5 +1,6 @@
 import {
   Controller,
+  Delete,
   Get,
   Post,
   Body,
@@ -14,7 +15,9 @@ import { ApiTags } from '@nestjs/swagger';
 import { IsEmail, IsString, MinLength } from 'class-validator';
 import { Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
+import { ThrottlerGuard, Throttle, SkipThrottle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
+import { UsersService } from '../users/users.service';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -57,14 +60,17 @@ function cookieOptions(configService: ConfigService) {
 
 @ApiTags('auth')
 @Controller('auth')
+@UseGuards(ThrottlerGuard)
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
+    private readonly usersService: UsersService,
     private readonly configService: ConfigService,
   ) {}
 
   @Post('register')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ short: { ttl: 60000, limit: 5 } })
   async register(
     @Body() body: RegisterDto,
     @Res({ passthrough: true }) res: Response,
@@ -84,6 +90,7 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ short: { ttl: 60000, limit: 5 } })
   async login(
     @Body() body: LoginDto,
     @Res({ passthrough: true }) res: Response,
@@ -102,12 +109,14 @@ export class AuthController {
 
   @Get('google')
   @UseGuards(GoogleAuthGuard)
+  @Throttle({ medium: { ttl: 60000, limit: 10 } })
   googleLogin() {
     // Passport redirects to Google — no body needed
   }
 
   @Get('google/callback')
   @UseGuards(GoogleAuthGuard)
+  @SkipThrottle()
   async googleCallback(@Req() req: Request, @Res() res: Response) {
     const tokens = await this.authService.login(req.user as AuthUser);
     const webUrl = this.configService.get<string>(
@@ -125,6 +134,7 @@ export class AuthController {
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ medium: { ttl: 60000, limit: 10 } })
   async refresh(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
@@ -146,6 +156,7 @@ export class AuthController {
   @Post('logout')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
+  @SkipThrottle()
   async logout(
     @CurrentUser() user: AuthUser,
     @Res({ passthrough: true }) res: Response,
@@ -156,7 +167,20 @@ export class AuthController {
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
+  @SkipThrottle()
   me(@CurrentUser() user: AuthUser): AuthUser {
     return user;
+  }
+
+  @Delete('me')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @SkipThrottle()
+  async deleteAccount(
+    @CurrentUser() user: AuthUser,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    await this.usersService.deleteAccount(user.id);
+    res.clearCookie('refresh_token', cookieOptions(this.configService));
   }
 }
