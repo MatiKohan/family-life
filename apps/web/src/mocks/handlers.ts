@@ -106,6 +106,8 @@ export const mockCalendarEvents: CalendarEvent[] = [
     createdBy: 'user-1',
     createdAt: '2026-03-01T00:00:00.000Z',
     updatedAt: '2026-03-01T00:00:00.000Z',
+    assigneeId: null,
+    assignee: null,
   },
   {
     id: 'event-2',
@@ -119,6 +121,8 @@ export const mockCalendarEvents: CalendarEvent[] = [
     createdBy: 'user-1',
     createdAt: '2026-03-01T00:00:00.000Z',
     updatedAt: '2026-03-01T00:00:00.000Z',
+    assigneeId: null,
+    assignee: null,
   },
 ];
 
@@ -236,6 +240,8 @@ export const handlers = [
       createdBy: 'user-1',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      assigneeId: null,
+      assignee: null,
     };
     return HttpResponse.json(newEvent, { status: 201 });
   }),

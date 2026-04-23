@@ -235,7 +235,9 @@
     "copyLink": "העתק קישור",
     "linkCopied": "הועתק!",
     "regenerateToken": "אפס קישור",
-    "regenerateConfirm": "פעולה זו תבטל את קישור המנוי הנוכחי. להמשיך?"
+    "regenerateConfirm": "פעולה זו תבטל את קישור המנוי הנוכחי. להמשיך?",
+    "assignee": "אחראי",
+    "assigneeNone": "כולם"
   },
   "apartments": {
     "searchParams": "פרמטרי חיפוש",

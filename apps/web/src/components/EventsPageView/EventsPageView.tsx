@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { apiRequest } from '../../lib/api-client';
+import { useFamily } from '../../hooks/useFamily';
 import { CalendarEvent } from '../../types/calendar';
 import { Page } from '../../types/page';
 import { CreateEventModal } from '../CalendarView/CalendarView';
@@ -136,6 +137,8 @@ export function EventsPageView({ page, familyId }: EventsPageViewProps) {
   const [showPast, setShowPast] = useState(false);
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const { data: family } = useFamily(familyId);
+  const members = family?.members ?? [];
 
   const unlinkMutation = useMutation({
     mutationFn: (eventId: string) =>
@@ -232,6 +235,19 @@ export function EventsPageView({ page, familyId }: EventsPageViewProps) {
                   {ev.description && (
                     <p className="text-xs text-gray-400 mt-1 truncate">{ev.description}</p>
                   )}
+                  {ev.assignee && (
+                    <p className="flex items-center gap-1 text-xs text-gray-500 mt-1">
+                      <span>👤</span>
+                      {ev.assignee.avatarUrl ? (
+                        <img src={ev.assignee.avatarUrl} alt={ev.assignee.name} className="w-4 h-4 rounded-full" />
+                      ) : (
+                        <span className="w-4 h-4 rounded-full bg-brand-100 text-brand-600 text-[10px] flex items-center justify-center font-semibold">
+                          {ev.assignee.name[0].toUpperCase()}
+                        </span>
+                      )}
+                      <span>{ev.assignee.name}</span>
+                    </p>
+                  )}
                 </div>
 
                 {/* Unlink button */}
@@ -269,6 +285,7 @@ export function EventsPageView({ page, familyId }: EventsPageViewProps) {
           initialDate={new Date()}
           onClose={() => setShowCreateModal(false)}
           onCreated={handleEventCreated}
+          members={members}
         />
       )}
     </div>

@@ -235,7 +235,9 @@
     "copyLink": "Copy link",
     "linkCopied": "Copied!",
     "regenerateToken": "Reset link",
-    "regenerateConfirm": "This will invalidate the current subscription link. Continue?"
+    "regenerateConfirm": "This will invalidate the current subscription link. Continue?",
+    "assignee": "Assignee",
+    "assigneeNone": "Anyone"
   },
   "apartments": {
     "searchParams": "Search Filters",

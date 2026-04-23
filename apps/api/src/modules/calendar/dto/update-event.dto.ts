@@ -54,4 +54,8 @@ export class UpdateEventDto {
   @IsOptional()
   @IsIn(['this', 'all', 'future'])
   editMode?: 'this' | 'all' | 'future';
+
+  @IsOptional()
+  @IsString()
+  assigneeId?: string | null;
 }

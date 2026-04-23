@@ -42,4 +42,8 @@ export class CreateEventDto {
   @ValidateNested()
   @Type(() => RecurrenceDto)
   recurrence?: RecurrenceDto;
+
+  @IsOptional()
+  @IsString()
+  assigneeId?: string;
 }

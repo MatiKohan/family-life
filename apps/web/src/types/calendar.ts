@@ -16,6 +16,8 @@ export interface CalendarEvent {
   } | null;
   recurrenceBaseId?: string;
   instanceDate?: string;
+  assigneeId: string | null;
+  assignee: { id: string; name: string; avatarUrl: string | null } | null;
 }
 
 export interface CreateEventRequest {
@@ -29,4 +31,5 @@ export interface CreateEventRequest {
     freq: 'daily' | 'weekly' | 'monthly' | 'yearly';
     until?: string;
   } | null;
+  assigneeId?: string | null;
 }

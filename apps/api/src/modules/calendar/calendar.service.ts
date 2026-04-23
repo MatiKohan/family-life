@@ -115,6 +115,11 @@ export class CalendarService {
         familyId,
         startAt: { lte: rangeEnd },
       },
+      include: {
+        assignee: {
+          select: { id: true, name: true, avatarUrl: true },
+        },
+      },
       orderBy: { startAt: 'asc' },
     });
 
@@ -151,6 +156,7 @@ export class CalendarService {
         ...(dto.recurrence
           ? { recurrence: dto.recurrence as unknown as Prisma.InputJsonValue }
           : {}),
+        ...(dto.assigneeId !== undefined ? { assigneeId: dto.assigneeId } : {}),
       },
     });
 
@@ -218,6 +224,10 @@ export class CalendarService {
             fields.reminderMinutesBefore !== undefined
               ? fields.reminderMinutesBefore
               : baseEvent.reminderMinutesBefore,
+          assigneeId:
+            fields.assigneeId !== undefined
+              ? fields.assigneeId
+              : baseEvent.assigneeId,
           createdBy: userId,
         },
       });
@@ -271,6 +281,10 @@ export class CalendarService {
             fields.reminderMinutesBefore !== undefined
               ? fields.reminderMinutesBefore
               : baseEvent.reminderMinutesBefore,
+          assigneeId:
+            fields.assigneeId !== undefined
+              ? fields.assigneeId
+              : baseEvent.assigneeId,
           createdBy: userId,
           recurrence: {
             freq: newRule.freq,
@@ -313,6 +327,9 @@ export class CalendarService {
             recurrence === null
               ? Prisma.JsonNull
               : (recurrence as unknown as Prisma.InputJsonValue),
+        }),
+        ...(fields.assigneeId !== undefined && {
+          assigneeId: fields.assigneeId,
         }),
       },
     });

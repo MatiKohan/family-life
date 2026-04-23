@@ -3,7 +3,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { apiRequest } from '../../lib/api-client';
 import { useCalendarEvents } from '../../hooks/useCalendarEvents';
+import { useFamily } from '../../hooks/useFamily';
 import { CalendarEvent, CreateEventRequest } from '../../types/calendar';
+import { FamilyMember } from '../../types/family';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -104,9 +106,10 @@ interface CreateEventModalProps {
   initialDate: Date;
   onClose: () => void;
   onCreated?: (event: CalendarEvent) => void;
+  members: FamilyMember[];
 }
 
-function CreateEventModal({ familyId, initialDate, onClose, onCreated }: CreateEventModalProps) {
+function CreateEventModal({ familyId, initialDate, onClose, onCreated, members }: CreateEventModalProps) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
 
@@ -125,6 +128,7 @@ function CreateEventModal({ familyId, initialDate, onClose, onCreated }: CreateE
   const [reminderMinutesBefore, setReminderMinutesBefore] = useState<number | null>(null);
   const [recurrenceFreq, setRecurrenceFreq] = useState<string>('none');
   const [recurrenceUntil, setRecurrenceUntil] = useState('');
+  const [assigneeId, setAssigneeId] = useState<string | null>(null);
 
   const createMutation = useMutation({
     mutationFn: (req: CreateEventRequest) =>
@@ -160,6 +164,7 @@ function CreateEventModal({ familyId, initialDate, onClose, onCreated }: CreateE
       isAllDay,
       reminderMinutesBefore: reminderMinutesBefore ?? undefined,
       recurrence,
+      assigneeId: assigneeId ?? undefined,
     };
 
     createMutation.mutate(req);
@@ -308,6 +313,47 @@ function CreateEventModal({ familyId, initialDate, onClose, onCreated }: CreateE
             )}
           </div>
 
+          {/* Assignee */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t('calendar.assignee')}
+            </label>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setAssigneeId(null)}
+                className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
+                  assigneeId === null
+                    ? 'bg-brand-600 text-white border-brand-600'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-brand-300'
+                }`}
+              >
+                {t('calendar.assigneeNone')}
+              </button>
+              {members.map((m) => (
+                <button
+                  key={m.userId}
+                  type="button"
+                  onClick={() => setAssigneeId(m.userId)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border transition-colors ${
+                    assigneeId === m.userId
+                      ? 'bg-brand-600 text-white border-brand-600'
+                      : 'bg-white text-gray-600 border-gray-200 hover:border-brand-300'
+                  }`}
+                >
+                  {m.user.avatarUrl ? (
+                    <img src={m.user.avatarUrl} alt={m.user.name} className="w-4 h-4 rounded-full" />
+                  ) : (
+                    <span className="w-4 h-4 rounded-full bg-brand-100 text-brand-600 text-xs flex items-center justify-center font-semibold">
+                      {m.user.name[0].toUpperCase()}
+                    </span>
+                  )}
+                  {m.user.name.split(' ')[0]}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Actions */}
           <div className="flex justify-end gap-3 pt-2">
             <button
@@ -339,9 +385,10 @@ interface EventDetailModalProps {
   event: CalendarEvent;
   familyId: string;
   onClose: () => void;
+  members: FamilyMember[];
 }
 
-function EventDetailModal({ event, familyId, onClose }: EventDetailModalProps) {
+function EventDetailModal({ event, familyId, onClose, members }: EventDetailModalProps) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
 
@@ -356,6 +403,7 @@ function EventDetailModal({ event, familyId, onClose }: EventDetailModalProps) {
   const [recurrenceUntil, setRecurrenceUntil] = useState(event.recurrence?.until ?? '');
   const [showDeleteChoice, setShowDeleteChoice] = useState(false);
   const [showEditChoice, setShowEditChoice] = useState(false);
+  const [assigneeId, setAssigneeId] = useState<string | null>(event.assigneeId);
 
   const isRecurringInstance = !!(event.recurrenceBaseId || event.recurrence);
 
@@ -376,6 +424,7 @@ function EventDetailModal({ event, familyId, onClose }: EventDetailModalProps) {
       isAllDay,
       reminderMinutesBefore,
       recurrence,
+      assigneeId,
     };
     if (isRecurringInstance && editMode === 'this' && event.instanceDate) {
       body.instanceDate = event.instanceDate;
@@ -482,6 +531,26 @@ function EventDetailModal({ event, familyId, onClose }: EventDetailModalProps) {
                   {event.recurrence.until && <span>· {t('calendar.recurrenceUntil')} {event.recurrence.until}</span>}
                 </div>
               )}
+              {/* Assignee display */}
+              {(() => {
+                const assigneeMember = members.find((m) => m.userId === event.assigneeId);
+                if (!assigneeMember) return null;
+                return (
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <span className="font-medium">👤 {t('calendar.assignee')}:</span>
+                    <span className="flex items-center gap-1.5">
+                      {assigneeMember.user.avatarUrl ? (
+                        <img src={assigneeMember.user.avatarUrl} alt={assigneeMember.user.name} className="w-5 h-5 rounded-full" />
+                      ) : (
+                        <span className="w-5 h-5 rounded-full bg-brand-100 text-brand-600 text-xs flex items-center justify-center font-semibold">
+                          {assigneeMember.user.name[0].toUpperCase()}
+                        </span>
+                      )}
+                      {assigneeMember.user.name}
+                    </span>
+                  </div>
+                );
+              })()}
             </div>
 
             <div className="flex items-center justify-between">
@@ -615,6 +684,47 @@ function EventDetailModal({ event, familyId, onClose }: EventDetailModalProps) {
                   </div>
                 )}
               </div>
+              {/* Assignee */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t('calendar.assignee')}
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setAssigneeId(null)}
+                    className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
+                      assigneeId === null
+                        ? 'bg-brand-600 text-white border-brand-600'
+                        : 'bg-white text-gray-600 border-gray-200 hover:border-brand-300'
+                    }`}
+                  >
+                    {t('calendar.assigneeNone')}
+                  </button>
+                  {members.map((m) => (
+                    <button
+                      key={m.userId}
+                      type="button"
+                      onClick={() => setAssigneeId(m.userId)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border transition-colors ${
+                        assigneeId === m.userId
+                          ? 'bg-brand-600 text-white border-brand-600'
+                          : 'bg-white text-gray-600 border-gray-200 hover:border-brand-300'
+                      }`}
+                    >
+                      {m.user.avatarUrl ? (
+                        <img src={m.user.avatarUrl} alt={m.user.name} className="w-4 h-4 rounded-full" />
+                      ) : (
+                        <span className="w-4 h-4 rounded-full bg-brand-100 text-brand-600 text-xs flex items-center justify-center font-semibold">
+                          {m.user.name[0].toUpperCase()}
+                        </span>
+                      )}
+                      {m.user.name.split(' ')[0]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="button"
@@ -715,6 +825,8 @@ export function CalendarView({ familyId, onEventClick }: CalendarViewProps) {
 
   const { start, end } = buildMonthRange(currentMonth);
   const { data: events = [], isLoading } = useCalendarEvents(familyId, start, end);
+  const { data: family } = useFamily(familyId);
+  const members = family?.members ?? [];
 
   const gridDays = buildGridDays(currentMonth);
 
@@ -852,6 +964,17 @@ export function CalendarView({ familyId, onEventClick }: CalendarViewProps) {
                           {ev.isAllDay ? '' : formatEventTime(ev) + ' '}
                           {ev.title}
                         </span>
+                        {ev.assignee && (
+                          <span className="shrink-0 ms-auto">
+                            {ev.assignee.avatarUrl ? (
+                              <img src={ev.assignee.avatarUrl} alt={ev.assignee.name} className="w-3.5 h-3.5 rounded-full" />
+                            ) : (
+                              <span className="w-3.5 h-3.5 rounded-full bg-white/60 text-brand-700 text-[8px] flex items-center justify-center font-bold">
+                                {ev.assignee.name[0].toUpperCase()}
+                              </span>
+                            )}
+                          </span>
+                        )}
                       </button>
                     ))}
                     {hasOverflow && (
@@ -884,6 +1007,7 @@ export function CalendarView({ familyId, onEventClick }: CalendarViewProps) {
           familyId={familyId}
           initialDate={createModalDate}
           onClose={() => setCreateModalDate(null)}
+          members={members}
         />
       )}
       {detailEvent && (
@@ -891,6 +1015,7 @@ export function CalendarView({ familyId, onEventClick }: CalendarViewProps) {
           event={detailEvent}
           familyId={familyId}
           onClose={() => setDetailEvent(null)}
+          members={members}
         />
       )}
     </div>
