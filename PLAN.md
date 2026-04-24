@@ -434,6 +434,38 @@ When one family member makes a change, all other connected members see it instan
 
 ---
 
+## Phase 19 — Calendar Event Assignee
+
+Status: **complete**
+
+Assign a family member to a calendar event so it's clear who is responsible.
+
+### Backend
+- [x] Add `assigneeId String?` + `assignee User?` relation to `CalendarEvent` Prisma model (migration: `add_calendar_event_assignee`)
+- [x] `CreateEventDto` + `UpdateEventDto` accept optional `assigneeId`
+- [x] `CalendarService.listEvents` includes `assignee { id, name, avatarUrl }` via Prisma relation
+- [x] `createEvent` + all `updateEvent` paths (all/this/future) propagate `assigneeId`
+
+### Frontend
+- [x] `CalendarEvent` type gains `assigneeId: string | null` and `assignee: {...} | null`
+- [x] `CreateEventRequest` gains optional `assigneeId`
+- [x] `CreateEventModal` + `EventDetailModal` accept `members` prop; show pill-picker (Anyone + one pill per member)
+- [x] Edit modal initializes from `event.assigneeId`; sends `assigneeId` in PATCH body
+- [x] View mode shows 👤 Assignee row when assigned
+- [x] Calendar grid event pills show a tiny assignee avatar
+- [x] `EventsPageView` shows assignee name/avatar on each event row
+- [x] `CalendarView` fetches family members via `useFamily` and passes them down
+
+---
+
+## Bug fixes (2026-04-23)
+
+- [x] **Folder delete now removes pages** — `FoldersService.deleteFolder` previously moved pages to root; now deletes them. Confirmation modal added (warns that pages will be permanently deleted).
+- [x] **Mobile: no delete button for pages** — `FamilyHomePage` `PageCard` now has a ⋯ button revealing a Delete option, with a confirmation modal. Works on both mobile (tap) and desktop (hover).
+- [x] **Drag page out of folder** — Added `RootDropZone` (a `useDroppable` area) that appears when dragging a folder page. Dropping on it moves the page to root (`folderId: null`).
+
+---
+
 ## Backlog / Future ideas
 
 - [ ] Photo/media pages
