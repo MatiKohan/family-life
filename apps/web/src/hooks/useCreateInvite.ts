@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '../lib/api-client';
+import { queryKeys } from '../lib/query-keys';
 
 export interface CreateInviteResult {
   token: string;
@@ -16,7 +17,7 @@ export function useCreateInvite(familyId: string) {
         method: 'POST',
       }),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['invites', familyId] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.invites.all(familyId) });
     },
   });
 }

@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { http, HttpResponse } from 'msw';
 import { server } from '../../mocks/server';
 import { TasksPageView } from './TasksPageView';
+import { queryKeys } from '../../lib/query-keys';
 import { Page } from '../../types/page';
 import { useAuthStore } from '../../store/auth.store';
 
@@ -61,7 +62,7 @@ function renderView(page: Page = basePage) {
   useAuthStore.getState().setSession({ id: 'u1', email: 'a@b.com', name: 'A', avatarUrl: null }, 'tok');
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 
-  qc.setQueryData(['pages', 'family-1', 'page-tasks'], page);
+  qc.setQueryData(queryKeys.pages.detail('family-1', 'page-tasks'), page);
 
   server.use(
     http.get('/api/families/family-1', () =>

@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '../lib/api-client';
+import { queryKeys } from '../lib/query-keys';
 
 export function useSyncApartments(familyId: string, pageId: string) {
   const queryClient = useQueryClient();
@@ -9,6 +10,6 @@ export function useSyncApartments(familyId: string, pageId: string) {
         `/families/${familyId}/pages/${pageId}/apartments/sync`,
         { method: 'POST' },
       ),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['pages', familyId, pageId] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.pages.detail(familyId, pageId) }),
   });
 }

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { apiRequest } from '../../lib/api-client';
+import { queryKeys } from '../../lib/query-keys';
 import { useCalendarEvents } from '../../hooks/useCalendarEvents';
 import { useFamily } from '../../hooks/useFamily';
 import { CalendarEvent, CreateEventRequest } from '../../types/calendar';
@@ -137,7 +138,7 @@ function CreateEventModal({ familyId, initialDate, onClose, onCreated, members }
         body: JSON.stringify(req),
       }),
     onSuccess: (event) => {
-      queryClient.invalidateQueries({ queryKey: ['calendar', familyId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.calendar.all(familyId) });
       onCreated?.(event);
       onClose();
     },
@@ -434,7 +435,7 @@ function EventDetailModal({ event, familyId, onClose, members }: EventDetailModa
       method: 'PATCH',
       body: JSON.stringify(body),
     });
-    queryClient.invalidateQueries({ queryKey: ['calendar', familyId] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.calendar.all(familyId) });
     setEditing(false);
     onClose();
   }
@@ -468,7 +469,7 @@ function EventDetailModal({ event, familyId, onClose, members }: EventDetailModa
       ? `/families/${familyId}/calendar/${baseId}?instance=${event.instanceDate}`
       : `/families/${familyId}/calendar/${baseId}`;
     await apiRequest(url, { method: 'DELETE' });
-    queryClient.invalidateQueries({ queryKey: ['calendar', familyId] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.calendar.all(familyId) });
     onClose();
   }
 

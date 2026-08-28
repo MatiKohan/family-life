@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { apiRequest } from '../../lib/api-client';
+import { queryKeys } from '../../lib/query-keys';
 import { useFolders } from '../../hooks/useFolders';
 import { PageSummary, PageType } from '../../types/page';
 
@@ -86,7 +87,7 @@ export function CreatePageModal({ familyId, onClose, onCreated }: Props) {
         body: JSON.stringify({ title: title.trim(), emoji, type, ...(folderId ? { folderId } : {}) }),
       }),
     onSuccess: (page) => {
-      queryClient.invalidateQueries({ queryKey: ['pages', familyId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.pages.all(familyId) });
       onCreated(page);
     },
   });

@@ -9,7 +9,13 @@ import { useAuthStore } from '../../store/auth.store';
 import { mockCalendarEvents } from '../../mocks/handlers';
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'warn' }));
+beforeEach(() => {
+  // CalendarView uses `new Date()` for the visible month; mock events are in April 2026.
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(new Date('2026-04-15T12:00:00.000Z'));
+});
 afterEach(() => {
+  vi.useRealTimers();
   server.resetHandlers();
   useAuthStore.getState().clearSession();
 });

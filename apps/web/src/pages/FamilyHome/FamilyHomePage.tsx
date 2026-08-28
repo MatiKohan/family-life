@@ -9,6 +9,7 @@ import { useFamily } from '../../hooks/useFamily';
 import { useAuthStore } from '../../store/auth.store';
 import { useFamilyStore } from '../../store/family.store';
 import { apiRequest } from '../../lib/api-client';
+import { queryKeys } from '../../lib/query-keys';
 import { PageSummary, PageType } from '../../types/page';
 
 function greeting(t: (k: string) => string): string {
@@ -109,8 +110,8 @@ export function FamilyHomePage() {
     mutationFn: (pageId: string) =>
       apiRequest(`/families/${id}/pages/${pageId}`, { method: 'DELETE' }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pages', id] });
-      queryClient.invalidateQueries({ queryKey: ['folders', id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.pages.all(id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.folders.all(id) });
     },
   });
 

@@ -1,0 +1,14 @@
+---
+description: Where to read project knowledge before changing Family Life
+alwaysApply: true
+---
+
+# Family Life knowledge
+
+Before non-trivial work, read `docs/knowledge/INDEX.md` and **only** the files that match the task (api, web, data-model, auth, testing, known-gaps).
+
+Do not treat `PLAN.md` or the README feature list as current without checking `docs/knowledge/known-gaps.md` and the code.
+
+Shared contracts live in `packages/types`. Family authorization is enforced in **services** (`requireMember` / `requireRole`), not Nest role guards.
+
+After changing modules, routes, Prisma models, Query keys, or auth: update the matching file under `docs/knowledge/`.

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { apiRequest } from '../../lib/api-client';
+import { queryKeys } from '../../lib/query-keys';
 import { useFamily } from '../../hooks/useFamily';
 import { CalendarEvent } from '../../types/calendar';
 import { Page } from '../../types/page';
@@ -57,7 +58,11 @@ function LinkEventModal({ familyId, pageId, alreadyLinkedIds, onClose, onLinked 
   const sixMonthsLater = new Date(now.getFullYear(), now.getMonth() + 6, 1);
 
   const { data: allEvents = [], isLoading } = useQuery<CalendarEvent[]>({
-    queryKey: ['calendar', familyId, now.toISOString().slice(0, 10), sixMonthsLater.toISOString().slice(0, 10)],
+    queryKey: queryKeys.calendar.range(
+      familyId,
+      now.toISOString().slice(0, 10),
+      sixMonthsLater.toISOString().slice(0, 10),
+    ),
     queryFn: () =>
       apiRequest<CalendarEvent[]>(
         `/families/${familyId}/calendar?start=${encodeURIComponent(now.toISOString())}&end=${encodeURIComponent(sixMonthsLater.toISOString())}`,
@@ -72,7 +77,7 @@ function LinkEventModal({ familyId, pageId, alreadyLinkedIds, onClose, onLinked 
         body: JSON.stringify({ eventId }),
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pages', familyId, pageId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.pages.detail(familyId, pageId) });
       onLinked();
       onClose();
     },
@@ -146,7 +151,7 @@ export function EventsPageView({ page, familyId }: EventsPageViewProps) {
         method: 'DELETE',
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pages', familyId, page.id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.pages.detail(familyId, page.id) });
     },
   });
 
@@ -166,7 +171,7 @@ export function EventsPageView({ page, familyId }: EventsPageViewProps) {
       method: 'POST',
       body: JSON.stringify({ eventId: event.id }),
     }).then(() => {
-      queryClient.invalidateQueries({ queryKey: ['pages', familyId, page.id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.pages.detail(familyId, page.id) });
     }).catch(() => {
       // ignore — the event is created even if linking fails
     });
@@ -276,7 +281,7 @@ export function EventsPageView({ page, familyId }: EventsPageViewProps) {
           pageId={page.id}
           alreadyLinkedIds={page.eventIds}
           onClose={() => setShowLinkModal(false)}
-          onLinked={() => queryClient.invalidateQueries({ queryKey: ['pages', familyId, page.id] })}
+          onLinked={() => queryClient.invalidateQueries({ queryKey: queryKeys.pages.detail(familyId, page.id) })}
         />
       )}
       {showCreateModal && (

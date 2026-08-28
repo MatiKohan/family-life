@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../store/auth.store';
+import { invalidateForRealtimeEvent } from '../lib/query-keys';
 
 const API_BASE = import.meta.env.VITE_API_URL
   ? `${import.meta.env.VITE_API_URL}/api`
@@ -19,14 +20,7 @@ export function useRealtimeEvents(familyId: string) {
     es.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data) as { type: string };
-        if (data.type === 'pages') {
-          queryClient.invalidateQueries({ queryKey: ['pages', familyId] });
-          queryClient.invalidateQueries({ queryKey: ['page'] });
-        } else if (data.type === 'calendar') {
-          queryClient.invalidateQueries({ queryKey: ['calendarEvents', familyId] });
-        } else if (data.type === 'activity') {
-          queryClient.invalidateQueries({ queryKey: ['activity', familyId] });
-        }
+        void invalidateForRealtimeEvent(queryClient, familyId, data.type);
       } catch {
         // ignore malformed events
       }

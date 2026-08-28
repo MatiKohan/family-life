@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '../lib/api-client';
+import { queryKeys } from '../lib/query-keys';
 
 export function useRevokeInvite(familyId: string) {
   const queryClient = useQueryClient();
@@ -10,7 +11,7 @@ export function useRevokeInvite(familyId: string) {
         method: 'DELETE',
       }),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['invites', familyId] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.invites.all(familyId) });
     },
   });
 }

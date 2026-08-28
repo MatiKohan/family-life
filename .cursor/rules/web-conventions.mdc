@@ -1,0 +1,14 @@
+---
+description: React web conventions for Family Life
+globs: apps/web/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Web conventions
+
+- HTTP only through `apiRequest` in `src/lib/api-client.ts` (Bearer + cookies + 401 refresh).
+- Family UI under `/family/:id/*` uses `FamilyShell`. Do not persist `accessToken`; persist `user` and `activeFamilyId` as today.
+- TanStack Query: `enabled: !!id`. Always use `queryKeys` from `src/lib/query-keys.ts` for fetch, invalidate, and `setQueryData`. Never invent a parallel key (e.g. `calendarEvents`).
+- New user-visible copy: `en.json` and `he.json`.
+- Tests: Vitest + MSW (`src/mocks/handlers.ts`); colocate `*.test.tsx`. Seed auth with the Zustand store.
+- List pages render `CanvasPageView`, not `ListPageView`.

@@ -18,6 +18,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { apiRequest } from '../../lib/api-client';
+import { queryKeys } from '../../lib/query-keys';
 import type { Page, Block } from '../../types/page';
 import { BlockRenderer } from './BlockRenderer';
 
@@ -97,7 +98,7 @@ function SortableBlock({ block, familyId, pageId, onUpdate, onDelete }: Sortable
 export function CanvasPageView({ page, familyId }: Props) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const cacheKey = ['pages', familyId, page.id];
+  const cacheKey = queryKeys.pages.detail(familyId, page.id);
 
   const [blocks, setBlocks] = useState<Block[]>(page.blocks ?? []);
   const [editingTitle, setEditingTitle] = useState(false);
@@ -190,7 +191,7 @@ export function CanvasPageView({ page, familyId }: Props) {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: cacheKey });
-      queryClient.invalidateQueries({ queryKey: ['pages', familyId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.pages.all(familyId) });
     },
   });
 

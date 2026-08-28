@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { http, HttpResponse } from 'msw';
 import { server } from '../../mocks/server';
 import { ListPageView } from './ListPageView';
+import { queryKeys } from '../../lib/query-keys';
 import { Page } from '../../types/page';
 import { useAuthStore } from '../../store/auth.store';
 
@@ -53,7 +54,7 @@ function renderView(page: Page = basePage) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 
   // Seed query cache with the page data so ListPageView mutations work optimistically
-  qc.setQueryData(['pages', 'family-1', 'page-1'], page);
+  qc.setQueryData(queryKeys.pages.detail('family-1', 'page-1'), page);
 
   // Mock the family endpoint (needed for member list)
   server.use(

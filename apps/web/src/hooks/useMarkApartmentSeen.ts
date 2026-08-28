@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '../lib/api-client';
+import { queryKeys } from '../lib/query-keys';
 
 export function useMarkApartmentSeen(familyId: string, pageId: string) {
   const queryClient = useQueryClient();
@@ -8,6 +9,6 @@ export function useMarkApartmentSeen(familyId: string, pageId: string) {
       apiRequest(`/families/${familyId}/pages/${pageId}/apartments/${listingId}/seen`, {
         method: 'PATCH',
       }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['pages', familyId, pageId] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.pages.detail(familyId, pageId) }),
   });
 }

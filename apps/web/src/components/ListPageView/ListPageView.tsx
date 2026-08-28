@@ -18,6 +18,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { apiRequest } from '../../lib/api-client';
+import { queryKeys } from '../../lib/query-keys';
 import { Page, ListItem } from '../../types/page';
 import { useFamily } from '../../hooks/useFamily';
 import { FamilyMember } from '../../types/family';
@@ -231,7 +232,7 @@ export function ListPageView({ page, familyId }: Props) {
   const [titleValue, setTitleValue] = useState(page.title);
   const addInputRef = useRef<HTMLInputElement>(null);
 
-  const cacheKey = ['pages', familyId, page.id];
+  const cacheKey = queryKeys.pages.detail(familyId, page.id);
 
   // Toggle checked (optimistic)
   const toggleMutation = useMutation({
@@ -436,7 +437,7 @@ export function ListPageView({ page, familyId }: Props) {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: cacheKey });
-      queryClient.invalidateQueries({ queryKey: ['pages', familyId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.pages.all(familyId) });
     },
   });
 

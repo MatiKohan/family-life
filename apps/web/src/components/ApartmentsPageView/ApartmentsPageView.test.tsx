@@ -5,6 +5,7 @@ import { http, HttpResponse } from 'msw';
 import { server } from '../../mocks/server';
 import { ApartmentsPageView } from './ApartmentsPageView';
 import { useAuthStore } from '../../store/auth.store';
+import { queryKeys } from '../../lib/query-keys';
 import { Page } from '../../types/page';
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'warn' }));
@@ -55,7 +56,7 @@ const mockApartmentsPageWithListings: Page = {
 function renderView(page: Page = mockApartmentsPage) {
   useAuthStore.getState().setSession({ id: 'user-1', email: 'a@b.com', name: 'A', avatarUrl: null }, 'tok');
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  qc.setQueryData(['pages', 'family-1', 'page-apts'], page);
+  qc.setQueryData(queryKeys.pages.detail('family-1', 'page-apts'), page);
   server.use(
     http.get('/api/families/family-1/pages/page-apts', () => HttpResponse.json(page)),
   );

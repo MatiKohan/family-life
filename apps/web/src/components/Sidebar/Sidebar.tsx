@@ -30,6 +30,7 @@ import { LanguageSwitcher } from '../LanguageSwitcher/LanguageSwitcher';
 import { SearchBar } from '../SearchBar/SearchBar';
 import { PageSummary, FolderSummary } from '../../types/page';
 import { apiRequest } from '../../lib/api-client';
+import { queryKeys } from '../../lib/query-keys';
 import { useFamilyStore } from '../../store/family.store';
 import { useAuthStore } from '../../store/auth.store';
 
@@ -388,8 +389,8 @@ export function Sidebar({ familyId, onClose }: SidebarProps) {
         body: JSON.stringify({ pageIds }),
       }),
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['pages', familyId] });
-      queryClient.invalidateQueries({ queryKey: ['folders', familyId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.pages.all(familyId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.folders.all(familyId) });
     },
   });
 
@@ -397,8 +398,8 @@ export function Sidebar({ familyId, onClose }: SidebarProps) {
     mutationFn: (pageId: string) =>
       apiRequest(`/families/${familyId}/pages/${pageId}`, { method: 'DELETE' }),
     onSuccess: (_data, pageId) => {
-      queryClient.invalidateQueries({ queryKey: ['pages', familyId] });
-      queryClient.invalidateQueries({ queryKey: ['folders', familyId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.pages.all(familyId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.folders.all(familyId) });
       if (activePageId === pageId) navigate(`/family/${familyId}`);
     },
   });
@@ -410,8 +411,8 @@ export function Sidebar({ familyId, onClose }: SidebarProps) {
         body: JSON.stringify({ folderId }),
       }),
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['pages', familyId] });
-      queryClient.invalidateQueries({ queryKey: ['folders', familyId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.pages.all(familyId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.folders.all(familyId) });
     },
   });
 
@@ -422,7 +423,7 @@ export function Sidebar({ familyId, onClose }: SidebarProps) {
         body: JSON.stringify(data),
       }),
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['folders', familyId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.folders.all(familyId) });
     },
   });
 
@@ -433,7 +434,7 @@ export function Sidebar({ familyId, onClose }: SidebarProps) {
         body: JSON.stringify(data),
       }),
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['folders', familyId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.folders.all(familyId) });
     },
   });
 
@@ -447,8 +448,8 @@ export function Sidebar({ familyId, onClose }: SidebarProps) {
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['pages', familyId] });
-      queryClient.invalidateQueries({ queryKey: ['folders', familyId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.pages.all(familyId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.folders.all(familyId) });
     },
   });
 
@@ -458,7 +459,7 @@ export function Sidebar({ familyId, onClose }: SidebarProps) {
         method: 'PATCH',
         body: JSON.stringify({ folderIds }),
       }),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ['folders', familyId] }),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.folders.all(familyId) }),
   });
 
   // --- Event handlers ---

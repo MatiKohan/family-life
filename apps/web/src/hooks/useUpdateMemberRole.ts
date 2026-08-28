@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '../lib/api-client';
+import { queryKeys } from '../lib/query-keys';
 import type { FamilyMember, FamilyRole } from '../types/family';
 
 export function useUpdateMemberRole(familyId: string) {
@@ -12,7 +13,7 @@ export function useUpdateMemberRole(familyId: string) {
         body: JSON.stringify({ role }),
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['families', familyId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.families.detail(familyId) });
     },
   });
 }

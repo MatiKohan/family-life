@@ -1,0 +1,15 @@
+---
+description: NestJS API conventions for Family Life
+globs: apps/api/**/*.ts
+alwaysApply: false
+---
+
+# API conventions
+
+- Modules: `apps/api/src/modules/<name>/` — module, controller, service, `dto/`, co-located `*.spec.ts`.
+- Routes sit under global prefix `/api`. Controllers: `JwtAuthGuard` + `@CurrentUser()`.
+- DTOs: `class-validator`; required properties use `!`.
+- Authz: call `FamilyService.requireMember` / `requireRole` (or the module’s equivalent Prisma membership check) on **every** family-scoped method. Do not add a second public way to skip this.
+- Import types from `@family-life/types`. After `schema.prisma` changes: `prisma generate` then `migrate dev`.
+- Prisma is global — inject `PrismaService`. Mock it in Jest; do not hit a real DB in unit tests.
+- Writes that other members should see: emit realtime + activity (and notifications when assigning).

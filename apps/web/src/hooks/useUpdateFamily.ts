@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '../lib/api-client';
+import { queryKeys } from '../lib/query-keys';
 import type { Family } from '../types/family';
 
 interface UpdateFamilyPayload {
@@ -17,8 +18,8 @@ export function useUpdateFamily(familyId: string) {
         body: JSON.stringify(payload),
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['families', familyId] });
-      queryClient.invalidateQueries({ queryKey: ['families'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.families.detail(familyId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.families.all() });
     },
   });
 }

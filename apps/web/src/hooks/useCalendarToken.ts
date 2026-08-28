@@ -1,11 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '../lib/api-client';
+import { queryKeys } from '../lib/query-keys';
 
 export function useCalendarToken(familyId: string) {
   const queryClient = useQueryClient();
 
   const query = useQuery({
-    queryKey: ['calendar-token', familyId],
+    queryKey: queryKeys.calendar.token(familyId),
     queryFn: () => apiRequest<{ token: string }>(`/families/${familyId}/calendar-token`),
     staleTime: Infinity,
   });
@@ -16,7 +17,7 @@ export function useCalendarToken(familyId: string) {
         method: 'POST',
       }),
     onSuccess: (data) => {
-      queryClient.setQueryData(['calendar-token', familyId], data);
+      queryClient.setQueryData(queryKeys.calendar.token(familyId), data);
     },
   });
 
