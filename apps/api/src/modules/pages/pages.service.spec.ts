@@ -862,7 +862,9 @@ describe('PagesService', () => {
     it('notifies when a canvas item is assigned to another member', async () => {
       mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
       const blocks = [{ id: 'block-1', type: 'list' as const, items: [] }];
-      mockPrisma.page.findFirst.mockResolvedValue(makeListPage({ items: blocks }));
+      mockPrisma.page.findFirst.mockResolvedValue(
+        makeListPage({ items: blocks }),
+      );
       mockPrisma.page.update.mockResolvedValue(makeListPage({ items: blocks }));
       mockPrisma.family.findUnique.mockResolvedValue({
         name: 'Smith',
@@ -878,13 +880,9 @@ describe('PagesService', () => {
         'user-2',
       );
 
-      expect(mockNotificationsService.sendAssignmentNotification).toHaveBeenCalledWith(
-        FAMILY_ID,
-        'user-2',
-        'Milk',
-        'Smith',
-        '🏠',
-      );
+      expect(
+        mockNotificationsService.sendAssignmentNotification,
+      ).toHaveBeenCalledWith(FAMILY_ID, 'user-2', 'Milk', 'Smith', '🏠');
     });
 
     it('throws NotFoundException when page does not exist', async () => {

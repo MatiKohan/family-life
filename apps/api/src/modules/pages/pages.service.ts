@@ -664,7 +664,12 @@ export class PagesService {
       type: 'item_added',
       payload: { pageId, pageTitle: page.title, itemText: newItem.text },
     });
-    await this.notifyAssignment(familyId, userId, newItem.assigneeId, newItem.text);
+    await this.notifyAssignment(
+      familyId,
+      userId,
+      newItem.assigneeId,
+      newItem.text,
+    );
     return newItem;
   }
 
@@ -719,7 +724,12 @@ export class PagesService {
     }
     if (assigneeChanged && patch.assigneeId) {
       const patchedText = patch.text ?? existingItem?.text ?? '';
-      await this.notifyAssignment(familyId, userId, patch.assigneeId, patchedText);
+      await this.notifyAssignment(
+        familyId,
+        userId,
+        patch.assigneeId,
+        patchedText,
+      );
     }
   }
 
