@@ -92,6 +92,22 @@ export class PagesService {
     );
   }
 
+  private notifyFamilyActivity(
+    familyId: string,
+    actorUserId: string,
+    message: string,
+    url: string,
+    excludeUserIds: Array<string | null | undefined> = [],
+  ): void {
+    void this.notificationsService.sendFamilyActivityNotification({
+      familyId,
+      actorUserId,
+      excludeUserIds,
+      message,
+      url,
+    });
+  }
+
   private normalizeBlocks(rawItems: unknown[]): Block[] {
     if (rawItems.length === 0) {
       return [{ id: randomUUID(), type: 'list', items: [] }];
@@ -143,6 +159,12 @@ export class PagesService {
       },
     });
     this.realtimeService.emit(familyId, 'pages');
+    this.notifyFamilyActivity(
+      familyId,
+      userId,
+      `created a new page: ${created.title}`,
+      `/family/${familyId}/pages/${created.id}`,
+    );
     return created;
   }
 
@@ -251,6 +273,13 @@ export class PagesService {
       userId,
       newItem.assigneeId,
       newItem.text,
+    );
+    this.notifyFamilyActivity(
+      familyId,
+      userId,
+      `added "${newItem.text}" to ${page.title}`,
+      `/family/${familyId}/pages/${pageId}`,
+      [newItem.assigneeId],
     );
     return result;
   }
@@ -386,6 +415,13 @@ export class PagesService {
       userId,
       newItem.assigneeId,
       newItem.text,
+    );
+    this.notifyFamilyActivity(
+      familyId,
+      userId,
+      `added a task "${newItem.text}" to ${page.title}`,
+      `/family/${familyId}/pages/${pageId}`,
+      [newItem.assigneeId],
     );
     return result;
   }
@@ -669,6 +705,13 @@ export class PagesService {
       userId,
       newItem.assigneeId,
       newItem.text,
+    );
+    this.notifyFamilyActivity(
+      familyId,
+      userId,
+      `added "${newItem.text}" to ${page.title}`,
+      `/family/${familyId}/pages/${pageId}`,
+      [newItem.assigneeId],
     );
     return newItem;
   }

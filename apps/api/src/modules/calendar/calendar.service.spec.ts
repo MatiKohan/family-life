@@ -46,7 +46,10 @@ const prismaMock = {
   },
 };
 
-const mockNotifications = { sendAssignmentNotification: jest.fn() };
+const mockNotifications = {
+  sendAssignmentNotification: jest.fn(),
+  sendFamilyActivityNotification: jest.fn(),
+};
 
 describe('CalendarService', () => {
   let service: CalendarService;
@@ -128,6 +131,14 @@ describe('CalendarService', () => {
         }),
       );
       expect(result).toEqual(mockEvent);
+      expect(
+        mockNotifications.sendFamilyActivityNotification,
+      ).toHaveBeenCalledWith(
+        expect.objectContaining({
+          actorUserId: USER_ID,
+          message: expect.stringContaining('Birthday Party'),
+        }),
+      );
     });
 
     it('notifies when the event is assigned to another member', async () => {

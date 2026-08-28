@@ -61,4 +61,5 @@ export interface NotificationSettings {
   invite?: boolean;
   itemAssigned?: boolean;
   eventReminder?: boolean;
+  itemAdded?: boolean;
 }

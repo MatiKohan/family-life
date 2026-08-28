@@ -168,4 +168,58 @@ export class NotificationsService {
       url: '/',
     });
   }
+
+  /**
+   * Web Push to family members except the actor (and any extra excluded ids).
+   * Does not send WhatsApp. Pref `itemAdded` defaults on unless set to false.
+   */
+  async sendFamilyActivityNotification(opts: {
+    familyId: string;
+    actorUserId: string;
+    excludeUserIds?: Array<string | null | undefined>;
+    message: string;
+    url: string;
+  }): Promise<void> {
+    const { familyId, actorUserId, message, url } = opts;
+    const skip = new Set(
+      [actorUserId, ...(opts.excludeUserIds ?? [])].filter(
+        (id): id is string => !!id,
+      ),
+    );
+
+    const [family, actor, members] = await Promise.all([
+      this.prisma.family.findUnique({
+        where: { id: familyId },
+        select: { name: true, emoji: true },
+      }),
+      this.prisma.user.findUnique({
+        where: { id: actorUserId },
+        select: { name: true },
+      }),
+      this.prisma.familyMember.findMany({ where: { familyId } }),
+    ]);
+
+    if (!family) return;
+
+    const actorName = actor?.name?.trim() || 'Someone';
+    const pushUserIds: string[] = [];
+
+    for (const member of members) {
+      if (skip.has(member.userId)) continue;
+      const settings = (member.notificationSettings ?? {}) as Record<
+        string,
+        boolean
+      >;
+      if (settings.itemAdded === false) continue;
+      pushUserIds.push(member.userId);
+    }
+
+    if (pushUserIds.length === 0) return;
+
+    await this.push.sendToUsers(pushUserIds, {
+      title: `${family.emoji} ${family.name}`,
+      body: `${actorName} ${message}`,
+      url,
+    });
+  }
 }

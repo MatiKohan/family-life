@@ -200,6 +200,13 @@ export class CalendarService {
       undefined,
       event.title,
     );
+    void this.notificationsService.sendFamilyActivityNotification({
+      familyId,
+      actorUserId: userId,
+      excludeUserIds: [event.assigneeId],
+      message: `added an event: ${event.title}`,
+      url: `/family/${familyId}/calendar`,
+    });
     return event;
   }
 

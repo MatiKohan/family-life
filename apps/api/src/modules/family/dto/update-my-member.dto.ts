@@ -1,10 +1,16 @@
-import { IsOptional, IsString, ValidateNested } from 'class-validator';
+import {
+  IsBoolean,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 class NotificationSettingsDto {
-  @IsOptional() invite?: boolean;
-  @IsOptional() itemAssigned?: boolean;
-  @IsOptional() eventReminder?: boolean;
+  @IsOptional() @IsBoolean() invite?: boolean;
+  @IsOptional() @IsBoolean() itemAssigned?: boolean;
+  @IsOptional() @IsBoolean() eventReminder?: boolean;
+  @IsOptional() @IsBoolean() itemAdded?: boolean;
 }
 
 export class UpdateMyMemberDto {

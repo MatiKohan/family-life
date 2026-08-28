@@ -13,6 +13,7 @@ export interface NotificationSettings {
   invite?: boolean;
   itemAssigned?: boolean;
   eventReminder?: boolean;
+  itemAdded?: boolean;
 }
 
 export interface FamilyMember {

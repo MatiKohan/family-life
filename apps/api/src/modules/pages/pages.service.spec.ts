@@ -71,6 +71,7 @@ const mockPrisma = {
 
 const mockNotificationsService = {
   sendAssignmentNotification: jest.fn(),
+  sendFamilyActivityNotification: jest.fn(),
 };
 const mockActivityService = { log: jest.fn() };
 const mockRealtimeService = { emit: jest.fn() };
@@ -855,6 +856,14 @@ describe('PagesService', () => {
         expect.objectContaining({
           type: 'item_added',
           payload: expect.objectContaining({ itemText: 'New block item' }),
+        }),
+      );
+      expect(
+        mockNotificationsService.sendFamilyActivityNotification,
+      ).toHaveBeenCalledWith(
+        expect.objectContaining({
+          actorUserId: USER_ID,
+          message: expect.stringContaining('New block item'),
         }),
       );
     });

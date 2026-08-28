@@ -5,10 +5,11 @@ import type { FamilyMember } from '../types/family';
 
 interface UpdateMyMemberPayload {
   whatsappPhone?: string | null;
-  notificationSettings?: {
+    notificationSettings?: {
     invite?: boolean;
     itemAssigned?: boolean;
     eventReminder?: boolean;
+    itemAdded?: boolean;
   };
 }
 

@@ -8,7 +8,7 @@ Schema: `apps/api/prisma/schema.prisma`. All family data is PostgreSQL via Prism
 |---|---|
 | `User` | Email, optional Google id / password, `refreshTokenHash`, name, avatar |
 | `Family` | Name, emoji, optional `calendarToken` (ICS) |
-| `FamilyMember` | `@@unique([familyId, userId])`, `role`, `whatsappPhone`, `notificationSettings` Json |
+Prefs live in `FamilyMember.notificationSettings` Json: `invite`, `itemAssigned`, `eventReminder`, `itemAdded` (all default on when the key is missing).
 | `FamilyInvite` | Token, optional email/phone, `InviteStatus`, `expiresAt` |
 | `PageFolder` | Sidebar folders; delete folder **hard-deletes** pages in it |
 | `Page` | Typed workspace document; **content is JSON columns**, not child tables |

@@ -30,6 +30,7 @@ export function FamilySettingsPage() {
   const [phone, setPhone] = useState('');
   const [itemAssignedEnabled, setItemAssignedEnabled] = useState(true);
   const [eventReminderEnabled, setEventReminderEnabled] = useState(true);
+  const [itemAddedEnabled, setItemAddedEnabled] = useState(true);
   const updateMyMember = useUpdateMyMember(id!);
   const updateMemberRole = useUpdateMemberRole(id!);
   const updateFamily = useUpdateFamily(id!);
@@ -47,13 +48,18 @@ export function FamilySettingsPage() {
       setPhone(currentMember.whatsappPhone ?? '');
       setItemAssignedEnabled(currentMember.notificationSettings?.itemAssigned !== false);
       setEventReminderEnabled(currentMember.notificationSettings?.eventReminder !== false);
+      setItemAddedEnabled(currentMember.notificationSettings?.itemAdded !== false);
     }
   }, [currentMember]);
 
   const handleSaveNotifications = () => {
     updateMyMember.mutate({
       whatsappPhone: phone || null,
-      notificationSettings: { itemAssigned: itemAssignedEnabled, eventReminder: eventReminderEnabled },
+      notificationSettings: {
+        itemAssigned: itemAssignedEnabled,
+        eventReminder: eventReminderEnabled,
+        itemAdded: itemAddedEnabled,
+      },
     });
   };
 
@@ -291,32 +297,44 @@ export function FamilySettingsPage() {
                 </p>
               </div>
 
-              {phone && (
-                <div className="space-y-2">
-                  <label className="flex items-center gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={itemAssignedEnabled}
-                      onChange={(e) => setItemAssignedEnabled(e.target.checked)}
-                      className="w-4 h-4 rounded text-brand-600"
-                    />
-                    <span className="text-sm text-gray-700">
-                      {t('notifications.itemAssigned', "Notify me when I'm assigned an item")}
-                    </span>
-                  </label>
-                  <label className="flex items-center gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={eventReminderEnabled}
-                      onChange={(e) => setEventReminderEnabled(e.target.checked)}
-                      className="w-4 h-4 rounded text-brand-600"
-                    />
-                    <span className="text-sm text-gray-700">
-                      {t('notifications.eventReminder', 'Send me calendar event reminders')}
-                    </span>
-                  </label>
-                </div>
-              )}
+              <div className="space-y-2">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={itemAddedEnabled}
+                    onChange={(e) => setItemAddedEnabled(e.target.checked)}
+                    className="w-4 h-4 rounded text-brand-600"
+                  />
+                  <span className="text-sm text-gray-700">
+                    {t(
+                      'notifications.itemAdded',
+                      'Notify me when someone adds a list item, page, or event',
+                    )}
+                  </span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={itemAssignedEnabled}
+                    onChange={(e) => setItemAssignedEnabled(e.target.checked)}
+                    className="w-4 h-4 rounded text-brand-600"
+                  />
+                  <span className="text-sm text-gray-700">
+                    {t('notifications.itemAssigned', "Notify me when I'm assigned an item")}
+                  </span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={eventReminderEnabled}
+                    onChange={(e) => setEventReminderEnabled(e.target.checked)}
+                    className="w-4 h-4 rounded text-brand-600"
+                  />
+                  <span className="text-sm text-gray-700">
+                    {t('notifications.eventReminder', 'Send me calendar event reminders')}
+                  </span>
+                </label>
+              </div>
 
               <button
                 type="button"
