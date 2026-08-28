@@ -40,7 +40,8 @@ Delete account (`DELETE /api/auth/me`) is blocked if the user is the sole OWNER 
 | Event | WhatsApp (Twilio) | Web push |
 |---|---|---|
 | Targeted invite with phone | yes | — |
-| Item/task assigned | if member prefs | yes |
+| Item/task assigned (including canvas list items) | if member prefs | yes |
+| Calendar event assigned to someone else | if member prefs | yes |
 | Calendar reminder (cron every minute) | if prefs | yes |
 
 Prefs: `FamilyMember.notificationSettings` (`eventReminder`, `itemAssigned`, `invite`). Missing Twilio/VAPID env disables those channels. Logs: `NotificationLog`.

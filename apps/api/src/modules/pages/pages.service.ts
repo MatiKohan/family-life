@@ -71,6 +71,27 @@ export class PagesService {
     return member;
   }
 
+  private async notifyAssignment(
+    familyId: string,
+    actorUserId: string,
+    assigneeId: string | null | undefined,
+    itemText: string,
+  ): Promise<void> {
+    if (!assigneeId || assigneeId === actorUserId) return;
+    const family = await this.prisma.family.findUnique({
+      where: { id: familyId },
+      select: { name: true, emoji: true },
+    });
+    if (!family) return;
+    void this.notificationsService.sendAssignmentNotification(
+      familyId,
+      assigneeId,
+      itemText,
+      family.name,
+      family.emoji,
+    );
+  }
+
   private normalizeBlocks(rawItems: unknown[]): Block[] {
     if (rawItems.length === 0) {
       return [{ id: randomUUID(), type: 'list', items: [] }];
@@ -110,7 +131,7 @@ export class PagesService {
     });
     const sortOrder = (maxOrder._max.sortOrder ?? -1) + 1;
     const metadataValue = dto.metadata as any;
-    return this.prisma.page.create({
+    const created = await this.prisma.page.create({
       data: {
         familyId,
         title: dto.title,
@@ -121,6 +142,8 @@ export class PagesService {
         ...(dto.metadata ? { metadata: metadataValue } : {}),
       },
     });
+    this.realtimeService.emit(familyId, 'pages');
+    return created;
   }
 
   async getPage(familyId: string, pageId: string, userId: string) {
@@ -165,7 +188,7 @@ export class PagesService {
       where: { id: pageId, familyId, deletedAt: null },
     });
     if (!page) throw new NotFoundException('Page not found');
-    return this.prisma.page.update({
+    const updated = await this.prisma.page.update({
       where: { id: pageId },
       data: {
         title: dto.title,
@@ -173,6 +196,8 @@ export class PagesService {
         ...(dto.folderId !== undefined ? { folderId: dto.folderId } : {}),
       },
     });
+    this.realtimeService.emit(familyId, 'pages');
+    return updated;
   }
 
   async deletePage(familyId: string, pageId: string, userId: string) {
@@ -185,6 +210,7 @@ export class PagesService {
       where: { id: pageId },
       data: { deletedAt: new Date() },
     });
+    this.realtimeService.emit(familyId, 'pages');
   }
 
   // List items
@@ -220,21 +246,12 @@ export class PagesService {
       type: 'item_added',
       payload: { pageId, pageTitle: page.title, itemText: newItem.text },
     });
-    if (newItem.assigneeId && newItem.assigneeId !== userId) {
-      const family = await this.prisma.family.findUnique({
-        where: { id: familyId },
-        select: { name: true, emoji: true },
-      });
-      if (family) {
-        void this.notificationsService.sendAssignmentNotification(
-          familyId,
-          newItem.assigneeId,
-          newItem.text,
-          family.name,
-          family.emoji,
-        );
-      }
-    }
+    await this.notifyAssignment(
+      familyId,
+      userId,
+      newItem.assigneeId,
+      newItem.text,
+    );
     return result;
   }
 
@@ -286,20 +303,13 @@ export class PagesService {
       });
     }
     if (assigneeChanged && dto.assigneeId) {
-      const family = await this.prisma.family.findUnique({
-        where: { id: familyId },
-        select: { name: true, emoji: true },
-      });
-      if (family) {
-        const updatedItem = items.find((i) => i.id === itemId);
-        void this.notificationsService.sendAssignmentNotification(
-          familyId,
-          dto.assigneeId,
-          updatedItem?.text ?? '',
-          family.name,
-          family.emoji,
-        );
-      }
+      const updatedItem = items.find((i) => i.id === itemId);
+      await this.notifyAssignment(
+        familyId,
+        userId,
+        dto.assigneeId,
+        updatedItem?.text ?? '',
+      );
     }
     return result;
   }
@@ -364,27 +374,19 @@ export class PagesService {
       where: { id: pageId },
       data: { taskItems: [...taskItems, newItem] },
     });
+    this.realtimeService.emit(familyId, 'pages');
     void this.activityService.log({
       familyId,
       userId,
       type: 'task_created',
       payload: { pageId, pageTitle: page.title, taskTitle: newItem.text },
     });
-    if (newItem.assigneeId && newItem.assigneeId !== userId) {
-      const family = await this.prisma.family.findUnique({
-        where: { id: familyId },
-        select: { name: true, emoji: true },
-      });
-      if (family) {
-        void this.notificationsService.sendAssignmentNotification(
-          familyId,
-          newItem.assigneeId,
-          newItem.text,
-          family.name,
-          family.emoji,
-        );
-      }
-    }
+    await this.notifyAssignment(
+      familyId,
+      userId,
+      newItem.assigneeId,
+      newItem.text,
+    );
     return result;
   }
 
@@ -432,6 +434,7 @@ export class PagesService {
       where: { id: pageId },
       data: { taskItems },
     });
+    this.realtimeService.emit(familyId, 'pages');
     if (dto.status !== undefined && dto.status !== existingTaskItem?.status) {
       const updatedTaskItem = taskItems.find((i) => i.id === itemId);
       void this.activityService.log({
@@ -447,20 +450,13 @@ export class PagesService {
       });
     }
     if (assigneeChanged && dto.assigneeId) {
-      const family = await this.prisma.family.findUnique({
-        where: { id: familyId },
-        select: { name: true, emoji: true },
-      });
-      if (family) {
-        const updatedTaskItem = taskItems.find((i) => i.id === itemId);
-        void this.notificationsService.sendAssignmentNotification(
-          familyId,
-          dto.assigneeId,
-          updatedTaskItem?.text ?? '',
-          family.name,
-          family.emoji,
-        );
-      }
+      const updatedTaskItem = taskItems.find((i) => i.id === itemId);
+      await this.notifyAssignment(
+        familyId,
+        userId,
+        dto.assigneeId,
+        updatedTaskItem?.text ?? '',
+      );
     }
     return result;
   }
@@ -481,10 +477,12 @@ export class PagesService {
         ? { ...item, deletedAt: new Date().toISOString() }
         : item,
     );
-    return this.prisma.page.update({
+    const result = await this.prisma.page.update({
       where: { id: pageId },
       data: { taskItems },
     });
+    this.realtimeService.emit(familyId, 'pages');
+    return result;
   }
 
   // Event refs
@@ -501,10 +499,12 @@ export class PagesService {
     if (!page) throw new NotFoundException('Page not found');
     const eventIds = (page.eventIds as string[]) || [];
     if (!eventIds.includes(eventId)) {
-      return this.prisma.page.update({
+      const updated = await this.prisma.page.update({
         where: { id: pageId },
         data: { eventIds: [...eventIds, eventId] },
       });
+      this.realtimeService.emit(familyId, 'pages');
+      return updated;
     }
     return page;
   }
@@ -521,10 +521,12 @@ export class PagesService {
     });
     if (!page) throw new NotFoundException('Page not found');
     const eventIds = (page.eventIds as string[]).filter((id) => id !== eventId);
-    return this.prisma.page.update({
+    const updated = await this.prisma.page.update({
       where: { id: pageId },
       data: { eventIds },
     });
+    this.realtimeService.emit(familyId, 'pages');
+    return updated;
   }
 
   async reorderPages(familyId: string, userId: string, pageIds: string[]) {
@@ -656,6 +658,13 @@ export class PagesService {
       data: { items: updated as unknown as Prisma.InputJsonValue },
     });
     this.realtimeService.emit(familyId, 'pages');
+    void this.activityService.log({
+      familyId,
+      userId,
+      type: 'item_added',
+      payload: { pageId, pageTitle: page.title, itemText: newItem.text },
+    });
+    await this.notifyAssignment(familyId, userId, newItem.assigneeId, newItem.text);
     return newItem;
   }
 
@@ -678,6 +687,15 @@ export class PagesService {
     });
     if (!page) throw new NotFoundException('Page not found');
     const blocks = this.normalizeBlocks(page.items as unknown[]);
+    const existingBlock = blocks.find((b) => b.id === blockId);
+    const existingItem =
+      existingBlock?.type === 'list'
+        ? existingBlock.items.find((i) => i.id === itemId)
+        : undefined;
+    const assigneeChanged =
+      patch.assigneeId != null &&
+      patch.assigneeId !== existingItem?.assigneeId &&
+      patch.assigneeId !== userId;
     const updated = blocks.map((b) => {
       if (b.id !== blockId || b.type !== 'list') return b;
       return {
@@ -690,6 +708,19 @@ export class PagesService {
       data: { items: updated as unknown as Prisma.InputJsonValue },
     });
     this.realtimeService.emit(familyId, 'pages');
+    if (patch.checked === true && !existingItem?.checked) {
+      const patchedText = patch.text ?? existingItem?.text ?? '';
+      void this.activityService.log({
+        familyId,
+        userId,
+        type: 'item_checked',
+        payload: { pageId, pageTitle: page.title, itemText: patchedText },
+      });
+    }
+    if (assigneeChanged && patch.assigneeId) {
+      const patchedText = patch.text ?? existingItem?.text ?? '';
+      await this.notifyAssignment(familyId, userId, patch.assigneeId, patchedText);
+    }
   }
 
   async reorderBlockItems(
@@ -716,6 +747,7 @@ export class PagesService {
       where: { id: pageId },
       data: { items: updated as unknown as Prisma.InputJsonValue },
     });
+    this.realtimeService.emit(familyId, 'pages');
   }
 
   async deleteBlockItem(

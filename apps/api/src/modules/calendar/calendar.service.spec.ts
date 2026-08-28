@@ -3,6 +3,7 @@ import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { CalendarService } from './calendar.service';
 import { PrismaService } from '../../database/prisma.service';
 import { ActivityService } from '../activity/activity.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { RealtimeService } from '../realtime/realtime.service';
 
 const FAMILY_ID = 'family-1';
@@ -33,6 +34,9 @@ const prismaMock = {
   familyMember: {
     findUnique: jest.fn(),
   },
+  family: {
+    findUnique: jest.fn(),
+  },
   calendarEvent: {
     findMany: jest.fn(),
     findFirst: jest.fn(),
@@ -41,6 +45,8 @@ const prismaMock = {
     delete: jest.fn(),
   },
 };
+
+const mockNotifications = { sendAssignmentNotification: jest.fn() };
 
 describe('CalendarService', () => {
   let service: CalendarService;
@@ -52,6 +58,7 @@ describe('CalendarService', () => {
         { provide: PrismaService, useValue: prismaMock },
         { provide: ActivityService, useValue: { log: jest.fn() } },
         { provide: RealtimeService, useValue: { emit: jest.fn() } },
+        { provide: NotificationsService, useValue: mockNotifications },
       ],
     }).compile();
 
@@ -121,6 +128,33 @@ describe('CalendarService', () => {
         }),
       );
       expect(result).toEqual(mockEvent);
+    });
+
+    it('notifies when the event is assigned to another member', async () => {
+      prismaMock.familyMember.findUnique.mockResolvedValue(mockMember);
+      prismaMock.calendarEvent.create.mockResolvedValue({
+        ...mockEvent,
+        assigneeId: 'user-2',
+      });
+      prismaMock.family.findUnique.mockResolvedValue({
+        name: 'Smith',
+        emoji: '🏠',
+      });
+
+      await service.createEvent(FAMILY_ID, USER_ID, {
+        title: 'Birthday Party',
+        startAt: '2026-05-01T10:00:00Z',
+        endAt: '2026-05-01T12:00:00Z',
+        assigneeId: 'user-2',
+      });
+
+      expect(mockNotifications.sendAssignmentNotification).toHaveBeenCalledWith(
+        FAMILY_ID,
+        'user-2',
+        'Birthday Party',
+        'Smith',
+        '🏠',
+      );
     });
 
     it('throws ForbiddenException when user is not a member', async () => {

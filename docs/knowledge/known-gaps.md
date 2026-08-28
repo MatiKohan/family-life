@@ -22,7 +22,7 @@ Use this when prioritizing improvements. Verify in code before treating as still
 - Mobile `BottomNav` has no Activity entry (sidebar only).
 - PWA theme color (`#7c3aed`) vs Tailwind `brand` blue.
 
-Fixed: SSE calendar invalidation now uses `queryKeys.calendar.all` (was `['calendarEvents', …]`). See `src/lib/query-keys.ts`.
+Fixed: SSE calendar invalidation uses `queryKeys.calendar.all`. Canvas list items log activity and send assignment push. Calendar event assignment notifies the assignee.
 
 ## Tests / product
 

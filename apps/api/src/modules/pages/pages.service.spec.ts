@@ -52,6 +52,9 @@ const mockPrisma = {
   familyMember: {
     findUnique: jest.fn(),
   },
+  family: {
+    findUnique: jest.fn(),
+  },
   page: {
     findMany: jest.fn(),
     findFirst: jest.fn(),
@@ -66,6 +69,12 @@ const mockPrisma = {
   },
 };
 
+const mockNotificationsService = {
+  sendAssignmentNotification: jest.fn(),
+};
+const mockActivityService = { log: jest.fn() };
+const mockRealtimeService = { emit: jest.fn() };
+
 describe('PagesService', () => {
   let service: PagesService;
 
@@ -74,12 +83,9 @@ describe('PagesService', () => {
       providers: [
         PagesService,
         { provide: PrismaService, useValue: mockPrisma },
-        {
-          provide: NotificationsService,
-          useValue: { sendAssignmentNotification: jest.fn() },
-        },
-        { provide: ActivityService, useValue: { log: jest.fn() } },
-        { provide: RealtimeService, useValue: { emit: jest.fn() } },
+        { provide: NotificationsService, useValue: mockNotificationsService },
+        { provide: ActivityService, useValue: mockActivityService },
+        { provide: RealtimeService, useValue: mockRealtimeService },
       ],
     }).compile();
 
@@ -845,6 +851,40 @@ describe('PagesService', () => {
         }),
       );
       expect(result).toMatchObject({ text: 'New block item', checked: false });
+      expect(mockActivityService.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'item_added',
+          payload: expect.objectContaining({ itemText: 'New block item' }),
+        }),
+      );
+    });
+
+    it('notifies when a canvas item is assigned to another member', async () => {
+      mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
+      const blocks = [{ id: 'block-1', type: 'list' as const, items: [] }];
+      mockPrisma.page.findFirst.mockResolvedValue(makeListPage({ items: blocks }));
+      mockPrisma.page.update.mockResolvedValue(makeListPage({ items: blocks }));
+      mockPrisma.family.findUnique.mockResolvedValue({
+        name: 'Smith',
+        emoji: '🏠',
+      });
+
+      await service.addBlockItem(
+        FAMILY_ID,
+        PAGE_ID,
+        'block-1',
+        USER_ID,
+        'Milk',
+        'user-2',
+      );
+
+      expect(mockNotificationsService.sendAssignmentNotification).toHaveBeenCalledWith(
+        FAMILY_ID,
+        'user-2',
+        'Milk',
+        'Smith',
+        '🏠',
+      );
     });
 
     it('throws NotFoundException when page does not exist', async () => {
@@ -900,6 +940,9 @@ describe('PagesService', () => {
             ]),
           }),
         }),
+      );
+      expect(mockActivityService.log).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'item_checked' }),
       );
     });
 

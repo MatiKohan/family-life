@@ -6,6 +6,7 @@ import {
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { ActivityService } from '../activity/activity.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { RealtimeService } from '../realtime/realtime.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
@@ -86,6 +87,7 @@ export class CalendarService {
     private readonly prisma: PrismaService,
     private readonly activityService: ActivityService,
     private readonly realtimeService: RealtimeService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   private async requireMember(userId: string, familyId: string) {
@@ -94,6 +96,29 @@ export class CalendarService {
     });
     if (!member) throw new ForbiddenException('Not a family member');
     return member;
+  }
+
+  private async notifyAssignment(
+    familyId: string,
+    actorUserId: string,
+    assigneeId: string | null | undefined,
+    previousAssigneeId: string | null | undefined,
+    title: string,
+  ): Promise<void> {
+    if (!assigneeId || assigneeId === actorUserId) return;
+    if (assigneeId === previousAssigneeId) return;
+    const family = await this.prisma.family.findUnique({
+      where: { id: familyId },
+      select: { name: true, emoji: true },
+    });
+    if (!family) return;
+    void this.notificationsService.sendAssignmentNotification(
+      familyId,
+      assigneeId,
+      title,
+      family.name,
+      family.emoji,
+    );
   }
 
   async listEvents(
@@ -168,6 +193,13 @@ export class CalendarService {
     });
 
     this.realtimeService.emit(familyId, 'calendar');
+    await this.notifyAssignment(
+      familyId,
+      userId,
+      event.assigneeId,
+      undefined,
+      event.title,
+    );
     return event;
   }
 
@@ -232,6 +264,13 @@ export class CalendarService {
         },
       });
       this.realtimeService.emit(familyId, 'calendar');
+      await this.notifyAssignment(
+        familyId,
+        userId,
+        created.assigneeId,
+        baseEvent.assigneeId,
+        created.title,
+      );
       return created;
     }
 
@@ -293,6 +332,13 @@ export class CalendarService {
         },
       });
       this.realtimeService.emit(familyId, 'calendar');
+      await this.notifyAssignment(
+        familyId,
+        userId,
+        created.assigneeId,
+        baseEvent.assigneeId,
+        created.title,
+      );
       return created;
     }
 
@@ -334,6 +380,13 @@ export class CalendarService {
       },
     });
     this.realtimeService.emit(familyId, 'calendar');
+    await this.notifyAssignment(
+      familyId,
+      userId,
+      updated.assigneeId,
+      event.assigneeId,
+      updated.title,
+    );
     return updated;
   }
 
