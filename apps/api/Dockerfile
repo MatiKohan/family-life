@@ -1,6 +1,7 @@
 # Stage 1: base
 FROM node:20-alpine AS base
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Pin to package.json packageManager. pnpm 11+ needs Node 22.13 (node:sqlite).
+RUN corepack enable && corepack prepare pnpm@10.32.1 --activate
 
 # Stage 2: builder
 FROM base AS builder
@@ -30,7 +31,7 @@ RUN pnpm --filter @family-life/api build
 
 # Stage 3: runner
 FROM node:20-alpine AS runner
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@10.32.1 --activate
 WORKDIR /app
 ENV PATH="/app/apps/api/node_modules/.bin:/app/node_modules/.bin:$PATH" \
     NODE_PATH="/app/apps/api/node_modules:/app/node_modules"

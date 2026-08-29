@@ -10,7 +10,7 @@ Internal reference for working on the family-life monorepo.
 brew install postgresql@16 redis node
 brew services start postgresql@16 redis
 corepack enable
-corepack prepare pnpm@latest --activate
+corepack prepare pnpm@10.32.1 --activate
 ```
 
 Create databases:

@@ -39,3 +39,5 @@ pnpm --filter @family-life/web exec vitest run src/components/Sidebar/Sidebar.te
 `.github/workflows/ci.yml`: all branches + PRs to `main`. Postgres 16 + Redis services. `pnpm lint` → prisma generate/migrate → `pnpm test:ci`. No Playwright.
 
 `deploy.yml` on `main`: Docker build API + web (`push: false`).
+
+Images use **Node 20**. Pin **pnpm 10.32.1** in Dockerfiles (`corepack prepare pnpm@10.32.1`). Do not use `pnpm@latest`: pnpm 11 requires Node 22.13 (`node:sqlite`) and will fail the Railway/Docker build.
