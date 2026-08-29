@@ -1,0 +1,8 @@
+# Used when Railway builds with Nixpacks/Railpack instead of apps/api/Dockerfile.
+# engines.node ">=20" otherwise selects Node 20; Corepack then installs pnpm 11 and crashes
+# (node:sqlite). Node 22.13+ is required for pnpm 11.
+[variables]
+NIXPACKS_NODE_VERSION = "22"
+
+[phases.setup]
+nixPkgs = ["nodejs_22"]

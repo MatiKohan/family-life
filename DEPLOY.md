@@ -14,8 +14,13 @@
 1. Go to [railway.app](https://railway.app) → **New Project → Deploy from GitHub repo**
 2. Select the `family-life` repo
 3. Railway creates a service — configure it:
-   - **Root Directory**: `apps/api`
-   - **Dockerfile Path**: `apps/api/Dockerfile`
+   - **Root Directory**: leave **empty** (repository root). The API image copies the
+     whole workspace; setting this to `apps/api` skips the Dockerfile and uses
+     Nixpacks with Node 20 + latest pnpm, which currently crashes (`node:sqlite`).
+   - **Builder**: Dockerfile (`apps/api/Dockerfile`) **or** Nixpacks/Railpack with Node 22
+     (`nixpacks.toml`, `apps/api/nixpacks.toml`, `.node-version`)
+   - **Dockerfile Path** (if using Docker): `apps/api/Dockerfile`
+   - Optional variable if Nixpacks still picks Node 20: `NIXPACKS_NODE_VERSION=22`
 4. Add a **PostgreSQL** add-on: click **+ New** → **Database → PostgreSQL**
    - `DATABASE_URL` is injected automatically
 5. Add a **Redis** add-on: click **+ New** → **Database → Redis**
@@ -29,6 +34,9 @@
    GOOGLE_CLIENT_SECRET=<from Google Cloud Console>
    GOOGLE_CALLBACK_URL=https://<your-api>.up.railway.app/api/auth/google/callback
    WEB_URL=https://<your-app>.vercel.app
+   VAPID_PUBLIC_KEY=<from local generate — same pair as Vercel>
+   VAPID_PRIVATE_KEY=<from local generate — never put this on Vercel>
+   VAPID_SUBJECT=mailto:<your-email>
    ```
    > WhatsApp (Phase 4 — add when ready):
    > ```
@@ -66,10 +74,12 @@
 3. Configure:
    - **Root Directory**: `apps/web`
    - **Framework Preset**: Vite (auto-detected)
-4. Add environment variable:
+4. Add environment variables:
    ```
    VITE_API_URL=https://<your-api>.up.railway.app
+   VITE_VAPID_PUBLIC_KEY=<same value as Railway VAPID_PUBLIC_KEY>
    ```
+   Vite bakes `VITE_*` in at **build** time. After changing this key, **Redeploy** the web app.
 5. Click **Deploy**
 6. Note your Vercel URL: `https://<your-app>.vercel.app`
 

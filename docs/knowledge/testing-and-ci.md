@@ -40,4 +40,4 @@ pnpm --filter @family-life/web exec vitest run src/components/Sidebar/Sidebar.te
 
 `deploy.yml` on `main`: Docker build API + web (`push: false`).
 
-Images use **Node 20**. Pin **pnpm 10.32.1** in Dockerfiles (`corepack prepare pnpm@10.32.1`). Do not use `pnpm@latest`: pnpm 11 requires Node 22.13 (`node:sqlite`) and will fail the Railway/Docker build.
+Images use **Node 22** (`node:22-alpine`) and **pnpm 10.32.1** via `npm install -g` (not Corepack `latest`). Railway often **does not use** `apps/api/Dockerfile` when Root Directory is `apps/api`; then Nixpacks/Railpack installs Node 20 + pnpm 11 and crashes (`node:sqlite`). `nixpacks.toml`, `apps/api/nixpacks.toml`, and `.node-version` force **Node 22**.

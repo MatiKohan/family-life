@@ -16,7 +16,7 @@ Turborepo + pnpm workspaces (`apps/*`, `packages/*`).
 
 **Local:** API `:3000` (`/api`, Swagger `/api/docs`), web `:5173` (Vite proxies `/api` → API). Postgres 16 required. Redis is in Homebrew/CI/`DEPLOY.md` but **the API does not use Redis** today (realtime is in-process).
 
-**Prod:** API on Railway (`apps/api/Dockerfile`), web on Vercel (`VITE_API_URL`). See `DEPLOY.md`.
+**Prod:** API on Railway (`apps/api/Dockerfile` when the service root is the repo; otherwise Nixpacks + Node 22), web on Vercel (`VITE_API_URL`). See `DEPLOY.md`.
 
 ## Request flow
 

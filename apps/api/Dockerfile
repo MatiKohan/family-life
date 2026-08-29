@@ -1,7 +1,8 @@
 # Stage 1: base
-FROM node:20-alpine AS base
-# Pin to package.json packageManager. pnpm 11+ needs Node 22.13 (node:sqlite).
-RUN corepack enable && corepack prepare pnpm@10.32.1 --activate
+FROM node:22-alpine AS base
+# Node 22: pnpm 11 needs node:sqlite (missing on Node 20). Also pin pnpm so Corepack
+# cannot float to latest. Railway often uses Nixpacks, not this file — see nixpacks.toml.
+RUN npm install -g pnpm@10.32.1
 
 # Stage 2: builder
 FROM base AS builder
@@ -30,8 +31,8 @@ RUN pnpm --filter @family-life/api exec prisma generate
 RUN pnpm --filter @family-life/api build
 
 # Stage 3: runner
-FROM node:20-alpine AS runner
-RUN corepack enable && corepack prepare pnpm@10.32.1 --activate
+FROM node:22-alpine AS runner
+RUN npm install -g pnpm@10.32.1
 WORKDIR /app
 ENV PATH="/app/apps/api/node_modules/.bin:/app/node_modules/.bin:$PATH" \
     NODE_PATH="/app/apps/api/node_modules:/app/node_modules"

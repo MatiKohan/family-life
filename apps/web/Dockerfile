@@ -1,7 +1,7 @@
 # Stage 1: builder
-FROM node:20-alpine AS builder
-# Pin to package.json packageManager. pnpm 11+ needs Node 22.13 (node:sqlite).
-RUN corepack enable && corepack prepare pnpm@10.32.1 --activate
+FROM node:22-alpine AS builder
+# Node 22: pnpm 11 needs node:sqlite (missing on Node 20).
+RUN npm install -g pnpm@10.32.1
 WORKDIR /app
 
 # Copy manifests for dependency installation
