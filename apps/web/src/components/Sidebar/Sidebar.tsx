@@ -39,6 +39,14 @@ interface SidebarProps {
   onClose?: () => void;
 }
 
+function HomeIcon() {
+  return (
+    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h4v-6h4v6h4a1 1 0 001-1V10" />
+    </svg>
+  );
+}
+
 function CalendarIcon() {
   return (
     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
@@ -740,6 +748,22 @@ export function Sidebar({ familyId, onClose }: SidebarProps) {
 
       {/* Bottom nav */}
       <div className="p-4 border-t border-gray-100 space-y-1">
+        <NavLink
+          to={`/family/${familyId}`}
+          end
+          onClick={() => onClose?.()}
+          className={({ isActive }) =>
+            `flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+              isActive
+                ? 'bg-brand-50 text-brand-700 font-medium'
+                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+            }`
+          }
+        >
+          <HomeIcon />
+          {t('nav.home')}
+        </NavLink>
+
         <NavLink
           to={`/family/${familyId}/calendar`}
           onClick={() => onClose?.()}

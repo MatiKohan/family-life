@@ -234,6 +234,7 @@ describe('Sidebar', () => {
     renderSidebar();
 
     // These labels come from i18n: pages.calendar, activity.title, family.settings
+    expect(screen.getByRole('link', { name: /^home$/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /calendar/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /assigned to me/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /activity/i })).toBeInTheDocument();

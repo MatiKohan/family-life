@@ -67,7 +67,7 @@ Many mutations live **inline** in Sidebar / canvas / calendar views, not only in
 ## Layout
 
 - Desktop `md+`: `Sidebar` + main
-- Mobile: `BottomNav` (Pages, Calendar, Activity, New, Settings)
+- Mobile: `BottomNav` (Home, Calendar, Activity, New, Settings)
 
 - Search: sidebar desktop, header magnifier on mobile
 - DnD: `@dnd-kit` (pages, folders, list/task items)

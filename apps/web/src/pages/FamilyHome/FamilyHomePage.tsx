@@ -109,6 +109,7 @@ export function FamilyHomePage() {
   const assignedPreview = [
     ...(dashboard?.assigned.listItems ?? []).map((i) => i.text),
     ...(dashboard?.assigned.tasks ?? []).map((i) => i.text),
+    ...(dashboard?.assigned.events ?? []).map((i) => i.title),
   ].slice(0, 3);
   const assignedCount =
     (dashboard?.assigned.listItems.length ?? 0) +
@@ -141,29 +142,28 @@ export function FamilyHomePage() {
     setPageToDelete(null);
   }
 
-  return (
-    <main className="flex-1 overflow-y-auto bg-gray-50">
+  const leftoverHref = firstListPage
+    ? `/family/${id}/pages/${firstListPage.id}`
+    : `/family/${id}/assigned`;
 
-      {/* Hero header */}
-      <div className="relative bg-gradient-to-br from-brand-500 to-brand-700 px-6 pt-8 pb-8 overflow-hidden">
-        {/* Decorative circles — behind content */}
+  return (
+    <main className="flex-1 bg-gray-50">
+
+      {/* Hero — compact on mobile so Today sits above the fold */}
+      <div className="relative bg-gradient-to-br from-brand-500 to-brand-700 px-4 md:px-6 pt-4 md:pt-8 pb-16 md:pb-20 overflow-hidden">
         <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full bg-white/5 pointer-events-none" />
         <div className="absolute top-16 -right-6 w-28 h-28 rounded-full bg-white/5 pointer-events-none" />
 
-        {/* Content — above decorative layer */}
         <div className="relative z-10">
-          {/* App brand */}
-          <div className="flex items-center gap-2 mb-6">
+          <div className="hidden md:flex items-center gap-2 mb-6">
             <img src="/logo.svg" alt="" className="w-8 h-8 rounded-xl shadow-md" />
             <span className="text-white/80 text-sm font-medium tracking-wide">{t('nav.familyLife')}</span>
           </div>
 
-          {/* Greeting */}
-          <h1 className="text-3xl font-bold text-white mb-1">
+          <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">
             {greeting(t)}{firstName ? `, ${firstName}` : ''}!
           </h1>
 
-          {/* Family info */}
           {family ? (
             <div className="flex items-center gap-2 mt-2">
               <span className="text-xl">{family.emoji}</span>
@@ -180,10 +180,15 @@ export function FamilyHomePage() {
         </div>
       </div>
 
-      {/* Today + assigned */}
-      <div className="px-4 -mt-2 space-y-3">
-        <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-5">
-          <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+      <div className="px-4 md:px-6 -mt-12 md:-mt-14 space-y-3 pb-8">
+        <section
+          aria-labelledby="home-today-heading"
+          className="bg-white rounded-2xl shadow-md border border-gray-100 p-4 md:p-5"
+        >
+          <h2
+            id="home-today-heading"
+            className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3"
+          >
             {t('home.today')}
           </h2>
           {dashboard?.todayEvents.length ? (
@@ -192,11 +197,11 @@ export function FamilyHomePage() {
                 <li key={ev.id}>
                   <Link
                     to={`/family/${id}/calendar?event=${ev.recurrenceBaseId ?? ev.id}`}
-                    className="flex items-center justify-between text-sm text-gray-800 hover:text-brand-700"
+                    className="flex items-center justify-between gap-3 min-h-11 text-sm text-gray-800 hover:text-brand-700"
                   >
-                    <span className="font-medium">{ev.title}</span>
+                    <span className="font-medium truncate">{ev.title}</span>
                     {!ev.isAllDay && (
-                      <span className="text-gray-400">
+                      <span className="text-gray-400 shrink-0">
                         {new Date(ev.startAt).toLocaleTimeString(undefined, {
                           hour: 'numeric',
                           minute: '2-digit',
@@ -210,12 +215,12 @@ export function FamilyHomePage() {
           ) : (
             <p className="text-sm text-gray-400">{t('home.noEventsToday')}</p>
           )}
-        </div>
+        </section>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Link
             to={`/family/${id}/assigned`}
-            className="bg-white rounded-2xl shadow-md border border-gray-100 p-5 hover:border-brand-200 transition-colors"
+            className="bg-white rounded-2xl shadow-md border border-gray-100 p-4 md:p-5 hover:border-brand-200 transition-colors min-h-11"
           >
             <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">
               {t('home.assignedToMe')}
@@ -236,24 +241,21 @@ export function FamilyHomePage() {
             )}
           </Link>
 
-          {firstListPage && (
-            <Link
-              to={`/family/${id}/pages/${firstListPage.id}`}
-              className="bg-white rounded-2xl shadow-md border border-gray-100 p-5 hover:border-brand-200 transition-colors"
-            >
-              <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">
-                {t('home.leftoverItems')}
-              </h2>
-              <p className="text-sm text-gray-800">
-                {t('home.leftoverCount', { count: dashboard?.openListItems ?? 0 })}
-              </p>
-            </Link>
-          )}
+          <Link
+            to={leftoverHref}
+            className="bg-white rounded-2xl shadow-md border border-gray-100 p-4 md:p-5 hover:border-brand-200 transition-colors min-h-11"
+          >
+            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">
+              {t('home.leftoverItems')}
+            </h2>
+            <p className="text-sm text-gray-800">
+              {t('home.leftoverCount', { count: dashboard?.openListItems ?? 0 })}
+            </p>
+          </Link>
         </div>
       </div>
 
-      {/* Pages card — pulled up to overlap the hero */}
-      <div className="px-4 pt-4 pb-8">
+      <div className="px-4 md:px-6 pb-8">
         <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-5">
 
           {/* Section header */}

@@ -21,9 +21,9 @@ describe('BottomNav', () => {
     expect(link).toHaveAttribute('href', '/family/family-1/activity');
   });
 
-  it('keeps Pages, Calendar, New page, and Settings', () => {
+  it('keeps Home, Calendar, New page, and Settings', () => {
     renderNav();
-    expect(screen.getByRole('link', { name: /pages/i })).toHaveAttribute('href', '/family/family-1');
+    expect(screen.getByRole('link', { name: /home/i })).toHaveAttribute('href', '/family/family-1');
     expect(screen.getByRole('link', { name: /calendar/i })).toHaveAttribute('href', '/family/family-1/calendar');
     expect(screen.getByRole('button', { name: /\+ new page/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /settings/i })).toHaveAttribute(
