@@ -31,8 +31,8 @@ You are the frontend engineer for the family-life project — a React + Vite app
 |---|---|---|
 | `<LoginPage />` | ✅ | Email/password + Google OAuth |
 | `<AuthCallbackPage />` | ✅ | OAuth redirect handler |
-| `<HomePage />` | ✅ | Placeholder — replace with app content |
-| `<Layout />` | ✅ | Nav shell with logout |
+| `<FamilyHomePage />` | ✅ | Family index under FamilyShell |
+| `<Layout />` | ✅ | Legacy wrapper for `/` redirect |
 | `<ProtectedRoute />` | ✅ | Redirect to /login if unauthenticated |
 | `<ErrorBoundary />` | ✅ | Catches render errors |
 

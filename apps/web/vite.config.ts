@@ -18,7 +18,7 @@ export default defineConfig({
         name: 'Shlom Bait',
         short_name: 'Shlom Bait',
         description: 'Family management app',
-        theme_color: '#7c3aed',
+        theme_color: '#2563eb',
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',

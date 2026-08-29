@@ -17,7 +17,7 @@ React 19 + Vite, Tailwind, TanStack Query, Zustand, React Router, i18n (`en` / `
 | `/join/:token` | public | Invite redeem |
 | `/family/create` | ProtectedRoute | Create family (no shell) |
 | `/family/:id` | Protected + **FamilyShell** | Home, pages, calendar, settings, activity |
-| `/` | Protected + legacy **Layout** | `HomeRedirect` (not `HomePage.tsx`) |
+| `/` | Protected + legacy **Layout** | `HomeRedirect` |
 | `*` | | navigate `/` |
 
 `HomeRedirect`: `family-storage` `activeFamilyId`, else first family from `useMyFamilies()`, else `/family/create`.
@@ -32,8 +32,6 @@ React 19 + Vite, Tailwind, TanStack Query, Zustand, React Router, i18n (`en` / `
 | `tasks` | `TasksPageView` |
 | `events` | `EventsPageView` |
 | `apartments` | `ApartmentsPageView` |
-
-`ListPageView` still exists and is tested; **routing uses Canvas** for lists. `NotesPageView/` is empty. `HomePage.tsx` is unused.
 
 ## Zustand
 
@@ -67,7 +65,8 @@ Many mutations live **inline** in Sidebar / canvas / calendar views, not only in
 ## Layout
 
 - Desktop `md+`: `Sidebar` + main
-- Mobile: `BottomNav` (Pages, Calendar, New, Settings — **no Activity tab**; Activity is in sidebar)
+- Mobile: `BottomNav` (Pages, Calendar, Activity, New, Settings)
+
 - Search: sidebar desktop, header magnifier on mobile
 - DnD: `@dnd-kit` (pages, folders, list/task items)
 

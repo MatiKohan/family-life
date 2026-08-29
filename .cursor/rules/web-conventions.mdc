@@ -11,4 +11,4 @@ alwaysApply: false
 - TanStack Query: `enabled: !!id`. Always use `queryKeys` from `src/lib/query-keys.ts` for fetch, invalidate, and `setQueryData`. Never invent a parallel key (e.g. `calendarEvents`).
 - New user-visible copy: `en.json` and `he.json`.
 - Tests: Vitest + MSW (`src/mocks/handlers.ts`); colocate `*.test.tsx`. Seed auth with the Zustand store.
-- List pages render `CanvasPageView`, not `ListPageView`.
+- List pages render `CanvasPageView`.

@@ -24,6 +24,14 @@ function CalendarIcon() {
   );
 }
 
+function ActivityIcon() {
+  return (
+    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  );
+}
+
 function SettingsIcon() {
   return (
     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
@@ -85,6 +93,19 @@ export function BottomNav({ familyId }: Props) {
         >
           <CalendarIcon />
           <span>{t('pages.calendar')}</span>
+        </NavLink>
+
+        {/* Activity tab */}
+        <NavLink
+          to={`/family/${familyId}/activity`}
+          className={({ isActive }) =>
+            `flex-1 flex flex-col items-center justify-center gap-1 py-2 text-xs font-medium transition-colors ${
+              isActive ? activeClass : inactiveClass
+            }`
+          }
+        >
+          <ActivityIcon />
+          <span>{t('activity.title')}</span>
         </NavLink>
 
         {/* New Page tab */}

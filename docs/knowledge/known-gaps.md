@@ -18,11 +18,9 @@ Use this when prioritizing improvements. Verify in code before treating as still
 
 ## Frontend inconsistencies
 
-- Unused: `pages/Home/HomePage.tsx`, empty `NotesPageView/`, `ListPageView` not on the list route.
-- Mobile `BottomNav` has no Activity entry (sidebar only).
-- PWA theme color (`#7c3aed`) vs Tailwind `brand` blue.
+- (none currently tracked)
 
-Fixed: SSE calendar invalidation uses `queryKeys.calendar.all`. Canvas list items log activity and send assignment push. Calendar event assignment notifies the assignee.
+Fixed: SSE calendar invalidation uses `queryKeys.calendar.all`. Canvas list items log activity and send assignment push. Calendar event assignment notifies the assignee. Mobile `BottomNav` includes Activity. PWA/theme/logo use brand blue (`#2563eb` / `#3b82f6`). Unused `HomePage` and unused `ListPageView` removed (lists still use `CanvasPageView`).
 
 ## Tests / product
 
