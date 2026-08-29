@@ -4,7 +4,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { http, HttpResponse } from 'msw';
 import { server } from '../../mocks/server';
 import { ActivityFeedPage } from './ActivityFeedPage';
-import { formatActivity, timeAgo } from './activityFeed.utils';
+import { activityHref, formatActivity, timeAgo } from './activityFeed.utils';
 import { useAuthStore } from '../../store/auth.store';
 import type { ActivityLog, ActivityFeedResponse } from '@family-life/types';
 
@@ -20,7 +20,7 @@ const mockLog: ActivityLog = {
   familyId: 'family-1',
   userId: 'user-1',
   type: 'item_added',
-  payload: { itemText: 'Milk', pageTitle: 'Groceries' },
+  payload: { itemText: 'Milk', pageTitle: 'Groceries', pageId: 'page-1' },
   createdAt: new Date().toISOString(),
   user: { id: 'user-1', name: 'Test User', avatarUrl: null },
 };
@@ -58,6 +58,10 @@ describe('ActivityFeedPage', () => {
     renderPage();
     await waitFor(() => expect(screen.getByText('Test User')).toBeInTheDocument());
     expect(screen.getByText('Added "Milk" to Groceries')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Added "Milk" to Groceries/ })).toHaveAttribute(
+      'href',
+      '/family/family-1/pages/page-1',
+    );
   });
 
   it('shows Load more button when nextCursor is set', async () => {
@@ -102,6 +106,27 @@ function t(key: string, opts?: Record<string, unknown>): string {
   }
   return str;
 }
+
+describe('activityHref', () => {
+  it('links list activity to the page', () => {
+    expect(
+      activityHref('family-1', {
+        ...mockLog,
+        payload: { pageId: 'page-1' },
+      }),
+    ).toBe('/family/family-1/pages/page-1');
+  });
+
+  it('links event activity to the calendar', () => {
+    expect(
+      activityHref('family-1', {
+        ...mockLog,
+        type: 'event_created',
+        payload: { eventId: 'event-1', title: 'Dinner' },
+      }),
+    ).toBe('/family/family-1/calendar?event=event-1');
+  });
+});
 
 describe('formatActivity', () => {
   const base: ActivityLog = {

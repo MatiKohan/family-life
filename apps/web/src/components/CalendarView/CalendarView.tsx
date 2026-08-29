@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { apiRequest } from '../../lib/api-client';
 import { queryKeys } from '../../lib/query-keys';
@@ -7,6 +8,7 @@ import { useCalendarEvents } from '../../hooks/useCalendarEvents';
 import { useFamily } from '../../hooks/useFamily';
 import { CalendarEvent, CreateEventRequest } from '../../types/calendar';
 import { FamilyMember } from '../../types/family';
+import { EventRsvpPanel } from './EventRsvpPanel';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -552,6 +554,12 @@ function EventDetailModal({ event, familyId, onClose, members }: EventDetailModa
                   </div>
                 );
               })()}
+              <EventRsvpPanel
+                familyId={familyId}
+                eventId={event.recurrenceBaseId ?? event.id}
+                attendees={event.attendees ?? []}
+                members={members}
+              />
             </div>
 
             <div className="flex items-center justify-between">
@@ -818,6 +826,7 @@ interface CalendarViewProps {
 
 export function CalendarView({ familyId, onEventClick }: CalendarViewProps) {
   const { t, i18n } = useTranslation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const today = new Date();
 
   const [currentMonth, setCurrentMonth] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
@@ -828,6 +837,19 @@ export function CalendarView({ familyId, onEventClick }: CalendarViewProps) {
   const { data: events = [], isLoading } = useCalendarEvents(familyId, start, end);
   const { data: family } = useFamily(familyId);
   const members = family?.members ?? [];
+
+  const openEventId = searchParams.get('event');
+  useEffect(() => {
+    if (!openEventId || events.length === 0) return;
+    const found = events.find(
+      (e) => e.id === openEventId || e.recurrenceBaseId === openEventId,
+    );
+    if (!found) return;
+    setDetailEvent(found);
+    const next = new URLSearchParams(searchParams);
+    next.delete('event');
+    setSearchParams(next, { replace: true });
+  }, [openEventId, events, searchParams, setSearchParams]);
 
   const gridDays = buildGridDays(currentMonth);
 

@@ -10,6 +10,7 @@ import { FamilyModule } from './modules/family/family.module';
 import { InvitesModule } from './modules/invites/invites.module';
 import { PagesModule } from './modules/pages/pages.module';
 import { CalendarModule } from './modules/calendar/calendar.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { ApartmentsModule } from './modules/apartments/apartments.module';
 import { PushModule } from './modules/push/push.module';
@@ -45,6 +46,7 @@ import { RealtimeModule } from './modules/realtime/realtime.module';
     InvitesModule,
     PagesModule,
     CalendarModule,
+    DashboardModule,
     NotificationsModule,
     ApartmentsModule,
     PushModule,

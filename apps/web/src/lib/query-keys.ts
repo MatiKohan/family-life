@@ -23,6 +23,11 @@ export const queryKeys = {
   activity: {
     all: (familyId: string | undefined) => ['activity', familyId] as const,
   },
+  dashboard: {
+    all: (familyId: string | undefined) => ['dashboard', familyId] as const,
+    range: (familyId: string | undefined, start: string, end: string) =>
+      ['dashboard', familyId, start, end] as const,
+  },
   search: {
     query: (familyId: string | undefined, q: string) => ['search', familyId, q] as const,
   },
@@ -41,10 +46,14 @@ export function invalidateForRealtimeEvent(
     return Promise.all([
       queryClient.invalidateQueries({ queryKey: queryKeys.pages.all(familyId) }),
       queryClient.invalidateQueries({ queryKey: queryKeys.activity.all(familyId) }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all(familyId) }),
     ]).then(() => undefined);
   }
   if (type === 'calendar') {
-    return queryClient.invalidateQueries({ queryKey: queryKeys.calendar.all(familyId) });
+    return Promise.all([
+      queryClient.invalidateQueries({ queryKey: queryKeys.calendar.all(familyId) }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all(familyId) }),
+    ]).then(() => undefined);
   }
   if (type === 'activity') {
     return queryClient.invalidateQueries({ queryKey: queryKeys.activity.all(familyId) });

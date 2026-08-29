@@ -756,6 +756,20 @@ export function Sidebar({ familyId, onClose }: SidebarProps) {
         </NavLink>
 
         <NavLink
+          to={`/family/${familyId}/assigned`}
+          onClick={() => onClose?.()}
+          className={({ isActive }) =>
+            `flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+              isActive
+                ? 'bg-brand-50 text-brand-700 font-medium'
+                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+            }`
+          }
+        >
+          {t('assigned.title')}
+        </NavLink>
+
+        <NavLink
           to={`/family/${familyId}/activity`}
           onClick={() => onClose?.()}
           className={({ isActive }) =>

@@ -384,4 +384,47 @@ describe('CalendarService', () => {
       expect(result).toEqual(updated);
     });
   });
+
+  describe('rsvpEvent', () => {
+    it('stores the member RSVP on the event', async () => {
+      prismaMock.familyMember.findUnique.mockResolvedValue(mockMember);
+      prismaMock.calendarEvent.findFirst.mockResolvedValue({
+        ...mockEvent,
+        attendees: [{ userId: 'other', status: 'going' }],
+      });
+      const updated = { ...mockEvent, attendees: [] };
+      prismaMock.calendarEvent.update.mockResolvedValue(updated);
+
+      await service.rsvpEvent(FAMILY_ID, EVENT_ID, USER_ID, {
+        status: 'going',
+        bringing: 'Salad',
+      });
+
+      expect(prismaMock.calendarEvent.update).toHaveBeenCalledWith({
+        where: { id: EVENT_ID },
+        data: {
+          attendees: [
+            { userId: 'other', status: 'going' },
+            { userId: USER_ID, status: 'going', bringing: 'Salad' },
+          ],
+        },
+      });
+    });
+
+    it('resolves recurring instance ids to the base event', async () => {
+      prismaMock.familyMember.findUnique.mockResolvedValue(mockMember);
+      prismaMock.calendarEvent.findFirst
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce({ ...mockEvent, attendees: [] });
+      prismaMock.calendarEvent.update.mockResolvedValue(mockEvent);
+
+      await service.rsvpEvent(FAMILY_ID, `${EVENT_ID}_2026-05-08`, USER_ID, {
+        status: 'maybe',
+      });
+
+      expect(prismaMock.calendarEvent.findFirst).toHaveBeenNthCalledWith(2, {
+        where: { id: EVENT_ID, familyId: FAMILY_ID },
+      });
+    });
+  });
 });

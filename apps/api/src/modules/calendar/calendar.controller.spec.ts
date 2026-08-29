@@ -35,6 +35,7 @@ const mockCalendarService = {
   createEvent: jest.fn(),
   updateEvent: jest.fn(),
   deleteEvent: jest.fn(),
+  rsvpEvent: jest.fn(),
 };
 
 const mockIcsService = {
@@ -165,6 +166,32 @@ describe('CalendarController', () => {
         USER_ID,
         '2026-05-08',
       );
+    });
+  });
+
+  describe('rsvpEvent', () => {
+    it('calls calendarService.rsvpEvent', async () => {
+      const updated = {
+        ...mockEvent,
+        attendees: [{ userId: USER_ID, status: 'going' }],
+      };
+      mockCalendarService.rsvpEvent.mockResolvedValue(updated);
+      const dto = { status: 'going' as const, bringing: 'Salad' };
+
+      const result = await controller.rsvpEvent(
+        mockUser,
+        FAMILY_ID,
+        EVENT_ID,
+        dto,
+      );
+
+      expect(mockCalendarService.rsvpEvent).toHaveBeenCalledWith(
+        FAMILY_ID,
+        EVENT_ID,
+        USER_ID,
+        dto,
+      );
+      expect(result).toEqual(updated);
     });
   });
 });

@@ -4,7 +4,13 @@
     "goodAfternoon": "Good afternoon",
     "goodEvening": "Good evening",
     "members": "{{count}} members",
-    "yourPages": "Your pages"
+    "yourPages": "Your pages",
+    "today": "Today",
+    "assignedToMe": "Assigned to me",
+    "leftoverItems": "Leftover groceries",
+    "leftoverCount": "{{count}} leftover items",
+    "noEventsToday": "Nothing on the calendar today",
+    "seeAll": "See all"
   },
   "common": {
     "loading": "Loading...",
@@ -237,7 +243,13 @@
     "regenerateToken": "Reset link",
     "regenerateConfirm": "This will invalidate the current subscription link. Continue?",
     "assignee": "Assignee",
-    "assigneeNone": "Anyone"
+    "assigneeNone": "Anyone",
+    "rsvpTitle": "Who's coming",
+    "rsvp_going": "Going",
+    "rsvp_maybe": "Maybe",
+    "rsvp_no": "Can't go",
+    "bringing": "Bringing",
+    "bringingPlaceholder": "Salad, drinks…"
   },
   "apartments": {
     "searchParams": "Search Filters",
@@ -299,6 +311,13 @@
     "justNow": "just now",
     "minAgo": "{{count}} min ago",
     "hoursAgo": "{{count}} hours ago"
+  },
+  "assigned": {
+    "title": "Assigned to me",
+    "empty": "Nothing assigned to you",
+    "lists": "List items",
+    "tasks": "Tasks",
+    "events": "Events"
   },
   "search": {
     "placeholder": "Search...",

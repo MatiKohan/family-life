@@ -16,7 +16,7 @@ React 19 + Vite, Tailwind, TanStack Query, Zustand, React Router, i18n (`en` / `
 | `/auth/callback` | public | Google `?accessToken=` |
 | `/join/:token` | public | Invite redeem |
 | `/family/create` | ProtectedRoute | Create family (no shell) |
-| `/family/:id` | Protected + **FamilyShell** | Home, pages, calendar, settings, activity |
+| `/family/:id` | Protected + **FamilyShell** | Home, assigned, pages, calendar, settings, activity |
 | `/` | Protected + legacy **Layout** | `HomeRedirect` |
 | `*` | | navigate `/` |
 
@@ -57,6 +57,8 @@ Canonical factory: `src/lib/query-keys.ts` (`queryKeys.*`). SSE uses `invalidate
 | `queryKeys.calendar.all(familyId)` | `['calendar', familyId]` (invalidates all ranges) |
 | `queryKeys.calendar.token(familyId)` | `['calendar-token', familyId]` |
 | `queryKeys.activity.all(familyId)` | `['activity', familyId]` |
+| `queryKeys.dashboard.range(familyId, start, end)` | `['dashboard', familyId, start, end]` |
+| `queryKeys.dashboard.all(familyId)` | `['dashboard', familyId]` |
 | `queryKeys.search.query(familyId, q)` | `['search', familyId, q]` |
 | `queryKeys.invites.all(familyId)` | `['invites', familyId]` |
 

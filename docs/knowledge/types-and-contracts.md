@@ -9,7 +9,7 @@ Barrel: `packages/types/src/index.ts`.
 | `auth.types.ts` | `AuthUser`, `JwtPayload` `{ sub, email }`, `TokenResponse` |
 | `family.types.ts` | Family, member, invite, roles, notification settings, invite request DTOs |
 | `page.types.ts` | `PageType`, `ListItem`, `TaskItem`, `Block`, apartments, `Page`, `CreatePageRequest` |
-| `calendar.types.ts` | `RecurrenceRule` |
+| `calendar.types.ts` | `RecurrenceRule`, RSVP/attendees, `FamilyDashboard` |
 | `activity.types.ts` | `ActivityType`, `ActivityLog`, feed response |
 | `common.types.ts` | `PaginatedResponse`, `ApiError` |
 

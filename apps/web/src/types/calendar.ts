@@ -18,6 +18,7 @@ export interface CalendarEvent {
   instanceDate?: string;
   assigneeId: string | null;
   assignee: { id: string; name: string; avatarUrl: string | null } | null;
+  attendees?: Array<{ userId: string; status: 'going' | 'maybe' | 'no'; bringing?: string }>;
 }
 
 export interface CreateEventRequest {

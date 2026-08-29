@@ -12,7 +12,7 @@ Prefs live in `FamilyMember.notificationSettings` Json: `invite`, `itemAssigned`
 | `FamilyInvite` | Token, optional email/phone, `InviteStatus`, `expiresAt` |
 | `PageFolder` | Sidebar folders; delete folder **hard-deletes** pages in it |
 | `Page` | Typed workspace document; **content is JSON columns**, not child tables |
-| `CalendarEvent` | Family events; `recurrence` Json; optional `assigneeId` |
+| `CalendarEvent` | Family events; `recurrence` Json; optional `assigneeId`; `attendees` Json (`{ userId, status, bringing? }[]`) |
 | `PushSubscription` | Web Push keys per device |
 | `ActivityLog` | Cursor-paginated feed; `type` + `payload` Json |
 | `NotificationLog` | Delivery audit (invite / assignment / reminder) |

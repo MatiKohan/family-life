@@ -17,6 +17,7 @@ import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { CalendarService } from './calendar.service';
 import { IcsService } from './ics.service';
 import { CreateEventDto } from './dto/create-event.dto';
+import { RsvpEventDto } from './dto/rsvp-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -50,6 +51,17 @@ export class CalendarController {
     @Body() dto: CreateEventDto,
   ) {
     return this.calendarService.createEvent(familyId, user.id, dto);
+  }
+
+  @Patch('families/:id/calendar/:eventId/rsvp')
+  @UseGuards(JwtAuthGuard)
+  rsvpEvent(
+    @CurrentUser() user: AuthUser,
+    @Param('id') familyId: string,
+    @Param('eventId') eventId: string,
+    @Body() dto: RsvpEventDto,
+  ) {
+    return this.calendarService.rsvpEvent(familyId, eventId, user.id, dto);
   }
 
   @Patch('families/:id/calendar/:eventId')

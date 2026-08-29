@@ -4,7 +4,13 @@
     "goodAfternoon": "צהריים טובים",
     "goodEvening": "ערב טוב",
     "members": "{{count}} חברים",
-    "yourPages": "הדפים שלכם"
+    "yourPages": "הדפים שלכם",
+    "today": "היום",
+    "assignedToMe": "משויך אליי",
+    "leftoverItems": "מה נשאר לקנות",
+    "leftoverCount": "{{count}} פריטים פתוחים",
+    "noEventsToday": "אין אירועים היום",
+    "seeAll": "הצג הכל"
   },
   "common": {
     "loading": "טוען...",
@@ -237,7 +243,13 @@
     "regenerateToken": "אפס קישור",
     "regenerateConfirm": "פעולה זו תבטל את קישור המנוי הנוכחי. להמשיך?",
     "assignee": "אחראי",
-    "assigneeNone": "כולם"
+    "assigneeNone": "כולם",
+    "rsvpTitle": "מי מגיע",
+    "rsvp_going": "מגיע",
+    "rsvp_maybe": "אולי",
+    "rsvp_no": "לא מגיע",
+    "bringing": "מביא",
+    "bringingPlaceholder": "סלט, שתייה…"
   },
   "apartments": {
     "searchParams": "פרמטרי חיפוש",
@@ -299,6 +311,13 @@
     "justNow": "עכשיו",
     "minAgo": "לפני {{count}} דקות",
     "hoursAgo": "לפני {{count}} שעות"
+  },
+  "assigned": {
+    "title": "משויך אליי",
+    "empty": "אין פריטים שמשויכים אליך",
+    "lists": "פריטי רשימה",
+    "tasks": "משימות",
+    "events": "אירועים"
   },
   "search": {
     "placeholder": "חיפוש...",
