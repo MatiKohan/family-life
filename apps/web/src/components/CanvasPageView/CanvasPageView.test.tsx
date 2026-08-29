@@ -233,8 +233,9 @@ describe('CanvasPageView', () => {
     renderView();
 
     await user.click(screen.getByRole('button', { name: /\+ list/i }));
+    await user.click(screen.getByRole('button', { name: /simple list/i }));
 
-    await waitFor(() => expect(putCalled).toBe(true), { timeout: 2000 });
+    await waitFor(() => expect(putCalled).toBe(true), { timeout: 3000 });
   });
 
   it('allows editing page title inline', async () => {

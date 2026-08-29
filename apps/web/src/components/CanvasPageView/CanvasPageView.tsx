@@ -133,6 +133,12 @@ export function CanvasPageView({ page, familyId }: Props) {
   // Debounced save for block structure changes
   const saveDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  useEffect(() => {
+    return () => {
+      if (saveDebounceRef.current) clearTimeout(saveDebounceRef.current);
+    };
+  }, []);
+
   const saveBlocksMutation = useMutation({
     mutationFn: (newBlocks: Block[]) =>
       apiRequest(`/families/${familyId}/pages/${page.id}/blocks`, {
