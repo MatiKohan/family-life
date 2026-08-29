@@ -864,7 +864,10 @@ describe('PagesService', () => {
           payload: expect.objectContaining({ itemText: 'New block item' }),
         }),
       );
-      expect(mockRealtimeService.emit).toHaveBeenCalledWith(FAMILY_ID, 'activity');
+      expect(mockRealtimeService.emit).toHaveBeenCalledWith(
+        FAMILY_ID,
+        'activity',
+      );
       expect(
         mockNotificationsService.sendFamilyActivityNotification,
       ).toHaveBeenCalledWith(
