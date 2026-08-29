@@ -245,6 +245,13 @@ export const handlers = [
     };
     return HttpResponse.json(newEvent, { status: 201 });
   }),
+  http.patch('/api/families/:familyId/calendar/:eventId/rsvp', async ({ request }) => {
+    const body = (await request.json()) as { status: string; bringing?: string };
+    return HttpResponse.json({
+      ...mockCalendarEvents[0],
+      attendees: [{ userId: 'user-1', status: body.status, bringing: body.bringing }],
+    });
+  }),
   http.patch('/api/families/:familyId/calendar/:eventId', async ({ request }) => {
     const body = await request.json();
     return HttpResponse.json(body);
@@ -285,6 +292,14 @@ export const handlers = [
   // Activity feed
   http.get('/api/families/:familyId/activity', () =>
     HttpResponse.json({ items: [], nextCursor: null }),
+  ),
+
+  http.get('/api/families/:familyId/dashboard', () =>
+    HttpResponse.json({
+      todayEvents: [],
+      assigned: { listItems: [], tasks: [], events: [] },
+      openListItems: 0,
+    }),
   ),
 
   // Canvas blocks

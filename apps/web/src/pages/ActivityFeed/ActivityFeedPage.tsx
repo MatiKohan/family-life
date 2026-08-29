@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
-import { useParams, Navigate } from 'react-router-dom';
+import { Link, useParams, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ActivityLog } from '@family-life/types';
 import { useActivityFeed } from '../../hooks/useActivityFeed';
-import { formatActivity, timeAgo } from './activityFeed.utils';
+import { activityHref, formatActivity, timeAgo } from './activityFeed.utils';
 
 // ---- helpers ---------------------------------------------------------------
 
@@ -56,10 +56,11 @@ function ActivitySkeleton() {
   );
 }
 
-function ActivityRow({ log }: { log: ActivityLog }) {
+function ActivityRow({ log, familyId }: { log: ActivityLog; familyId: string }) {
   const { t } = useTranslation();
-  return (
-    <div className="flex items-start gap-3 py-3">
+  const href = activityHref(familyId, log);
+  const body = (
+    <>
       <div
         className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold text-white shrink-0 ${avatarColor(log.userId)}`}
         aria-hidden="true"
@@ -76,8 +77,21 @@ function ActivityRow({ log }: { log: ActivityLog }) {
       >
         {timeAgo(log.createdAt, t)}
       </time>
-    </div>
+    </>
   );
+
+  if (href) {
+    return (
+      <Link
+        to={href}
+        className="flex items-start gap-3 py-3 hover:bg-gray-50 rounded-lg -mx-1 px-1"
+      >
+        {body}
+      </Link>
+    );
+  }
+
+  return <div className="flex items-start gap-3 py-3">{body}</div>;
 }
 
 // ---- page ------------------------------------------------------------------
@@ -128,7 +142,7 @@ function ActivityFeedContent({ familyId }: { familyId: string }) {
       {allItems.length > 0 && (
         <div className="divide-y divide-gray-100">
           {allItems.map((log) => (
-            <ActivityRow key={log.id} log={log} />
+            <ActivityRow key={log.id} log={log} familyId={familyId} />
           ))}
         </div>
       )}

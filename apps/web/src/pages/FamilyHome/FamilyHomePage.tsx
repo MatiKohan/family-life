@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { CreatePageModal } from '../../components/CreatePageModal/CreatePageModal';
 import { usePages } from '../../hooks/usePages';
 import { useFolders } from '../../hooks/useFolders';
 import { useFamily } from '../../hooks/useFamily';
+import { useDashboard } from '../../hooks/useDashboard';
+import { localDayRange } from '../../lib/local-day-range';
 import { useAuthStore } from '../../store/auth.store';
 import { useFamilyStore } from '../../store/family.store';
 import { apiRequest } from '../../lib/api-client';
@@ -101,6 +103,17 @@ export function FamilyHomePage() {
   const { data: pages, isLoading } = usePages(id);
   const { data: folders } = useFolders(id);
   const { data: family } = useFamily(id);
+  const { start: dayStart, end: dayEnd } = localDayRange();
+  const { data: dashboard } = useDashboard(id, dayStart, dayEnd);
+  const firstListPage = pages?.find((p) => p.type === 'list');
+  const assignedPreview = [
+    ...(dashboard?.assigned.listItems ?? []).map((i) => i.text),
+    ...(dashboard?.assigned.tasks ?? []).map((i) => i.text),
+  ].slice(0, 3);
+  const assignedCount =
+    (dashboard?.assigned.listItems.length ?? 0) +
+    (dashboard?.assigned.tasks.length ?? 0) +
+    (dashboard?.assigned.events.length ?? 0);
   const user = useAuthStore((s) => s.user);
   const { collapsedFolderIds, toggleFolder } = useFamilyStore();
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -163,6 +176,78 @@ export function FamilyHomePage() {
             </div>
           ) : (
             <div className="h-6 w-40 bg-white/10 rounded animate-pulse mt-2" />
+          )}
+        </div>
+      </div>
+
+      {/* Today + assigned */}
+      <div className="px-4 -mt-2 space-y-3">
+        <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-5">
+          <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+            {t('home.today')}
+          </h2>
+          {dashboard?.todayEvents.length ? (
+            <ul className="space-y-2">
+              {dashboard.todayEvents.map((ev) => (
+                <li key={ev.id}>
+                  <Link
+                    to={`/family/${id}/calendar?event=${ev.recurrenceBaseId ?? ev.id}`}
+                    className="flex items-center justify-between text-sm text-gray-800 hover:text-brand-700"
+                  >
+                    <span className="font-medium">{ev.title}</span>
+                    {!ev.isAllDay && (
+                      <span className="text-gray-400">
+                        {new Date(ev.startAt).toLocaleTimeString(undefined, {
+                          hour: 'numeric',
+                          minute: '2-digit',
+                        })}
+                      </span>
+                    )}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-gray-400">{t('home.noEventsToday')}</p>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Link
+            to={`/family/${id}/assigned`}
+            className="bg-white rounded-2xl shadow-md border border-gray-100 p-5 hover:border-brand-200 transition-colors"
+          >
+            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">
+              {t('home.assignedToMe')}
+            </h2>
+            {assignedCount === 0 ? (
+              <p className="text-sm text-gray-400">{t('assigned.empty')}</p>
+            ) : (
+              <ul className="text-sm text-gray-800 space-y-1">
+                {assignedPreview.map((text) => (
+                  <li key={text} className="truncate">
+                    {text}
+                  </li>
+                ))}
+                {assignedCount > assignedPreview.length && (
+                  <li className="text-brand-600 font-medium">{t('home.seeAll')}</li>
+                )}
+              </ul>
+            )}
+          </Link>
+
+          {firstListPage && (
+            <Link
+              to={`/family/${id}/pages/${firstListPage.id}`}
+              className="bg-white rounded-2xl shadow-md border border-gray-100 p-5 hover:border-brand-200 transition-colors"
+            >
+              <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">
+                {t('home.leftoverItems')}
+              </h2>
+              <p className="text-sm text-gray-800">
+                {t('home.leftoverCount', { count: dashboard?.openListItems ?? 0 })}
+              </p>
+            </Link>
           )}
         </div>
       </div>

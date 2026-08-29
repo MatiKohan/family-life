@@ -20,7 +20,7 @@ Use this when prioritizing improvements. Verify in code before treating as still
 
 - (none currently tracked)
 
-Fixed: SSE calendar invalidation uses `queryKeys.calendar.all`. Canvas list items log activity and send assignment push. Calendar event assignment notifies the assignee. Mobile `BottomNav` includes Activity. PWA/theme/logo use brand blue (`#2563eb` / `#3b82f6`). Unused `HomePage` and unused `ListPageView` removed (lists still use `CanvasPageView`).
+Fixed: SSE calendar invalidation uses `queryKeys.calendar.all`. Canvas list items log activity and send assignment push. Calendar event assignment notifies the assignee. Mobile `BottomNav` includes Activity. PWA/theme/logo use brand blue (`#2563eb` / `#3b82f6`). Unused `HomePage` and unused `ListPageView` removed (lists still use `CanvasPageView`). Family home shows today, assigned preview, leftover list items. Activity rows open the related page or calendar event. RSVP lives on calendar event details.
 
 ## Tests / product
 

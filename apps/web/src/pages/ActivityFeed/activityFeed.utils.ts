@@ -2,6 +2,21 @@ import { ActivityLog } from '@family-life/types';
 
 type TFunction = (key: string, opts?: Record<string, unknown>) => string;
 
+export function activityHref(familyId: string, log: ActivityLog): string | null {
+  const pageId = log.payload.pageId;
+  if (typeof pageId === 'string' && pageId) {
+    return `/family/${familyId}/pages/${pageId}`;
+  }
+  if (log.type === 'event_created') {
+    const eventId = log.payload.eventId;
+    if (typeof eventId === 'string' && eventId) {
+      return `/family/${familyId}/calendar?event=${eventId}`;
+    }
+    return `/family/${familyId}/calendar`;
+  }
+  return null;
+}
+
 export function formatActivity(log: ActivityLog, t: TFunction): string {
   const p = log.payload;
   switch (log.type) {

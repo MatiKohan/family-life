@@ -9,7 +9,35 @@ import { ActivityService } from '../activity/activity.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { RealtimeService } from '../realtime/realtime.service';
 import { CreateEventDto } from './dto/create-event.dto';
+import { RsvpEventDto } from './dto/rsvp-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
+
+type StoredAttendee = {
+  userId: string;
+  status: 'going' | 'maybe' | 'no';
+  bringing?: string;
+};
+
+function parseAttendees(raw: unknown): StoredAttendee[] {
+  if (!Array.isArray(raw)) return [];
+  const out: StoredAttendee[] = [];
+  for (const row of raw) {
+    if (!row || typeof row !== 'object') continue;
+    const userId = (row as StoredAttendee).userId;
+    const status = (row as StoredAttendee).status;
+    if (typeof userId !== 'string') continue;
+    if (status !== 'going' && status !== 'maybe' && status !== 'no') continue;
+    const bringing = (row as StoredAttendee).bringing;
+    out.push({
+      userId,
+      status,
+      ...(typeof bringing === 'string' && bringing.trim()
+        ? { bringing: bringing.trim() }
+        : {}),
+    });
+  }
+  return out;
+}
 
 type RecurrenceRule = {
   freq: 'daily' | 'weekly' | 'monthly' | 'yearly';
@@ -268,6 +296,7 @@ export class CalendarService {
             fields.assigneeId !== undefined
               ? fields.assigneeId
               : baseEvent.assigneeId,
+          attendees: baseEvent.attendees as Prisma.InputJsonValue,
           createdBy: userId,
         },
       });
@@ -332,6 +361,7 @@ export class CalendarService {
             fields.assigneeId !== undefined
               ? fields.assigneeId
               : baseEvent.assigneeId,
+          attendees: baseEvent.attendees as Prisma.InputJsonValue,
           createdBy: userId,
           recurrence: {
             freq: newRule.freq,
@@ -431,5 +461,44 @@ export class CalendarService {
     // Delete entire event / series
     await this.prisma.calendarEvent.delete({ where: { id: eventId } });
     this.realtimeService.emit(familyId, 'calendar');
+  }
+
+  async rsvpEvent(
+    familyId: string,
+    eventId: string,
+    userId: string,
+    dto: RsvpEventDto,
+  ) {
+    await this.requireMember(userId, familyId);
+
+    let event = await this.prisma.calendarEvent.findFirst({
+      where: { id: eventId, familyId },
+    });
+    if (!event) {
+      const underscore = eventId.lastIndexOf('_');
+      if (underscore > 0) {
+        event = await this.prisma.calendarEvent.findFirst({
+          where: { id: eventId.slice(0, underscore), familyId },
+        });
+      }
+    }
+    if (!event) throw new NotFoundException('Event not found');
+
+    const attendees = parseAttendees(event.attendees).filter(
+      (a) => a.userId !== userId,
+    );
+    const bringing = dto.bringing?.trim();
+    attendees.push({
+      userId,
+      status: dto.status,
+      ...(bringing && dto.status !== 'no' ? { bringing } : {}),
+    });
+
+    const updated = await this.prisma.calendarEvent.update({
+      where: { id: event.id },
+      data: { attendees: attendees as Prisma.InputJsonValue },
+    });
+    this.realtimeService.emit(familyId, 'calendar');
+    return updated;
   }
 }

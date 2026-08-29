@@ -9,6 +9,7 @@ import { AuthCallbackPage } from './pages/AuthCallback/AuthCallbackPage';
 import { FamilyCreatePage } from './pages/FamilyCreate/FamilyCreatePage';
 import { JoinFamilyPage } from './pages/JoinFamily/JoinFamilyPage';
 import { FamilyHomePage } from './pages/FamilyHome/FamilyHomePage';
+import { AssignedPage } from './pages/Assigned/AssignedPage';
 import { PageViewPage } from './pages/PageView/PageViewPage';
 import { CalendarPage } from './pages/Calendar/CalendarPage';
 import { FamilySettingsPage } from './pages/FamilySettings/FamilySettingsPage';
@@ -90,6 +91,14 @@ function App() {
         >
           {/* index = /family/:id */}
           <Route index element={<FamilyHomePage />} />
+          <Route
+            path="assigned"
+            element={
+              <ErrorBoundary>
+                <AssignedPage />
+              </ErrorBoundary>
+            }
+          />
           {/* page view = /family/:id/pages/:pageId */}
           <Route
             path="pages/:pageId"
