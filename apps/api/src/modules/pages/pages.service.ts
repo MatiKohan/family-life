@@ -108,6 +108,45 @@ export class PagesService {
     });
   }
 
+  private async recordActivity(data: {
+    familyId: string;
+    userId: string;
+    type: string;
+    payload?: Record<string, unknown>;
+  }): Promise<void> {
+    await this.activityService.log(data);
+    this.realtimeService.emit(data.familyId, 'activity');
+  }
+
+  /** Attach an item to the requested list block. Empty pages store `[]` and
+   *  getPage synthesizes a new block id on each load — adopt the client's id. */
+  private addItemToListBlocks(
+    blocks: Block[],
+    blockId: string,
+    newItem: ListItemData,
+  ): Block[] {
+    const match = blocks.find((b) => b.id === blockId && b.type === 'list');
+    if (match && match.type === 'list') {
+      return blocks.map((b) =>
+        b.id === blockId && b.type === 'list'
+          ? { ...b, items: [...b.items, newItem] }
+          : b,
+      );
+    }
+    const firstListIdx = blocks.findIndex((b) => b.type === 'list');
+    if (firstListIdx >= 0) {
+      return blocks.map((b, i) => {
+        if (i !== firstListIdx || b.type !== 'list') return b;
+        return {
+          ...b,
+          id: b.items.length === 0 ? blockId : b.id,
+          items: [...b.items, newItem],
+        };
+      });
+    }
+    return [...blocks, { id: blockId, type: 'list', items: [newItem] }];
+  }
+
   private normalizeBlocks(rawItems: unknown[]): Block[] {
     if (rawItems.length === 0) {
       return [{ id: randomUUID(), type: 'list', items: [] }];
@@ -155,6 +194,13 @@ export class PagesService {
         type: dto.type,
         sortOrder,
         createdBy: userId,
+        ...(dto.type === 'list'
+          ? {
+              items: [
+                { id: randomUUID(), type: 'list', items: [] },
+              ] as unknown as Prisma.InputJsonValue,
+            }
+          : {}),
         ...(dto.metadata ? { metadata: metadataValue } : {}),
       },
     });
@@ -262,7 +308,7 @@ export class PagesService {
       data: { items: [...items, newItem] },
     });
     this.realtimeService.emit(familyId, 'pages');
-    void this.activityService.log({
+    await this.recordActivity({
       familyId,
       userId,
       type: 'item_added',
@@ -320,7 +366,7 @@ export class PagesService {
     this.realtimeService.emit(familyId, 'pages');
     if (dto.checked === true && !existingItem?.checked) {
       const updatedItem = items.find((i) => i.id === itemId);
-      void this.activityService.log({
+      await this.recordActivity({
         familyId,
         userId,
         type: 'item_checked',
@@ -404,7 +450,7 @@ export class PagesService {
       data: { taskItems: [...taskItems, newItem] },
     });
     this.realtimeService.emit(familyId, 'pages');
-    void this.activityService.log({
+    await this.recordActivity({
       familyId,
       userId,
       type: 'task_created',
@@ -473,7 +519,7 @@ export class PagesService {
     this.realtimeService.emit(familyId, 'pages');
     if (dto.status !== undefined && dto.status !== existingTaskItem?.status) {
       const updatedTaskItem = taskItems.find((i) => i.id === itemId);
-      void this.activityService.log({
+      await this.recordActivity({
         familyId,
         userId,
         type: 'task_status_changed',
@@ -685,16 +731,13 @@ export class PagesService {
       dueDate: dueDate ?? null,
       createdAt: new Date().toISOString(),
     };
-    const updated = blocks.map((b) => {
-      if (b.id !== blockId || b.type !== 'list') return b;
-      return { ...b, items: [...b.items, newItem] };
-    });
+    const updated = this.addItemToListBlocks(blocks, blockId, newItem);
     await this.prisma.page.update({
       where: { id: pageId },
       data: { items: updated as unknown as Prisma.InputJsonValue },
     });
     this.realtimeService.emit(familyId, 'pages');
-    void this.activityService.log({
+    await this.recordActivity({
       familyId,
       userId,
       type: 'item_added',
@@ -758,7 +801,7 @@ export class PagesService {
     this.realtimeService.emit(familyId, 'pages');
     if (patch.checked === true && !existingItem?.checked) {
       const patchedText = patch.text ?? existingItem?.text ?? '';
-      void this.activityService.log({
+      await this.recordActivity({
         familyId,
         userId,
         type: 'item_checked',

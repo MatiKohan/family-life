@@ -38,7 +38,10 @@ export function invalidateForRealtimeEvent(
   type: string,
 ): Promise<void> {
   if (type === 'pages') {
-    return queryClient.invalidateQueries({ queryKey: queryKeys.pages.all(familyId) });
+    return Promise.all([
+      queryClient.invalidateQueries({ queryKey: queryKeys.pages.all(familyId) }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.activity.all(familyId) }),
+    ]).then(() => undefined);
   }
   if (type === 'calendar') {
     return queryClient.invalidateQueries({ queryKey: queryKeys.calendar.all(familyId) });

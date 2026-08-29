@@ -185,7 +185,7 @@ export class CalendarService {
       },
     });
 
-    void this.activityService.log({
+    await this.activityService.log({
       familyId,
       userId,
       type: 'event_created',
@@ -193,6 +193,7 @@ export class CalendarService {
     });
 
     this.realtimeService.emit(familyId, 'calendar');
+    this.realtimeService.emit(familyId, 'activity');
     await this.notifyAssignment(
       familyId,
       userId,

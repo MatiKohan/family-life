@@ -1,24 +1,35 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 
 @Injectable()
 export class ActivityService {
+  private readonly logger = new Logger(ActivityService.name);
+
   constructor(private readonly prisma: PrismaService) {}
 
-  log(data: {
+  async log(data: {
     familyId: string;
     userId: string;
     type: string;
     payload?: Record<string, unknown>;
   }) {
-    return this.prisma.activityLog.create({
-      data: {
-        familyId: data.familyId,
-        userId: data.userId,
-        type: data.type,
-        payload: (data.payload ?? {}) as object,
-      },
-    });
+    try {
+      return await this.prisma.activityLog.create({
+        data: {
+          familyId: data.familyId,
+          userId: data.userId,
+          type: data.type,
+          payload: (data.payload ?? {}) as Prisma.InputJsonValue,
+        },
+      });
+    } catch (err) {
+      this.logger.error(
+        `Failed to write activity log type=${data.type} family=${data.familyId}`,
+        err instanceof Error ? err.stack : String(err),
+      );
+      throw err;
+    }
   }
 
   async getFeed(

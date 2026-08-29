@@ -39,7 +39,9 @@ Private `requireMember` (direct Prisma) is duplicated in pages, calendar, folder
 
 ## Side effects on writes
 
-Typical page/calendar/invite mutations: `RealtimeService.emit`, `ActivityService.log`, assignment → `sendAssignmentNotification`.
+Typical page/calendar/invite mutations: `RealtimeService.emit` (`pages` and `activity` after list writes), `ActivityService.log` (awaited), assignment → `sendAssignmentNotification`.
+
+List pages persist canvas blocks in `Page.items`. Empty lists used to store `[]`; each GET invented a new block id, so adding an item often missed the block. New list pages seed one list block; `addBlockItem` adopts the client block id when the stored list is empty.
 
 Activity types seen in code: `item_added`, `item_checked`, `task_created`, `task_status_changed`, `event_created`, `member_invited`.
 

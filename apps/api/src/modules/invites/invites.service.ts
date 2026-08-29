@@ -177,7 +177,7 @@ export class InvitesService {
       where: { id: userId },
       select: { name: true },
     });
-    void this.activityService.log({
+    await this.activityService.log({
       familyId: invite.familyId,
       userId,
       type: 'member_invited',

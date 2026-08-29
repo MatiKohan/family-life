@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
   DndContext,
@@ -17,6 +18,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { apiRequest } from '../../lib/api-client';
+import { queryKeys } from '../../lib/query-keys';
 import type { ListBlock, ListItem } from '../../types/page';
 
 interface Props {
@@ -28,6 +30,7 @@ interface Props {
 
 export function ListBlockView({ block, familyId, pageId, onUpdate }: Props) {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const [newItemText, setNewItemText] = useState('');
   const addInputRef = useRef<HTMLInputElement>(null);
   // Categorized state
@@ -112,13 +115,20 @@ export function ListBlockView({ block, familyId, pageId, onUpdate }: Props) {
     apiRequest<ListItem>(`${base}/items`, {
       method: 'POST',
       body: JSON.stringify({ text, ...(category != null ? { category } : {}) }),
-    }).then((created) => {
-      onUpdate(
-        block.items
-          .filter((i) => i.id !== optimisticItem.id)
-          .concat({ ...created, category }),
-      );
-    });
+    })
+      .then((created) => {
+        onUpdate(
+          block.items
+            .filter((i) => i.id !== optimisticItem.id)
+            .concat({ ...created, category }),
+        );
+        void queryClient.invalidateQueries({
+          queryKey: queryKeys.activity.all(familyId),
+        });
+      })
+      .catch(() => {
+        onUpdate(block.items.filter((i) => i.id !== optimisticItem.id));
+      });
   }
 
   function handleAddSubmit(e: React.FormEvent) {

@@ -38,11 +38,12 @@ describe('invalidateForRealtimeEvent', () => {
   });
 
   it('invalidates page list and detail keys used by usePages / usePage', async () => {
-    const { qc, pageList, pageDetail, calendarRange } = seedClient();
+    const { qc, pageList, pageDetail, calendarRange, activity } = seedClient();
     await invalidateForRealtimeEvent(qc, familyId, 'pages');
     expect(qc.getQueryState(pageList)?.isInvalidated).toBe(true);
     expect(qc.getQueryState(pageDetail)?.isInvalidated).toBe(true);
     expect(qc.getQueryState(calendarRange)?.isInvalidated).toBe(false);
+    expect(qc.getQueryState(activity)?.isInvalidated).toBe(true);
   });
 
   it('invalidates activity feed keys', async () => {

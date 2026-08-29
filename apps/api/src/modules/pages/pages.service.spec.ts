@@ -155,6 +155,12 @@ describe('PagesService', () => {
           type: 'list',
           createdBy: USER_ID,
           sortOrder: 1,
+          items: [
+            expect.objectContaining({
+              type: 'list',
+              items: [],
+            }),
+          ],
         },
       });
       expect(result).toEqual(createdPage);
@@ -858,12 +864,49 @@ describe('PagesService', () => {
           payload: expect.objectContaining({ itemText: 'New block item' }),
         }),
       );
+      expect(mockRealtimeService.emit).toHaveBeenCalledWith(FAMILY_ID, 'activity');
       expect(
         mockNotificationsService.sendFamilyActivityNotification,
       ).toHaveBeenCalledWith(
         expect.objectContaining({
           actorUserId: USER_ID,
           message: expect.stringContaining('New block item'),
+        }),
+      );
+    });
+
+    it('saves the item when the page has no persisted blocks yet', async () => {
+      mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
+      mockPrisma.page.findFirst.mockResolvedValue(makeListPage({ items: [] }));
+      mockPrisma.page.update.mockResolvedValue(makeListPage());
+
+      await service.addBlockItem(
+        FAMILY_ID,
+        PAGE_ID,
+        'client-block-id',
+        USER_ID,
+        'Milk',
+      );
+
+      expect(mockPrisma.page.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            items: [
+              expect.objectContaining({
+                id: 'client-block-id',
+                type: 'list',
+                items: expect.arrayContaining([
+                  expect.objectContaining({ text: 'Milk' }),
+                ]),
+              }),
+            ],
+          }),
+        }),
+      );
+      expect(mockActivityService.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'item_added',
+          payload: expect.objectContaining({ itemText: 'Milk' }),
         }),
       );
     });
