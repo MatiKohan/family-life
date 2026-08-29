@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Navigate, useParams, Outlet, useNavigate } from 'react-router-dom';
+import { Navigate, useParams, Outlet, useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../../store/auth.store';
 import { useFamilyStore } from '../../store/family.store';
 import { useFamily } from '../../hooks/useFamily';
@@ -70,9 +70,12 @@ export function FamilyShell() {
               {isLoading ? (
                 <div className="h-5 w-32 bg-gray-100 rounded animate-pulse" />
               ) : (
-                <span className="text-sm font-semibold text-gray-900 truncate">
+                <Link
+                  to={`/family/${id}`}
+                  className="text-sm font-semibold text-gray-900 truncate"
+                >
                   {family?.emoji} {family?.name}
-                </span>
+                </Link>
               )}
               <div className="ml-auto flex items-center gap-2">
                 <button

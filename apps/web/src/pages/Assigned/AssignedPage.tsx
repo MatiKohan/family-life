@@ -27,7 +27,7 @@ export function AssignedPage() {
       assigned.events.length === 0);
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6 space-y-8">
+    <div className="max-w-2xl mx-auto px-4 py-6 space-y-8 pb-4">
       <h1 className="text-xl font-semibold text-gray-900">{t('assigned.title')}</h1>
 
       {isLoading && <p className="text-sm text-gray-500">{t('common.loading')}</p>}
@@ -47,7 +47,7 @@ export function AssignedPage() {
               <li key={`${item.pageId}-${item.text}`}>
                 <Link
                   to={`/family/${familyId}/pages/${item.pageId}`}
-                  className="flex items-center gap-2 py-3 text-sm text-gray-800 hover:text-brand-700"
+                  className="flex items-center gap-2 py-3 min-h-11 text-sm text-gray-800 hover:text-brand-700"
                 >
                   <span>{item.pageEmoji}</span>
                   <span className="font-medium">{item.text}</span>
@@ -69,7 +69,7 @@ export function AssignedPage() {
               <li key={`${item.pageId}-${item.text}`}>
                 <Link
                   to={`/family/${familyId}/pages/${item.pageId}`}
-                  className="flex items-center gap-2 py-3 text-sm text-gray-800 hover:text-brand-700"
+                  className="flex items-center gap-2 py-3 min-h-11 text-sm text-gray-800 hover:text-brand-700"
                 >
                   <span>{item.pageEmoji}</span>
                   <span className="font-medium">{item.text}</span>
@@ -91,7 +91,7 @@ export function AssignedPage() {
               <li key={ev.id}>
                 <Link
                   to={`/family/${familyId}/calendar?event=${ev.recurrenceBaseId ?? ev.id}`}
-                  className="flex items-center gap-2 py-3 text-sm text-gray-800 hover:text-brand-700"
+                  className="flex items-center gap-2 py-3 min-h-11 text-sm text-gray-800 hover:text-brand-700"
                 >
                   <span className="font-medium">{ev.title}</span>
                 </Link>

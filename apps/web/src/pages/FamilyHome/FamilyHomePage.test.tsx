@@ -67,6 +67,7 @@ describe('FamilyHomePage', () => {
   it('shows today events, assigned preview, and leftover groceries', async () => {
     renderHome();
     await waitFor(() => expect(screen.getByText('Dinner')).toBeInTheDocument());
+    expect(screen.getByRole('heading', { name: 'Today' })).toBeInTheDocument();
     expect(screen.getByText('Milk')).toBeInTheDocument();
     expect(screen.getByText('3 leftover items')).toBeInTheDocument();
   });
