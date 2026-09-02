@@ -9,17 +9,13 @@ import { useFamily } from '../../hooks/useFamily';
 import { CalendarEvent, CreateEventRequest } from '../../types/calendar';
 import { FamilyMember } from '../../types/family';
 import { EventRsvpPanel } from './EventRsvpPanel';
+import { CalendarSubscribeActions } from '../CalendarSubscribe/CalendarSubscribeActions';
+import { allDayUtcIso, toLocalDateString } from '../../lib/local-day-range';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function toLocalDateString(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
 
 function toLocalDateTimeString(date: Date): string {
   const base = toLocalDateString(date);
@@ -66,10 +62,7 @@ function buildGridDays(month: Date): Array<{ date: Date; isCurrentMonth: boolean
 
 function eventsForDay(events: CalendarEvent[], day: Date): CalendarEvent[] {
   const dayStr = toLocalDateString(day);
-  return events.filter((ev) => {
-    const evDay = ev.startAt.slice(0, 10);
-    return evDay === dayStr;
-  });
+  return events.filter((ev) => toLocalDateString(new Date(ev.startAt)) === dayStr);
 }
 
 function isSameDay(a: Date, b: Date): boolean {
@@ -158,12 +151,12 @@ function CreateEventModal({ familyId, initialDate, onClose, onCreated, members }
     const req: CreateEventRequest = {
       title: trimmed,
       description: description.trim() || undefined,
-      startAt: isAllDay
-        ? new Date(startAt.slice(0, 10) + 'T00:00:00').toISOString()
-        : new Date(startAt).toISOString(),
-      endAt: isAllDay
-        ? new Date(startAt.slice(0, 10) + 'T23:59:59').toISOString()
-        : new Date(endAt).toISOString(),
+      ...(isAllDay
+        ? allDayUtcIso(startAt.slice(0, 10))
+        : {
+            startAt: new Date(startAt).toISOString(),
+            endAt: new Date(endAt).toISOString(),
+          }),
       isAllDay,
       reminderMinutesBefore: reminderMinutesBefore ?? undefined,
       recurrence,
@@ -418,12 +411,12 @@ function EventDetailModal({ event, familyId, onClose, members }: EventDetailModa
     const body: Record<string, unknown> = {
       title: title.trim(),
       description: description.trim() || undefined,
-      startAt: isAllDay
-        ? new Date(startAt.slice(0, 10) + 'T00:00:00').toISOString()
-        : new Date(startAt).toISOString(),
-      endAt: isAllDay
-        ? new Date(startAt.slice(0, 10) + 'T23:59:59').toISOString()
-        : new Date(endAt).toISOString(),
+      ...(isAllDay
+        ? allDayUtcIso(startAt.slice(0, 10))
+        : {
+            startAt: new Date(startAt).toISOString(),
+            endAt: new Date(endAt).toISOString(),
+          }),
       isAllDay,
       reminderMinutesBefore,
       recurrence,
@@ -816,6 +809,75 @@ function EventDetailModal({ event, familyId, onClose, members }: EventDetailModa
 }
 
 // ---------------------------------------------------------------------------
+// DayEventsSheet — full list for a busy day
+// ---------------------------------------------------------------------------
+
+interface DayEventsSheetProps {
+  date: Date;
+  events: CalendarEvent[];
+  onClose: () => void;
+  onSelectEvent: (event: CalendarEvent) => void;
+  onCreate: () => void;
+}
+
+function DayEventsSheet({ date, events, onClose, onSelectEvent, onCreate }: DayEventsSheetProps) {
+  const { t } = useTranslation();
+  const dateLabel = date.toLocaleDateString(undefined, {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
+      <div
+        className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-labelledby="day-events-title"
+      >
+        <div className="flex items-start justify-between gap-2 mb-4">
+          <h2 id="day-events-title" className="text-lg font-semibold text-gray-900">
+            {t('calendar.dayEventsTitle', { date: dateLabel })}
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors text-xl leading-none"
+            aria-label={t('common.close')}
+          >
+            ×
+          </button>
+        </div>
+        <ul className="space-y-1 max-h-72 overflow-y-auto">
+          {events.map((ev) => (
+            <li key={ev.id}>
+              <button
+                type="button"
+                onClick={() => onSelectEvent(ev)}
+                className="w-full text-start px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                <span className="font-medium">{ev.title}</span>
+                <span className="text-gray-400 ms-2">
+                  {ev.isAllDay ? t('calendar.allDay') : formatEventTime(ev)}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+        <button
+          type="button"
+          onClick={onCreate}
+          className="mt-4 w-full text-sm px-3 py-2 rounded-lg bg-brand-600 text-white hover:bg-brand-700 transition-colors font-medium"
+        >
+          {t('calendar.newEvent')}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // CalendarView (main export)
 // ---------------------------------------------------------------------------
 
@@ -832,6 +894,8 @@ export function CalendarView({ familyId, onEventClick }: CalendarViewProps) {
   const [currentMonth, setCurrentMonth] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
   const [createModalDate, setCreateModalDate] = useState<Date | null>(null);
   const [detailEvent, setDetailEvent] = useState<CalendarEvent | null>(null);
+  const [daySheetDate, setDaySheetDate] = useState<Date | null>(null);
+  const [showExport, setShowExport] = useState(false);
 
   const { start, end } = buildMonthRange(currentMonth);
   const { data: events = [], isLoading } = useCalendarEvents(familyId, start, end);
@@ -874,6 +938,8 @@ export function CalendarView({ familyId, onEventClick }: CalendarViewProps) {
     const dayEvents = eventsForDay(events, day);
     if (dayEvents.length === 0) {
       setCreateModalDate(day);
+    } else {
+      setDaySheetDate(day);
     }
   }
 
@@ -913,12 +979,21 @@ export function CalendarView({ familyId, onEventClick }: CalendarViewProps) {
         >
           {t('calendar.today')}
         </button>
-        <button
-          onClick={() => setCreateModalDate(today)}
-          className="ms-auto text-sm px-3 py-1.5 rounded-lg bg-brand-600 text-white hover:bg-brand-700 transition-colors font-medium"
-        >
-          {t('calendar.newEvent')}
-        </button>
+        <div className="ms-auto flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowExport(true)}
+            className="text-sm px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+          >
+            {t('calendar.exportCalendar')}
+          </button>
+          <button
+            onClick={() => setCreateModalDate(today)}
+            className="text-sm px-3 py-1.5 rounded-lg bg-brand-600 text-white hover:bg-brand-700 transition-colors font-medium"
+          >
+            {t('calendar.newEvent')}
+          </button>
+        </div>
       </div>
 
       {/* Calendar grid */}
@@ -1002,13 +1077,14 @@ export function CalendarView({ familyId, onEventClick }: CalendarViewProps) {
                     ))}
                     {hasOverflow && (
                       <button
+                        type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setCreateModalDate(null);
+                          setDaySheetDate(date);
                         }}
                         className="text-xs text-gray-500 hover:text-gray-700 px-1"
                       >
-                        +{overflowCount} more
+                        {t('calendar.moreCount', { count: overflowCount })}
                       </button>
                     )}
                   </div>
@@ -1025,6 +1101,53 @@ export function CalendarView({ familyId, onEventClick }: CalendarViewProps) {
       </div>
 
       {/* Modals */}
+      {daySheetDate && (
+        <DayEventsSheet
+          date={daySheetDate}
+          events={eventsForDay(events, daySheetDate)}
+          onClose={() => setDaySheetDate(null)}
+          onSelectEvent={(event) => {
+            setDaySheetDate(null);
+            if (onEventClick) {
+              onEventClick(event);
+            } else {
+              setDetailEvent(event);
+            }
+          }}
+          onCreate={() => {
+            setCreateModalDate(daySheetDate);
+            setDaySheetDate(null);
+          }}
+        />
+      )}
+      {showExport && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={() => setShowExport(false)}
+        >
+          <div
+            className="bg-white rounded-xl shadow-xl w-full max-w-md p-6"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-labelledby="export-calendar-title"
+          >
+            <div className="flex items-start justify-between gap-2 mb-4">
+              <h2 id="export-calendar-title" className="text-lg font-semibold text-gray-900">
+                {t('calendar.subscribeTitle')}
+              </h2>
+              <button
+                type="button"
+                onClick={() => setShowExport(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors text-xl leading-none"
+                aria-label={t('common.close')}
+              >
+                ×
+              </button>
+            </div>
+            <CalendarSubscribeActions familyId={familyId} />
+          </div>
+        </div>
+      )}
       {createModalDate && (
         <CreateEventModal
           familyId={familyId}

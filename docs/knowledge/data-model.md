@@ -12,7 +12,7 @@ Prefs live in `FamilyMember.notificationSettings` Json: `invite`, `itemAssigned`
 | `FamilyInvite` | Token, optional email/phone, `InviteStatus`, `expiresAt` |
 | `PageFolder` | Sidebar folders; delete folder **hard-deletes** pages in it |
 | `Page` | Typed workspace document; **content is JSON columns**, not child tables |
-| `CalendarEvent` | Family events; `recurrence` Json; optional `assigneeId`; `attendees` Json (`{ userId, status, bringing? }[]`) |
+| `CalendarEvent` | Family events; `recurrence` Json; optional `assigneeId`; `attendees` Json (`{ userId, status, bringing? }[]`); `reminderSentDates` for recurring reminder de-dupe |
 | `PushSubscription` | Web Push keys per device |
 | `ActivityLog` | Cursor-paginated feed; `type` + `payload` Json |
 | `NotificationLog` | Delivery audit (invite / assignment / reminder) |
@@ -37,7 +37,7 @@ List pages: `getPage` wraps a legacy flat `items` array in one list `Block` (`no
 
 ## Recurrence
 
-- **Calendar:** `CalendarEvent.recurrence` (`freq`, `until`, `exceptions`). Expanded at **read** time in `listEvents`. Edit modes: `this` / `future` / `all`.
+- **Calendar:** `CalendarEvent.recurrence` (`freq`, `until`, `exceptions`). Expanded at **read** time in `listEvents` using **UTC** date arithmetic. Edit modes: `this` / `future` / `all`. Recurring reminders track sent instance dates in `reminderSentDates`.
 - **Tasks:** `TaskItem.recurrence` `{ freq, nextDue }`. Midnight cron `RecurringTaskScheduler` resets due recurring tasks.
 
 ## Membership rules (approx.)

@@ -234,6 +234,7 @@
     "deleteRecurring": "מחיקת אירוע חוזר",
     "deleteThisOnly": "אירוע זה בלבד",
     "deleteAllEvents": "כל האירועים בסדרה",
+    "exportCalendar": "ייצוא",
     "subscribeTitle": "הוסף ליומן",
     "subscribeHint": "קבל את כל אירועי המשפחה בתוכנת היומן שלך — מתעדכן אוטומטית.",
     "addToGoogle": "הוסף ל-Google Calendar",
@@ -249,7 +250,9 @@
     "rsvp_maybe": "אולי",
     "rsvp_no": "לא מגיע",
     "bringing": "מביא",
-    "bringingPlaceholder": "סלט, שתייה…"
+    "bringingPlaceholder": "סלט, שתייה…",
+    "moreCount": "+{{count}} נוספים",
+    "dayEventsTitle": "{{date}}"
   },
   "apartments": {
     "searchParams": "פרמטרי חיפוש",

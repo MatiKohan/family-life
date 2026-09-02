@@ -219,6 +219,7 @@ i18n.use(initReactI18next).init({
           deleteThisOnly: 'This event only',
           deleteAllEvents: 'All events in series',
           subscribeTitle: 'Subscribe to Calendar',
+          exportCalendar: 'Export',
           subscribeHint: 'Get all family events in your calendar app.',
           addToGoogle: 'Add to Google Calendar',
           addToApple: 'Add to Apple Calendar',
@@ -232,6 +233,8 @@ i18n.use(initReactI18next).init({
           rsvp_no: "Can't go",
           bringing: 'Bringing',
           bringingPlaceholder: 'Salad, drinks…',
+          moreCount: '+{{count}} more',
+          dayEventsTitle: '{{date}}',
         },
         nav: {
           home: 'Home',

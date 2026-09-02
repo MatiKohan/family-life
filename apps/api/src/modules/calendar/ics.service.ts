@@ -4,8 +4,16 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import ical from 'ical-generator';
+import ical, { ICalEventRepeatingFreq } from 'ical-generator';
 import { PrismaService } from '../../database/prisma.service';
+import { parseRecurrence, type RecurrenceRule } from './calendar-recurrence';
+
+const ICS_FREQ: Record<RecurrenceRule['freq'], ICalEventRepeatingFreq> = {
+  daily: ICalEventRepeatingFreq.DAILY,
+  weekly: ICalEventRepeatingFreq.WEEKLY,
+  monthly: ICalEventRepeatingFreq.MONTHLY,
+  yearly: ICalEventRepeatingFreq.YEARLY,
+};
 
 @Injectable()
 export class IcsService {
@@ -64,6 +72,7 @@ export class IcsService {
     const cal = ical({ name: family.name });
 
     for (const ev of events) {
+      const recurrence = parseRecurrence(ev.recurrence);
       cal.createEvent({
         id: ev.id,
         summary: ev.title,
@@ -71,6 +80,23 @@ export class IcsService {
         start: ev.startAt,
         end: ev.endAt,
         allDay: ev.isAllDay,
+        ...(recurrence
+          ? {
+              repeating: {
+                freq: ICS_FREQ[recurrence.freq],
+                ...(recurrence.until
+                  ? { until: new Date(`${recurrence.until}T23:59:59.000Z`) }
+                  : {}),
+                ...(recurrence.exceptions?.length
+                  ? {
+                      exclude: recurrence.exceptions.map(
+                        (d) => new Date(`${d}T00:00:00.000Z`),
+                      ),
+                    }
+                  : {}),
+              },
+            }
+          : {}),
       });
     }
 
