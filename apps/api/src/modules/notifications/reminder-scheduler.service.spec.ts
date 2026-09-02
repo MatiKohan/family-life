@@ -50,7 +50,9 @@ describe('ReminderSchedulerService', () => {
 
     await service.sendDueReminders();
 
-    expect(notifications.sendEventReminderNotification).toHaveBeenCalledTimes(1);
+    expect(notifications.sendEventReminderNotification).toHaveBeenCalledTimes(
+      1,
+    );
     expect(prismaMock.calendarEvent.update).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: 'e1' },
@@ -102,7 +104,9 @@ describe('ReminderSchedulerService', () => {
 
     await service.sendDueReminders();
 
-    expect(notifications.sendEventReminderNotification).toHaveBeenCalledTimes(1);
+    expect(notifications.sendEventReminderNotification).toHaveBeenCalledTimes(
+      1,
+    );
     expect(prismaMock.calendarEvent.update).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: 'e2' },

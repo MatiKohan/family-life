@@ -202,7 +202,11 @@ describe('IcsService', () => {
       prismaMock.calendarEvent.findMany.mockResolvedValue([
         {
           ...mockEvent,
-          recurrence: { freq: 'weekly', until: '2026-06-01', exceptions: ['2026-05-08'] },
+          recurrence: {
+            freq: 'weekly',
+            until: '2026-06-01',
+            exceptions: ['2026-05-08'],
+          },
         },
       ]);
 

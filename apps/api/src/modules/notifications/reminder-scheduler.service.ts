@@ -35,9 +35,7 @@ export class ReminderSchedulerService {
 
       if (!recurrence) {
         if (event.reminderSentAt) continue;
-        const reminderAt = new Date(
-          event.startAt.getTime() - minutes * 60_000,
-        );
+        const reminderAt = new Date(event.startAt.getTime() - minutes * 60_000);
         if (reminderAt >= windowStart && reminderAt <= now) {
           await this.fireReminder(event, event.startAt);
           await this.prisma.calendarEvent.update({

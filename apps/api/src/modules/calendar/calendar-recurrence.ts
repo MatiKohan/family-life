@@ -18,13 +18,19 @@ export function parseRecurrence(raw: unknown): RecurrenceRule | null {
     freq,
     ...(typeof until === 'string' && until ? { until } : {}),
     ...(Array.isArray(exceptions)
-      ? { exceptions: exceptions.filter((d): d is string => typeof d === 'string') }
+      ? {
+          exceptions: exceptions.filter(
+            (d): d is string => typeof d === 'string',
+          ),
+        }
       : {}),
   };
 }
 
 function asDate(value: unknown): Date {
-  return value instanceof Date ? new Date(value.getTime()) : new Date(value as string);
+  return value instanceof Date
+    ? new Date(value.getTime())
+    : new Date(value as string);
 }
 
 export function advanceDate(date: Date, freq: RecurrenceFreq): Date {

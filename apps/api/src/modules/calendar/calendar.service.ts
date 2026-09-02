@@ -379,7 +379,9 @@ export class CalendarService {
 
     if (instanceDate) {
       // Delete just this instance — add to exceptions
-      const rule = parseRecurrence(event.recurrence) ?? { freq: 'daily' as const };
+      const rule = parseRecurrence(event.recurrence) ?? {
+        freq: 'daily' as const,
+      };
       const exceptions = [...(rule.exceptions ?? []), instanceDate];
       await this.prisma.calendarEvent.update({
         where: { id: eventId },
