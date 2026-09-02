@@ -47,6 +47,18 @@ describe('CalendarView', () => {
     expect(screen.getByRole('button', { name: /new event/i })).toBeInTheDocument();
   });
 
+  it('opens Google and Apple export actions from the calendar header', async () => {
+    const user = userEvent.setup();
+    renderView();
+
+    await user.click(screen.getByRole('button', { name: /^export$/i }));
+
+    await waitFor(() =>
+      expect(screen.getByRole('link', { name: /add to google calendar/i })).toBeInTheDocument(),
+    );
+    expect(screen.getByRole('link', { name: /add to apple calendar/i })).toBeInTheDocument();
+  });
+
   it('renders day name headers (Sun through Sat)', () => {
     renderView();
     expect(screen.getByText('Sun')).toBeInTheDocument();
@@ -348,5 +360,51 @@ describe('CalendarView', () => {
 
     // Should show the recurrence badge with "Weekly" text
     expect(screen.getByText('Weekly')).toBeInTheDocument();
+  });
+
+  it('places timed events on the local calendar day rather than the UTC date', async () => {
+    const startAt = '2026-04-15T22:30:00.000Z';
+    server.use(
+      http.get('/api/families/:familyId/calendar', () =>
+        HttpResponse.json([
+          {
+            ...mockCalendarEvents[0],
+            id: 'evening-1',
+            title: 'Late Dinner',
+            startAt,
+            endAt: '2026-04-15T23:30:00.000Z',
+            isAllDay: false,
+          },
+        ]),
+      ),
+    );
+
+    renderView();
+    await waitFor(() => expect(screen.getByTitle('Late Dinner')).toBeInTheDocument());
+  });
+
+  it('opens a day sheet from +N more with every event that day', async () => {
+    const noon = (hour: string) => `2026-04-15T${hour}:00:00.000Z`;
+    server.use(
+      http.get('/api/families/:familyId/calendar', () =>
+        HttpResponse.json([
+          { ...mockCalendarEvents[0], id: 'd1', title: 'Alpha', startAt: noon('12'), endAt: noon('13'), isAllDay: false },
+          { ...mockCalendarEvents[0], id: 'd2', title: 'Bravo', startAt: noon('13'), endAt: noon('14'), isAllDay: false },
+          { ...mockCalendarEvents[0], id: 'd3', title: 'Charlie', startAt: noon('14'), endAt: noon('15'), isAllDay: false },
+        ]),
+      ),
+    );
+
+    const user = userEvent.setup();
+    renderView();
+
+    await waitFor(() => expect(screen.getByTitle('Alpha')).toBeInTheDocument());
+    await user.click(screen.getByRole('button', { name: /\+1 more/i }));
+
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    const sheet = screen.getByRole('dialog');
+    expect(sheet).toHaveTextContent('Charlie');
+    expect(sheet).toHaveTextContent('Bravo');
+    expect(sheet).toHaveTextContent('Alpha');
   });
 });

@@ -81,6 +81,7 @@ model CalendarEvent {
   isAllDay             Boolean   @default(false)
   reminderMinutesBefore Int?
   reminderSentAt       DateTime?
+  reminderSentDates    String[]  @default([])
   recurrence           Json?
   assigneeId           String?
   assignee             User?     @relation("AssignedEvents", fields: [assigneeId], references: [id], onDelete: SetNull)

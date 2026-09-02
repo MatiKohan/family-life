@@ -234,6 +234,7 @@
     "deleteRecurring": "Delete recurring event",
     "deleteThisOnly": "This event only",
     "deleteAllEvents": "All events in series",
+    "exportCalendar": "Export",
     "subscribeTitle": "Subscribe to Calendar",
     "subscribeHint": "Get all family events in your calendar app — updates automatically.",
     "addToGoogle": "Add to Google Calendar",
@@ -249,7 +250,9 @@
     "rsvp_maybe": "Maybe",
     "rsvp_no": "Can't go",
     "bringing": "Bringing",
-    "bringingPlaceholder": "Salad, drinks…"
+    "bringingPlaceholder": "Salad, drinks…",
+    "moreCount": "+{{count}} more",
+    "dayEventsTitle": "{{date}}"
   },
   "apartments": {
     "searchParams": "Search Filters",

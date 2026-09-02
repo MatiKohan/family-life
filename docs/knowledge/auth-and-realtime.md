@@ -31,6 +31,8 @@ Delete account (`DELETE /api/auth/me`) is blocked if the user is the sole OWNER 
 
 - Member: `GET /api/families/:familyId/calendar-token`
 - Public feed: `GET /api/families/:familyId/calendar.ics?token=`
+- Feed includes `RRULE` / `EXDATE` for stored recurrence (not expanded instances)
+- Web: Calendar **Export** and Family Settings subscribe use `calendarSubscribeLinks` (Google `cid`, `webcal`, copy)
 - ADMIN+ can regenerate token
 
 ## Notifications
@@ -43,7 +45,7 @@ Delete account (`DELETE /api/auth/me`) is blocked if the user is the sole OWNER 
 | Item/task assigned (including canvas list items) | if member prefs | yes |
 | Calendar event assigned to someone else | if member prefs | yes |
 | Page / list item / task / event created | — | yes (`itemAdded`, skip actor + assignee) |
-| Calendar reminder (cron every minute) | if prefs | yes |
+| Calendar reminder (cron every minute) | if prefs | yes (one-off via `reminderSentAt`; recurring instances via `reminderSentDates`) |
 
 Prefs: `FamilyMember.notificationSettings` (`eventReminder`, `itemAssigned`, `invite`, `itemAdded`). `itemAdded` is **Web Push only** (no WhatsApp): other members are notified when someone creates a page, list item, task, or event. The actor and the assignee (if any) are skipped. Missing Twilio/VAPID env disables those channels. Logs: `NotificationLog`.
 

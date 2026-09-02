@@ -197,6 +197,22 @@ describe('IcsService', () => {
       expect(result).toContain('Birthday Party');
     });
 
+    it('includes RRULE for recurring events', async () => {
+      prismaMock.family.findUnique.mockResolvedValue(mockFamilyWithToken);
+      prismaMock.calendarEvent.findMany.mockResolvedValue([
+        {
+          ...mockEvent,
+          recurrence: { freq: 'weekly', until: '2026-06-01', exceptions: ['2026-05-08'] },
+        },
+      ]);
+
+      const result = await service.generateIcs(FAMILY_ID, TOKEN);
+
+      expect(result).toContain('RRULE:FREQ=WEEKLY');
+      expect(result).toContain('UNTIL=');
+      expect(result).toMatch(/EXDATE/);
+    });
+
     it('returns ICS with no events when family has none', async () => {
       prismaMock.family.findUnique.mockResolvedValue(mockFamilyWithToken);
       prismaMock.calendarEvent.findMany.mockResolvedValue([]);

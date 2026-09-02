@@ -8,6 +8,7 @@ import { PrismaService } from '../../database/prisma.service';
 import { ActivityService } from '../activity/activity.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { RealtimeService } from '../realtime/realtime.service';
+import { expandEvent, parseRecurrence } from './calendar-recurrence';
 import { CreateEventDto } from './dto/create-event.dto';
 import { RsvpEventDto } from './dto/rsvp-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
@@ -37,76 +38,6 @@ function parseAttendees(raw: unknown): StoredAttendee[] {
     });
   }
   return out;
-}
-
-type RecurrenceRule = {
-  freq: 'daily' | 'weekly' | 'monthly' | 'yearly';
-  until?: string;
-  exceptions?: string[];
-};
-
-function advanceDate(date: Date, freq: string): Date {
-  const d = new Date(date);
-  switch (freq) {
-    case 'daily':
-      d.setDate(d.getDate() + 1);
-      break;
-    case 'weekly':
-      d.setDate(d.getDate() + 7);
-      break;
-    case 'monthly':
-      d.setMonth(d.getMonth() + 1);
-      break;
-    case 'yearly':
-      d.setFullYear(d.getFullYear() + 1);
-      break;
-  }
-  return d;
-}
-
-function expandEvent(
-  event: Record<string, unknown>,
-  rangeStart: Date,
-  rangeEnd: Date,
-): Record<string, unknown>[] {
-  const recurrence = event['recurrence'] as RecurrenceRule | null;
-  if (!recurrence) return [event];
-
-  const duration =
-    new Date(event['endAt'] as string).getTime() -
-    new Date(event['startAt'] as string).getTime();
-  const exceptions = new Set(recurrence.exceptions ?? []);
-  const until = recurrence.until
-    ? new Date(recurrence.until + 'T23:59:59Z')
-    : null;
-
-  const instances: Record<string, unknown>[] = [];
-  let cursor = new Date(event['startAt'] as string);
-  let count = 0;
-
-  while (cursor <= rangeEnd && count < 500) {
-    count++;
-    if (until && cursor > until) break;
-
-    const dateStr = cursor.toISOString().slice(0, 10);
-    const isBase =
-      cursor.getTime() === new Date(event['startAt'] as string).getTime();
-
-    if (cursor >= rangeStart && !exceptions.has(dateStr)) {
-      instances.push({
-        ...event,
-        id: isBase ? event['id'] : `${event['id'] as string}_${dateStr}`,
-        startAt: cursor.toISOString(),
-        endAt: new Date(cursor.getTime() + duration).toISOString(),
-        recurrenceBaseId: event['id'],
-        instanceDate: dateStr,
-      });
-    }
-
-    cursor = advanceDate(cursor, recurrence.freq);
-  }
-
-  return instances;
 }
 
 @Injectable()
@@ -257,7 +188,8 @@ export class CalendarService {
       });
       if (!baseEvent) throw new NotFoundException('Event not found');
 
-      const rule = (baseEvent.recurrence ?? {}) as RecurrenceRule;
+      const rule = parseRecurrence(baseEvent.recurrence);
+      if (!rule) throw new NotFoundException('Event not found');
       const exceptions = [...(rule.exceptions ?? []), instanceDate];
       await this.prisma.calendarEvent.update({
         where: { id: eventId },
@@ -318,7 +250,8 @@ export class CalendarService {
       });
       if (!baseEvent) throw new NotFoundException('Event not found');
 
-      const rule = (baseEvent.recurrence ?? {}) as RecurrenceRule;
+      const rule = parseRecurrence(baseEvent.recurrence);
+      if (!rule) throw new NotFoundException('Event not found');
       const dayBefore = new Date(instanceDate);
       dayBefore.setDate(dayBefore.getDate() - 1);
       const newUntil = dayBefore.toISOString().slice(0, 10);
@@ -405,7 +338,10 @@ export class CalendarService {
         ...(fields.reminderMinutesBefore !== undefined && {
           reminderMinutesBefore: fields.reminderMinutesBefore,
         }),
-        ...(resetReminder && { reminderSentAt: null }),
+        ...(resetReminder && {
+          reminderSentAt: null,
+          reminderSentDates: [],
+        }),
         ...(recurrence !== undefined && {
           recurrence:
             recurrence === null
@@ -443,7 +379,7 @@ export class CalendarService {
 
     if (instanceDate) {
       // Delete just this instance — add to exceptions
-      const rule = (event.recurrence ?? {}) as RecurrenceRule;
+      const rule = parseRecurrence(event.recurrence) ?? { freq: 'daily' as const };
       const exceptions = [...(rule.exceptions ?? []), instanceDate];
       await this.prisma.calendarEvent.update({
         where: { id: eventId },

@@ -68,6 +68,7 @@ Many mutations live **inline** in Sidebar / canvas / calendar views, not only in
 
 - Desktop `md+`: `Sidebar` + main
 - Mobile: `BottomNav` (Home, Calendar, Activity, New, Settings)
+- Calendar month grid places events on the **local** start day; `+N more` opens a day sheet. All-day create/edit stores noon UTC. Header **Export** opens Google / Apple / copy subscribe links (same ICS token as Family Settings).
 
 - Search: sidebar desktop, header magnifier on mobile
 - DnD: `@dnd-kit` (pages, folders, list/task items)
