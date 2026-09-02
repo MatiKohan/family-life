@@ -1,7 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { http, HttpResponse } from 'msw';
 import { server } from '../../mocks/server';
 import { useAuthStore } from '../../store/auth.store';
 import { CalendarSubscribeActions } from './CalendarSubscribeActions';
