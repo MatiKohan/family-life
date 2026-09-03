@@ -6,7 +6,7 @@ Schema: `apps/api/prisma/schema.prisma`. All family data is PostgreSQL via Prism
 
 | Model | Purpose |
 |---|---|
-| `User` | Email, optional Google id / password, `refreshTokenHash`, name, avatar, `locale` (`en` / `he`, for notifications) |
+| `User` | Email, optional Google id / password, `refreshTokenHash`, display `name` (editable), avatar, `locale` (`en` / `he`, for notifications) |
 | `Family` | Name, emoji, optional `calendarToken` (ICS) |
 Prefs live in `FamilyMember.notificationSettings` Json: `invite`, `itemAssigned`, `eventReminder`, `itemAdded` (all default on when the key is missing).
 | `FamilyInvite` | Token, optional email/phone, `InviteStatus`, `expiresAt` |

@@ -22,7 +22,7 @@ DTOs: `class-validator`. Required fields use `!` for `strictPropertyInitializati
 |---|---|---|
 | `health` | `GET /health` | No JWT, skip throttle |
 | `users` | none | Used by auth (findOrCreate, refresh hash, deleteAccount) |
-| `auth` | `/auth/*` | register, login, google, refresh, logout, me, PATCH me (locale), delete me |
+| `auth` | `/auth/*` | register, login, google, refresh, logout, me, PATCH me (`locale`, `name`), delete me |
 | `family` | `/families`, `/families/:id`, members | Exports `requireMember`, `requireRole`, `addMemberByInvite` |
 | `invites` | `/families/:id/invites/*`, public `/invites/info/:token`, `/invites/join/:token` | Join uses optional JWT |
 | `pages` | `/families/:id/pages` + items, task-items, event-refs, blocks | Soft-delete pages; `RecurringTaskScheduler` |

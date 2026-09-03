@@ -151,7 +151,7 @@ export function FamilyHomePage() {
     <main className="flex-1 bg-gray-50">
 
       {/* Hero — compact on mobile so Today sits above the fold */}
-      <div className="relative bg-gradient-to-br from-brand-500 to-brand-700 px-4 md:px-6 pt-4 md:pt-8 pb-16 md:pb-20 overflow-hidden">
+      <div className="relative bg-gradient-to-br from-brand-500 to-brand-700 px-4 md:px-6 pt-4 md:pt-8 pb-12 md:pb-14 overflow-hidden">
         <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full bg-white/5 pointer-events-none" />
         <div className="absolute top-16 -right-6 w-28 h-28 rounded-full bg-white/5 pointer-events-none" />
 
@@ -181,10 +181,10 @@ export function FamilyHomePage() {
         </div>
       </div>
 
-      <div className="px-4 md:px-6 -mt-8 md:-mt-10 space-y-3 pb-8">
+      <div className="relative z-10 px-4 md:px-6 -mt-6 md:-mt-8 space-y-3 pb-8">
         <section
           aria-labelledby="home-today-heading"
-          className="bg-white rounded-2xl shadow-md border border-gray-100 px-4 pb-4 pt-6 md:px-5 md:pb-5 md:pt-7"
+          className="bg-white rounded-2xl shadow-md border border-gray-100 p-4 md:p-5"
         >
           <h2
             id="home-today-heading"

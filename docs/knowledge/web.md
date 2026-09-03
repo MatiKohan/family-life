@@ -40,7 +40,7 @@ React 19 + Vite, Tailwind, TanStack Query, Zustand, React Router, i18n (`en` / `
 | `auth.store` | `auth-storage` | `user` | `accessToken` |
 | `family.store` | `family-storage` | `activeFamilyId`, `collapsedFolderIds` | — |
 
-Language: `localStorage` `language`. Logged-in sessions also persist `User.locale` via `PATCH /auth/me` so push/WhatsApp match the UI.
+Language: `localStorage` `language`. Logged-in sessions also persist `User.locale` via `PATCH /auth/me` so push/WhatsApp match the UI. Display name is edited on Family Settings (`PATCH /auth/me` `{ name }`) and used everywhere `User.name` is shown.
 
 ## Query keys
 

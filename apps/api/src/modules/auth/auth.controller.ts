@@ -13,7 +13,14 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { IsEmail, IsIn, IsString, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsIn,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 import { Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { ThrottlerGuard, Throttle, SkipThrottle } from '@nestjs/throttler';
@@ -47,8 +54,15 @@ class RegisterDto {
 }
 
 class UpdateMeDto {
+  @IsOptional()
   @IsIn(['en', 'he'])
-  locale!: 'en' | 'he';
+  locale?: 'en' | 'he';
+
+  @IsOptional()
+  @IsString()
+  @MinLength(2)
+  @MaxLength(80)
+  name?: string;
 }
 
 const REFRESH_COOKIE = 'refresh_token';
@@ -182,7 +196,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @SkipThrottle()
   updateMe(@CurrentUser() user: AuthUser, @Body() dto: UpdateMeDto) {
-    return this.usersService.updateLocale(user.id, dto.locale);
+    return this.usersService.updateProfile(user.id, dto);
   }
 
   @Delete('me')

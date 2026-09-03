@@ -131,8 +131,12 @@ export const handlers = [
   http.get('/api/health', () => HttpResponse.json({ status: 'ok' })),
   http.get('/api/auth/me', () => HttpResponse.json(mockUser)),
   http.patch('/api/auth/me', async ({ request }) => {
-    const body = (await request.json()) as { locale?: 'en' | 'he' };
-    return HttpResponse.json({ ...mockUser, locale: body.locale ?? mockUser.locale });
+    const body = (await request.json()) as { locale?: 'en' | 'he'; name?: string };
+    return HttpResponse.json({
+      ...mockUser,
+      locale: body.locale ?? mockUser.locale,
+      name: body.name ?? mockUser.name,
+    });
   }),
   http.post('/api/auth/refresh', () =>
     HttpResponse.json({ accessToken: 'new-mock-token', user: mockUser }),
