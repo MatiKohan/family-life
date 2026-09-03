@@ -41,7 +41,8 @@
     "passwordPlaceholder": "••••••",
     "namePlaceholder": "השם שלך",
     "signInToContinue": "התחבר כדי להמשיך.",
-    "signOut": "התנתק"
+    "signOut": "התנתק",
+    "signingIn": "מתחבר…"
   },
   "family": {
     "createTitle": "יצירת משפחה",
@@ -120,6 +121,7 @@
     "noFolder": "ללא תיקייה",
     "deletePage": "מחק דף",
     "deletePageConfirm": "למחוק את \"{{title}}\"? לא ניתן לבטל פעולה זו.",
+    "deleteBlockConfirm": "למחוק את הבלוק הזה?",
     "deleteFolder": "מחק תיקייה",
     "dropToRemoveFromFolder": "שחרר כאן להוצאה מהתיקייה",
     "deleteFolderConfirmTitle": "למחוק תיקייה?",
@@ -329,7 +331,9 @@
     "tasks": "משימות",
     "events": "אירועים",
     "noResults": "אין תוצאות עבור \"{{q}}\"",
-    "searching": "מחפש..."
+    "searching": "מחפש...",
+    "clear": "נקה חיפוש",
+    "open": "חיפוש"
   },
   "offline": {
     "banner": "אין חיבור לאינטרנט — השינויים יסונכרנו כשתתחבר מחדש"

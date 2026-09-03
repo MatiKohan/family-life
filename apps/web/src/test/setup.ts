@@ -251,6 +251,8 @@ i18n.use(initReactI18next).init({
           events: 'Events',
           noResults: 'No results for "{{q}}"',
           searching: 'Searching...',
+          clear: 'Clear search',
+          open: 'Search',
         },
         offline: {
           banner: "You're offline — changes will sync when you reconnect",

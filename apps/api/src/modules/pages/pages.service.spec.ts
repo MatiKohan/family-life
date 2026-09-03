@@ -873,7 +873,10 @@ describe('PagesService', () => {
       ).toHaveBeenCalledWith(
         expect.objectContaining({
           actorUserId: USER_ID,
-          message: expect.stringContaining('New block item'),
+          activity: expect.objectContaining({
+            type: 'list_item',
+            itemText: 'New block item',
+          }),
         }),
       );
     });

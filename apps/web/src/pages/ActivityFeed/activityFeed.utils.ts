@@ -1,4 +1,5 @@
 import { ActivityLog } from '@family-life/types';
+import { formatShortDate } from '../../lib/date-locale';
 
 type TFunction = (key: string, opts?: Record<string, unknown>) => string;
 
@@ -37,7 +38,7 @@ export function formatActivity(log: ActivityLog, t: TFunction): string {
   }
 }
 
-export function timeAgo(dateStr: string, t: TFunction): string {
+export function timeAgo(dateStr: string, t: TFunction, language: string): string {
   const now = Date.now();
   const then = new Date(dateStr).getTime();
   const diffMs = now - then;
@@ -48,6 +49,5 @@ export function timeAgo(dateStr: string, t: TFunction): string {
   if (diffMin < 60) return t('activity.minAgo', { count: diffMin });
   if (diffHours < 24) return t('activity.hoursAgo', { count: diffHours });
 
-  const date = new Date(dateStr);
-  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  return formatShortDate(dateStr, language);
 }

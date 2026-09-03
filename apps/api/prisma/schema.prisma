@@ -15,6 +15,7 @@ model User {
   avatarUrl        String?
   password         String?
   refreshTokenHash String?
+  locale             String    @default("en")
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
   families         FamilyMember[]

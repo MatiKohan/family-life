@@ -7,6 +7,7 @@ import { useFamily } from '../../hooks/useFamily';
 import { CalendarEvent } from '../../types/calendar';
 import { Page } from '../../types/page';
 import { CreateEventModal } from '../CalendarView/CalendarView';
+import { formatShortDate, formatTime } from '../../lib/date-locale';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -26,15 +27,13 @@ function isSameDay(a: Date, b: Date): boolean {
   );
 }
 
-function formatEventDate(ev: CalendarEvent): string {
-  const start = new Date(ev.startAt);
-  return start.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+function formatEventDate(ev: CalendarEvent, language: string): string {
+  return formatShortDate(ev.startAt, language);
 }
 
-function formatEventStart(ev: CalendarEvent): string {
+function formatEventStart(ev: CalendarEvent, language: string): string {
   if (ev.isAllDay) return '';
-  const start = new Date(ev.startAt);
-  return start.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+  return formatTime(ev.startAt, language);
 }
 
 // ---------------------------------------------------------------------------
@@ -50,7 +49,7 @@ interface LinkEventModalProps {
 }
 
 function LinkEventModal({ familyId, pageId, alreadyLinkedIds, onClose, onLinked }: LinkEventModalProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
 
   // Fetch a broad window of family events (next 6 months)
@@ -108,7 +107,7 @@ function LinkEventModal({ familyId, pageId, alreadyLinkedIds, onClose, onLinked 
                   className="w-full text-start px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100 transition-colors disabled:opacity-50"
                 >
                   <span className="font-medium">{ev.title}</span>
-                  <span className="text-gray-400 ms-2">{formatEventDate(ev)}</span>
+                  <span className="text-gray-400 ms-2">{formatEventDate(ev, i18n.language)}</span>
                 </button>
               </li>
             ))}
@@ -137,7 +136,7 @@ interface EventsPageViewProps {
 }
 
 export function EventsPageView({ page, familyId }: EventsPageViewProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
   const [showPast, setShowPast] = useState(false);
   const [showLinkModal, setShowLinkModal] = useState(false);
@@ -215,13 +214,13 @@ export function EventsPageView({ page, familyId }: EventsPageViewProps) {
       ) : (
         <div className="space-y-0">
           {visibleEvents.map((ev) => {
-            const timeLabel = formatEventStart(ev);
+            const timeLabel = formatEventStart(ev, i18n.language);
             return (
               <div key={ev.id} className="flex gap-4 group py-3 border-b border-gray-100 last:border-b-0">
                 {/* Date column */}
                 <div className="w-16 shrink-0 text-center">
                   <span className="text-xs font-medium text-brand-600 bg-brand-50 px-2 py-1 rounded-lg block">
-                    {formatEventDate(ev)}
+                    {formatEventDate(ev, i18n.language)}
                   </span>
                 </div>
 

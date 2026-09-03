@@ -11,6 +11,7 @@ import { FamilyMember } from '../../types/family';
 import { EventRsvpPanel } from './EventRsvpPanel';
 import { CalendarSubscribeActions } from '../CalendarSubscribe/CalendarSubscribeActions';
 import { allDayUtcIso, toLocalDateString } from '../../lib/local-day-range';
+import { formatDateTime, formatLongDate, formatTime, intlLocale } from '../../lib/date-locale';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -73,25 +74,16 @@ function isSameDay(a: Date, b: Date): boolean {
   );
 }
 
-function formatEventTime(ev: CalendarEvent): string {
+function formatEventTime(ev: CalendarEvent, language: string): string {
   if (ev.isAllDay) return '';
-  const d = new Date(ev.startAt);
-  return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+  return formatTime(ev.startAt, language);
 }
 
 // ---------------------------------------------------------------------------
 // Reminder options
 // ---------------------------------------------------------------------------
 
-const REMINDER_OPTIONS: { label: string; value: number | null }[] = [
-  { label: 'No reminder', value: null },
-  { label: '15 minutes before', value: 15 },
-  { label: '30 minutes before', value: 30 },
-  { label: '1 hour before', value: 60 },
-  { label: '2 hours before', value: 120 },
-  { label: '1 day before', value: 1440 },
-  { label: '2 days before', value: 2880 },
-];
+const REMINDER_VALUES: (number | null)[] = [null, 15, 30, 60, 120, 1440, 2880];
 
 // ---------------------------------------------------------------------------
 // CreateEventModal
@@ -271,9 +263,9 @@ function CreateEventModal({ familyId, initialDate, onClose, onCreated, members }
               onChange={(e) => setReminderMinutesBefore(e.target.value === '' ? null : Number(e.target.value))}
               className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
             >
-              {REMINDER_OPTIONS.map((opt) => (
-                <option key={opt.value ?? 'none'} value={opt.value ?? ''}>
-                  {t(`calendar.reminder_${opt.value ?? 'none'}`, { defaultValue: opt.label })}
+              {REMINDER_VALUES.map((value) => (
+                <option key={value ?? 'none'} value={value ?? ''}>
+                  {t(`calendar.reminder_${value ?? 'none'}`)}
                 </option>
               ))}
             </select>
@@ -385,7 +377,7 @@ interface EventDetailModalProps {
 }
 
 function EventDetailModal({ event, familyId, onClose, members }: EventDetailModalProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
 
   const [editing, setEditing] = useState(false);
@@ -469,12 +461,10 @@ function EventDetailModal({ event, familyId, onClose, members }: EventDetailModa
   }
 
   const startFormatted = event.isAllDay
-    ? new Date(event.startAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
-    : new Date(event.startAt).toLocaleString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+    ? formatLongDate(event.startAt, i18n.language)
+    : formatDateTime(event.startAt, i18n.language);
 
-  const endFormatted = event.isAllDay
-    ? null
-    : new Date(event.endAt).toLocaleString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+  const endFormatted = event.isAllDay ? null : formatDateTime(event.endAt, i18n.language);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
@@ -515,9 +505,7 @@ function EventDetailModal({ event, familyId, onClose, members }: EventDetailModa
               {event.reminderMinutesBefore != null && (
                 <p className="text-sm text-gray-600">
                   <span className="font-medium">🔔 {t('calendar.reminder')}:</span>{' '}
-                  {t(`calendar.reminder_${event.reminderMinutesBefore}`, {
-                    defaultValue: REMINDER_OPTIONS.find((o) => o.value === event.reminderMinutesBefore)?.label ?? '',
-                  })}
+                  {t(`calendar.reminder_${event.reminderMinutesBefore}`)}
                 </p>
               )}
               {event.recurrence && (
@@ -651,9 +639,9 @@ function EventDetailModal({ event, familyId, onClose, members }: EventDetailModa
                   onChange={(e) => setReminderMinutesBefore(e.target.value === '' ? null : Number(e.target.value))}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
                 >
-                  {REMINDER_OPTIONS.map((opt) => (
-                    <option key={opt.value ?? 'none'} value={opt.value ?? ''}>
-                      {t(`calendar.reminder_${opt.value ?? 'none'}`, { defaultValue: opt.label })}
+                  {REMINDER_VALUES.map((value) => (
+                    <option key={value ?? 'none'} value={value ?? ''}>
+                      {t(`calendar.reminder_${value ?? 'none'}`)}
                     </option>
                   ))}
                 </select>
@@ -821,8 +809,8 @@ interface DayEventsSheetProps {
 }
 
 function DayEventsSheet({ date, events, onClose, onSelectEvent, onCreate }: DayEventsSheetProps) {
-  const { t } = useTranslation();
-  const dateLabel = date.toLocaleDateString(undefined, {
+  const { t, i18n } = useTranslation();
+  const dateLabel = date.toLocaleDateString(intlLocale(i18n.language), {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
@@ -859,7 +847,7 @@ function DayEventsSheet({ date, events, onClose, onSelectEvent, onCreate }: DayE
               >
                 <span className="font-medium">{ev.title}</span>
                 <span className="text-gray-400 ms-2">
-                  {ev.isAllDay ? t('calendar.allDay') : formatEventTime(ev)}
+                  {ev.isAllDay ? t('calendar.allDay') : formatEventTime(ev, i18n.language)}
                 </span>
               </button>
             </li>
@@ -1059,7 +1047,7 @@ export function CalendarView({ familyId, onEventClick }: CalendarViewProps) {
                       >
                         {ev.reminderMinutesBefore != null && <span className="shrink-0">🔔</span>}
                         <span className="truncate">
-                          {ev.isAllDay ? '' : formatEventTime(ev) + ' '}
+                          {ev.isAllDay ? '' : formatEventTime(ev, i18n.language) + ' '}
                           {ev.title}
                         </span>
                         {ev.assignee && (

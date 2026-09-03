@@ -57,7 +57,7 @@ function ActivitySkeleton() {
 }
 
 function ActivityRow({ log, familyId }: { log: ActivityLog; familyId: string }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const href = activityHref(familyId, log);
   const body = (
     <>
@@ -75,7 +75,7 @@ function ActivityRow({ log, familyId }: { log: ActivityLog; familyId: string }) 
         dateTime={log.createdAt}
         className="text-xs text-gray-400 shrink-0 mt-0.5 whitespace-nowrap"
       >
-        {timeAgo(log.createdAt, t)}
+        {timeAgo(log.createdAt, t, i18n.language)}
       </time>
     </>
   );

@@ -45,7 +45,7 @@ export function BlockRenderer({ block, familyId, pageId, dragHandle, onUpdate, o
       block.type === 'list'
         ? block.items.length > 0
         : block.content.trim().length > 0;
-    if (hasContent && !window.confirm('Delete this block?')) return;
+    if (hasContent && !window.confirm(t('pages.deleteBlockConfirm'))) return;
     onDelete();
   }
 

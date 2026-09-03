@@ -90,6 +90,14 @@ export class UsersService {
     return user ? this.toAuthUser(user) : null;
   }
 
+  async updateLocale(userId: string, locale: 'en' | 'he'): Promise<AuthUser> {
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data: { locale },
+    });
+    return this.toAuthUser(user);
+  }
+
   async saveRefreshTokenHash(userId: string, hash: string): Promise<void> {
     await this.prisma.user.update({
       where: { id: userId },
@@ -140,12 +148,14 @@ export class UsersService {
     email: string;
     name: string;
     avatarUrl: string | null;
+    locale?: string | null;
   }): AuthUser {
     return {
       id: user.id,
       email: user.email,
       name: user.name,
       avatarUrl: user.avatarUrl,
+      locale: user.locale?.startsWith('he') ? 'he' : 'en',
     };
   }
 }

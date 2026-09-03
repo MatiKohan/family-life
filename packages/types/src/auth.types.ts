@@ -3,6 +3,7 @@ export interface AuthUser {
   email: string;
   name: string;
   avatarUrl: string | null;
+  locale?: 'en' | 'he';
 }
 
 export interface JwtPayload {

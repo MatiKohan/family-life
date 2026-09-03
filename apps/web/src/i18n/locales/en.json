@@ -41,7 +41,8 @@
     "passwordPlaceholder": "••••••",
     "namePlaceholder": "Your name",
     "signInToContinue": "Sign in to continue.",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "signingIn": "Signing you in…"
   },
   "family": {
     "createTitle": "Create a Family",
@@ -120,6 +121,7 @@
     "noFolder": "No folder",
     "deletePage": "Delete page",
     "deletePageConfirm": "Delete \"{{title}}\"? This action cannot be undone.",
+    "deleteBlockConfirm": "Delete this block?",
     "deleteFolder": "Delete folder",
     "dropToRemoveFromFolder": "Drop here to remove from folder",
     "deleteFolderConfirmTitle": "Delete folder?",
@@ -329,7 +331,9 @@
     "tasks": "Tasks",
     "events": "Events",
     "noResults": "No results for \"{{q}}\"",
-    "searching": "Searching..."
+    "searching": "Searching...",
+    "clear": "Clear search",
+    "open": "Search"
   },
   "offline": {
     "banner": "You're offline — changes will sync when you reconnect"

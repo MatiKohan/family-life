@@ -158,6 +158,7 @@ describe('UsersService', () => {
       });
       const result = await service.findById('user-1');
       expect(result?.id).toBe('user-1');
+      expect(result?.locale).toBe('en');
     });
   });
 });

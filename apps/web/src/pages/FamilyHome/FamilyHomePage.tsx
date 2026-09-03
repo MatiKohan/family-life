@@ -8,6 +8,7 @@ import { useFolders } from '../../hooks/useFolders';
 import { useFamily } from '../../hooks/useFamily';
 import { useDashboard } from '../../hooks/useDashboard';
 import { localDayRange } from '../../lib/local-day-range';
+import { formatTime } from '../../lib/date-locale';
 import { useAuthStore } from '../../store/auth.store';
 import { useFamilyStore } from '../../store/family.store';
 import { apiRequest } from '../../lib/api-client';
@@ -96,7 +97,7 @@ function SkeletonCard() {
 }
 
 export function FamilyHomePage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -180,10 +181,10 @@ export function FamilyHomePage() {
         </div>
       </div>
 
-      <div className="px-4 md:px-6 -mt-12 md:-mt-14 space-y-3 pb-8">
+      <div className="px-4 md:px-6 -mt-8 md:-mt-10 space-y-3 pb-8">
         <section
           aria-labelledby="home-today-heading"
-          className="bg-white rounded-2xl shadow-md border border-gray-100 p-4 md:p-5"
+          className="bg-white rounded-2xl shadow-md border border-gray-100 px-4 pb-4 pt-6 md:px-5 md:pb-5 md:pt-7"
         >
           <h2
             id="home-today-heading"
@@ -202,10 +203,7 @@ export function FamilyHomePage() {
                     <span className="font-medium truncate">{ev.title}</span>
                     {!ev.isAllDay && (
                       <span className="text-gray-400 shrink-0">
-                        {new Date(ev.startAt).toLocaleTimeString(undefined, {
-                          hour: 'numeric',
-                          minute: '2-digit',
-                        })}
+                        {formatTime(ev.startAt, i18n.language)}
                       </span>
                     )}
                   </Link>

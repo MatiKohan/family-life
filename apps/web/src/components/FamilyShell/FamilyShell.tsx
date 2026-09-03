@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Navigate, useParams, Outlet, useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/auth.store';
 import { useFamilyStore } from '../../store/family.store';
 import { useFamily } from '../../hooks/useFamily';
@@ -16,6 +17,7 @@ import { useRealtimeEvents } from '../../hooks/useRealtimeEvents';
  * Child routes render inside the <main> area via <Outlet />.
  */
 export function FamilyShell() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const user = useAuthStore((s) => s.user);
   const clearSession = useAuthStore((s) => s.clearSession);
@@ -62,7 +64,7 @@ export function FamilyShell() {
                 onClick={() => setMobileSearchOpen(false)}
                 className="text-sm text-brand-600 font-medium shrink-0"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
             </>
           ) : (
@@ -82,7 +84,7 @@ export function FamilyShell() {
                   type="button"
                   onClick={() => setMobileSearchOpen(true)}
                   className="text-gray-500 hover:text-gray-700 p-1"
-                  aria-label="Search"
+                  aria-label={t('search.open')}
                 >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z" />
@@ -96,7 +98,7 @@ export function FamilyShell() {
                   type="button"
                   onClick={handleLogout}
                   className="text-gray-500 hover:text-gray-700 p-1"
-                  aria-label="Sign out"
+                  aria-label={t('auth.signOut')}
                 >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

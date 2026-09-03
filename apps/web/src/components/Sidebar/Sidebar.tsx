@@ -473,7 +473,7 @@ export function Sidebar({ familyId, onClose }: SidebarProps) {
   // --- Event handlers ---
 
   function handleDeletePage(pageId: string, pageTitle: string) {
-    if (!window.confirm(`Delete "${pageTitle}"?`)) return;
+    if (!window.confirm(t('pages.deletePageConfirm', { title: pageTitle }))) return;
     deleteMutation.mutate(pageId);
   }
 

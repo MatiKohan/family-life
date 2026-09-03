@@ -40,7 +40,7 @@ React 19 + Vite, Tailwind, TanStack Query, Zustand, React Router, i18n (`en` / `
 | `auth.store` | `auth-storage` | `user` | `accessToken` |
 | `family.store` | `family-storage` | `activeFamilyId`, `collapsedFolderIds` | — |
 
-Language: `localStorage` `language`.
+Language: `localStorage` `language`. Logged-in sessions also persist `User.locale` via `PATCH /auth/me` so push/WhatsApp match the UI.
 
 ## Query keys
 
@@ -75,4 +75,4 @@ Many mutations live **inline** in Sidebar / canvas / calendar views, not only in
 
 ## i18n
 
-`src/i18n/locales/{en,he}.json`. New user-visible strings need both locales. Vitest setup embeds a **subset** of English, not the full JSON.
+`src/i18n/locales/{en,he}.json`. New user-visible strings need both locales. Display dates/times use `lib/date-locale.ts` (`he-IL` / `en-US`) so they follow the app language, not the OS. Vitest setup embeds a **subset** of English, not the full JSON.
