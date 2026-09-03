@@ -308,6 +308,7 @@ export const handlers = [
       todayEvents: [],
       assigned: { listItems: [], tasks: [], events: [] },
       openListItems: 0,
+      leftoverPageId: null,
     }),
   ),
 

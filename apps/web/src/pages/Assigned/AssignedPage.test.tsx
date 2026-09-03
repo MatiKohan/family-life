@@ -38,6 +38,7 @@ function renderAssigned() {
           events: [],
         },
         openListItems: 1,
+        leftoverPageId: 'page-1',
       }),
     ),
   );
