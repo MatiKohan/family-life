@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import type { AuthUser } from '@family-life/types';
 import { useFamily } from '../../hooks/useFamily';
 import { useAuthStore } from '../../store/auth.store';
 import { useUpdateMyMember } from '../../hooks/useUpdateMyMember';
@@ -9,6 +11,8 @@ import { useUpdateFamily } from '../../hooks/useUpdateFamily';
 import { usePushSubscription } from '../../hooks/usePushSubscription';
 import { InviteModal } from '../../components/InviteModal/InviteModal';
 import { CalendarSubscribeActions } from '../../components/CalendarSubscribe/CalendarSubscribeActions';
+import { apiRequest } from '../../lib/api-client';
+import { queryKeys } from '../../lib/query-keys';
 import type { FamilyRole } from '../../types/family';
 
 const ROLE_BADGE: Record<string, string> = {
@@ -21,11 +25,14 @@ export function FamilySettingsPage() {
   const { id } = useParams<{ id: string }>();
   const { t } = useTranslation();
   const currentUser = useAuthStore((s) => s.user);
+  const setSession = useAuthStore((s) => s.setSession);
   const { data: family, isLoading } = useFamily(id);
+  const queryClient = useQueryClient();
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [editingFamily, setEditingFamily] = useState(false);
   const [familyName, setFamilyName] = useState('');
   const [familyEmoji, setFamilyEmoji] = useState('');
+  const [displayName, setDisplayName] = useState(currentUser?.name ?? '');
 
   const [phone, setPhone] = useState('');
   const [itemAssignedEnabled, setItemAssignedEnabled] = useState(true);
@@ -40,6 +47,24 @@ export function FamilySettingsPage() {
   const currentMember = family?.members.find((m) => m.user.id === currentUser?.id);
   const canInvite = currentMember?.role === 'OWNER' || currentMember?.role === 'ADMIN';
   const canManageRoles = currentMember?.role === 'OWNER' || currentMember?.role === 'ADMIN';
+
+  useEffect(() => {
+    if (currentUser?.name) setDisplayName(currentUser.name);
+  }, [currentUser?.name]);
+
+  const updateName = useMutation({
+    mutationFn: (name: string) =>
+      apiRequest<AuthUser>('/auth/me', {
+        method: 'PATCH',
+        body: JSON.stringify({ name }),
+      }),
+    onSuccess: (updated) => {
+      const token = useAuthStore.getState().accessToken;
+      if (token) setSession(updated, token);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.families.all() });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.activity.all(id) });
+    },
+  });
 
   useEffect(() => {
     if (currentMember) {
@@ -154,6 +179,44 @@ export function FamilySettingsPage() {
               {t('invite.inviteMember')}
             </button>
           )}
+        </div>
+
+        <div>
+          <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">
+            {t('profile.title')}
+          </h2>
+          <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
+            <label className="block text-sm font-medium text-gray-700" htmlFor="display-name">
+              {t('auth.name')}
+            </label>
+            <input
+              id="display-name"
+              type="text"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              maxLength={80}
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
+            />
+            <p className="text-xs text-gray-400">{t('profile.hint')}</p>
+            <button
+              type="button"
+              disabled={
+                displayName.trim().length < 2 ||
+                displayName.trim() === (currentUser?.name ?? '') ||
+                updateName.isPending
+              }
+              onClick={() => updateName.mutate(displayName.trim())}
+              className="w-full px-4 py-2 text-sm font-medium text-white bg-brand-600 rounded-lg hover:bg-brand-700 transition-colors disabled:opacity-50"
+            >
+              {updateName.isPending ? t('common.saving') : t('common.save')}
+            </button>
+            {updateName.isSuccess && (
+              <p className="text-xs text-green-600 text-center">{t('notifications.saved')}</p>
+            )}
+            {updateName.isError && (
+              <p className="text-xs text-red-500 text-center">{t('common.error')}</p>
+            )}
+          </div>
         </div>
 
         {/* Members list */}

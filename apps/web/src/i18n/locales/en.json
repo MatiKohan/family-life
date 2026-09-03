@@ -65,6 +65,10 @@
     "roleAdmin": "Admin",
     "roleOwner": "Owner"
   },
+  "profile": {
+    "title": "Your name",
+    "hint": "Shown to your family in activity, assignments, and notifications."
+  },
   "invite": {
     "joining": "Joining family...",
     "success": "You joined {{familyName}}!",

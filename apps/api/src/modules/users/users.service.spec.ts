@@ -37,8 +37,8 @@ describe('UsersService', () => {
   };
 
   describe('findOrCreate', () => {
-    it('returns existing user by googleId and updates name/avatar', async () => {
-      const existing = { id: 'user-1', ...profile };
+    it('returns existing user by googleId and updates avatar only', async () => {
+      const existing = { id: 'user-1', ...profile, name: 'Chosen Name' };
       mockPrisma.user.findUnique.mockResolvedValue(existing);
       mockPrisma.user.update.mockResolvedValue(existing);
 
@@ -47,12 +47,12 @@ describe('UsersService', () => {
       expect(mockPrisma.user.create).not.toHaveBeenCalled();
       expect(mockPrisma.user.update).toHaveBeenCalledWith({
         where: { id: 'user-1' },
-        data: { name: profile.name, avatarUrl: profile.avatarUrl },
+        data: { avatarUrl: profile.avatarUrl },
       });
       expect(result.id).toBe('user-1');
     });
 
-    it('links googleId to existing email account and updates name/avatar', async () => {
+    it('links googleId to existing email account without overwriting name', async () => {
       const existingByEmail = { id: 'user-1', ...profile, googleId: null };
       // First call (by googleId) returns null, second call (by email) returns existing
       mockPrisma.user.findUnique
@@ -70,7 +70,6 @@ describe('UsersService', () => {
         where: { id: 'user-1' },
         data: {
           googleId: profile.googleId,
-          name: profile.name,
           avatarUrl: profile.avatarUrl,
         },
       });
@@ -159,6 +158,35 @@ describe('UsersService', () => {
       const result = await service.findById('user-1');
       expect(result?.id).toBe('user-1');
       expect(result?.locale).toBe('en');
+    });
+  });
+
+  describe('updateProfile', () => {
+    it('updates display name', async () => {
+      mockPrisma.user.update.mockResolvedValue({
+        id: 'user-1',
+        ...profile,
+        name: 'Mati',
+      });
+      const result = await service.updateProfile('user-1', { name: '  Mati  ' });
+      expect(mockPrisma.user.update).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+        data: { name: 'Mati' },
+      });
+      expect(result?.name).toBe('Mati');
+    });
+
+    it('updates locale without touching name', async () => {
+      mockPrisma.user.update.mockResolvedValue({
+        id: 'user-1',
+        ...profile,
+        locale: 'he',
+      });
+      await service.updateProfile('user-1', { locale: 'he' });
+      expect(mockPrisma.user.update).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+        data: { locale: 'he' },
+      });
     });
   });
 });

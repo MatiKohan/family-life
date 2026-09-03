@@ -38,6 +38,10 @@ i18n.use(initReactI18next).init({
           signInToContinue: 'Sign in to continue.',
           signOut: 'Sign out',
         },
+        profile: {
+          title: 'Your name',
+          hint: 'Shown to your family in activity, assignments, and notifications.',
+        },
         home: {
           goodMorning: 'Good morning',
           goodAfternoon: 'Good afternoon',

@@ -10,7 +10,7 @@
 3. `POST /api/auth/refresh` — cookie only; throttled
 4. `POST /api/auth/logout` — JWT; clear hash + cookie
 5. Google: `GET /api/auth/google` → callback sets cookie and redirects `WEB_URL/auth/callback?accessToken=…`
-6. Account merge: Google `findOrCreate` can link to existing email/password user
+6. Account merge: Google `findOrCreate` can link to existing email/password user. Later Google logins refresh **avatar only**, not `name`, so a chosen display name is kept.
 
 **Web:** Zustand `auth-storage` persists **user only**. Access token is memory-only. `useRestoreSession` calls refresh on load. `apiRequest` retries once on 401 via refresh; failed refresh clears session.
 

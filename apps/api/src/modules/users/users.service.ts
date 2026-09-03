@@ -19,10 +19,9 @@ export class UsersService {
       where: { googleId: profile.googleId },
     });
     if (byGoogleId) {
-      // Keep name and avatar up to date from Google
       const updated = await this.prisma.user.update({
         where: { id: byGoogleId.id },
-        data: { name: profile.name, avatarUrl: profile.avatarUrl },
+        data: { avatarUrl: profile.avatarUrl },
       });
       return this.toAuthUser(updated);
     }
@@ -36,7 +35,6 @@ export class UsersService {
         where: { id: byEmail.id },
         data: {
           googleId: profile.googleId,
-          name: profile.name,
           avatarUrl: profile.avatarUrl,
         },
       });
@@ -90,10 +88,25 @@ export class UsersService {
     return user ? this.toAuthUser(user) : null;
   }
 
-  async updateLocale(userId: string, locale: 'en' | 'he'): Promise<AuthUser> {
+  async updateProfile(
+    userId: string,
+    patch: { locale?: 'en' | 'he'; name?: string },
+  ): Promise<AuthUser> {
+    const data: { locale?: 'en' | 'he'; name?: string } = {};
+    if (patch.locale) data.locale = patch.locale;
+    if (patch.name !== undefined) {
+      const name = patch.name.trim();
+      if (name.length < 2) {
+        throw new BadRequestException('Name must be at least 2 characters');
+      }
+      data.name = name;
+    }
+    if (Object.keys(data).length === 0) {
+      throw new BadRequestException('Nothing to update');
+    }
     const user = await this.prisma.user.update({
       where: { id: userId },
-      data: { locale },
+      data,
     });
     return this.toAuthUser(user);
   }
