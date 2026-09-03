@@ -4,6 +4,7 @@ import { InviteStatus, FamilyRole } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { FamilyService } from '../family/family.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { normalizeLocale } from '../notifications/notification-i18n';
 import { ActivityService } from '../activity/activity.service';
 import { CreateLinkInviteDto } from './dto/create-link-invite.dto';
 import { CreateTargetedInviteDto } from './dto/create-targeted-invite.dto';
@@ -77,16 +78,23 @@ export class InvitesService {
     const inviteUrl = `${webUrl}/join/${invite.token}`;
 
     if (dto.phone) {
-      const family = await this.prisma.family.findUnique({
-        where: { id: familyId },
-        select: { name: true, emoji: true },
-      });
+      const [family, inviter] = await Promise.all([
+        this.prisma.family.findUnique({
+          where: { id: familyId },
+          select: { name: true, emoji: true },
+        }),
+        this.prisma.user.findUnique({
+          where: { id: userId },
+          select: { locale: true },
+        }),
+      ]);
       if (family) {
         void this.notificationsService.sendInviteNotification(
           dto.phone,
           inviteUrl,
           family.name,
           family.emoji,
+          normalizeLocale(inviter?.locale),
         );
       }
     }

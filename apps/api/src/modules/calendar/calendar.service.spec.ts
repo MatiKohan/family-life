@@ -136,7 +136,7 @@ describe('CalendarService', () => {
       ).toHaveBeenCalledWith(
         expect.objectContaining({
           actorUserId: USER_ID,
-          message: expect.stringContaining('Birthday Party'),
+          activity: { type: 'event', eventTitle: 'Birthday Party' },
         }),
       );
     });

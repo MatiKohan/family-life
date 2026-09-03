@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useSearch } from '../../hooks/useSearch';
+import { formatLongDate } from '../../lib/date-locale';
 
 interface SearchBarProps {
   familyId: string;
@@ -28,7 +29,7 @@ function MagnifierIcon() {
 }
 
 export function SearchBar({ familyId, onClose }: SearchBarProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
@@ -111,7 +112,7 @@ export function SearchBar({ familyId, onClose }: SearchBarProps) {
               setOpen(false);
             }}
             className="absolute right-2 text-gray-400 hover:text-gray-600 transition-colors"
-            aria-label="Clear search"
+            aria-label={t('search.clear')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -220,7 +221,7 @@ export function SearchBar({ familyId, onClose }: SearchBarProps) {
                   <span>📅</span>
                   <span className="flex-1 min-w-0 truncate">{event.title}</span>
                   <span className="text-xs text-gray-400 shrink-0">
-                    {new Date(event.startAt).toLocaleDateString()}
+                    {formatLongDate(event.startAt, i18n.language)}
                   </span>
                 </div>
               ))}

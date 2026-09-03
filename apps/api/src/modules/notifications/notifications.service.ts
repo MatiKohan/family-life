@@ -5,6 +5,16 @@ import {
   NOTIFICATION_CHANNELS,
 } from './channels/notification-channel.interface';
 import { PushService } from '../push/push.service';
+import {
+  activityBody,
+  formatEventWhen,
+  normalizeLocale,
+  tNotification,
+  type AppLocale,
+  type FamilyActivityKind,
+} from './notification-i18n';
+
+export type { FamilyActivityKind };
 
 @Injectable()
 export class NotificationsService {
@@ -16,8 +26,6 @@ export class NotificationsService {
     private readonly prisma: PrismaService,
     private readonly push: PushService,
   ) {}
-
-  // ─── Internal dispatch ────────────────────────────────────────────────────
 
   private getChannel(name: string): INotificationChannel | undefined {
     return this.channels.find((c) => c.channelName === name && c.isConfigured);
@@ -64,17 +72,35 @@ export class NotificationsService {
     }
   }
 
-  // ─── Public notification methods ─────────────────────────────────────────
+  private async pushByLocale(
+    entries: Array<{ userId: string; locale: AppLocale }>,
+    build: (locale: AppLocale) => { title: string; body: string; url?: string },
+  ): Promise<void> {
+    const groups = new Map<AppLocale, string[]>();
+    for (const entry of entries) {
+      const ids = groups.get(entry.locale) ?? [];
+      ids.push(entry.userId);
+      groups.set(entry.locale, ids);
+    }
+    await Promise.all(
+      [...groups.entries()].map(([locale, userIds]) =>
+        this.push.sendToUsers(userIds, build(locale)),
+      ),
+    );
+  }
 
   async sendInviteNotification(
     phone: string,
     inviteUrl: string,
     familyName: string,
     familyEmoji: string,
+    locale: AppLocale = 'en',
   ): Promise<void> {
-    const body =
-      `${familyEmoji} You've been invited to join *${familyName}* on Family Life!\n\n` +
-      `Tap here to join: ${inviteUrl}`;
+    const body = tNotification(locale, 'invite', {
+      emoji: familyEmoji,
+      familyName,
+      inviteUrl,
+    });
 
     await this.deliver('whatsapp', phone, body, 'invite', {
       inviteUrl,
@@ -92,18 +118,10 @@ export class NotificationsService {
   ): Promise<void> {
     const members = await this.prisma.familyMember.findMany({
       where: { familyId },
+      include: { user: { select: { locale: true } } },
     });
 
-    const timeLabel = startAt.toLocaleString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-    });
-
-    const body = `${familyEmoji} Reminder: *${eventTitle}* is coming up on ${timeLabel}`;
-
-    const pushUserIds: string[] = [];
+    const pushEntries: Array<{ userId: string; locale: AppLocale }> = [];
 
     for (const member of members) {
       const settings = (member.notificationSettings ?? {}) as Record<
@@ -112,9 +130,17 @@ export class NotificationsService {
       >;
       if (settings.eventReminder === false) continue;
 
-      pushUserIds.push(member.userId);
+      const locale = normalizeLocale(member.user.locale);
+      pushEntries.push({ userId: member.userId, locale });
 
       if (!member.whatsappPhone) continue;
+
+      const timeLabel = formatEventWhen(startAt, locale);
+      const body = tNotification(locale, 'reminder_wa', {
+        emoji: familyEmoji,
+        eventTitle,
+        timeLabel,
+      });
 
       await this.deliver('whatsapp', member.whatsappPhone, body, 'reminder', {
         familyId,
@@ -123,11 +149,14 @@ export class NotificationsService {
       });
     }
 
-    await this.push.sendToUsers(pushUserIds, {
+    await this.pushByLocale(pushEntries, (locale) => ({
       title: `${familyEmoji} ${familyName}`,
-      body: `Reminder: ${eventTitle} on ${timeLabel}`,
-      url: '/',
-    });
+      body: tNotification(locale, 'reminder_push', {
+        eventTitle,
+        timeLabel: formatEventWhen(startAt, locale),
+      }),
+      url: `/family/${familyId}/calendar?event=${eventId}`,
+    }));
   }
 
   async sendAssignmentNotification(
@@ -139,6 +168,7 @@ export class NotificationsService {
   ): Promise<void> {
     const member = await this.prisma.familyMember.findUnique({
       where: { familyId_userId: { familyId, userId: assigneeUserId } },
+      include: { user: { select: { locale: true } } },
     });
 
     if (!member) return;
@@ -149,23 +179,32 @@ export class NotificationsService {
     >;
     if (settings.itemAssigned === false) return;
 
-    const body =
-      `${familyEmoji} You've been assigned a task in *${familyName}*:\n\n` +
-      `"${itemText}"`;
+    const locale = normalizeLocale(member.user.locale);
+    const vars = {
+      emoji: familyEmoji,
+      familyName,
+      itemText,
+    };
 
     if (member.whatsappPhone) {
-      await this.deliver('whatsapp', member.whatsappPhone, body, 'assignment', {
-        familyId,
-        assigneeUserId,
-        itemText,
-        familyName,
-      });
+      await this.deliver(
+        'whatsapp',
+        member.whatsappPhone,
+        tNotification(locale, 'assigned_wa', vars),
+        'assignment',
+        {
+          familyId,
+          assigneeUserId,
+          itemText,
+          familyName,
+        },
+      );
     }
 
     await this.push.sendToUser(assigneeUserId, {
       title: `${familyEmoji} ${familyName}`,
-      body: `You were assigned: ${itemText}`,
-      url: '/',
+      body: tNotification(locale, 'assigned_push', vars),
+      url: `/family/${familyId}`,
     });
   }
 
@@ -177,10 +216,10 @@ export class NotificationsService {
     familyId: string;
     actorUserId: string;
     excludeUserIds?: Array<string | null | undefined>;
-    message: string;
+    activity: FamilyActivityKind;
     url: string;
   }): Promise<void> {
-    const { familyId, actorUserId, message, url } = opts;
+    const { familyId, actorUserId, activity, url } = opts;
     const skip = new Set(
       [actorUserId, ...(opts.excludeUserIds ?? [])].filter(
         (id): id is string => !!id,
@@ -196,13 +235,16 @@ export class NotificationsService {
         where: { id: actorUserId },
         select: { name: true },
       }),
-      this.prisma.familyMember.findMany({ where: { familyId } }),
+      this.prisma.familyMember.findMany({
+        where: { familyId },
+        include: { user: { select: { locale: true } } },
+      }),
     ]);
 
     if (!family) return;
 
-    const actorName = actor?.name?.trim() || 'Someone';
-    const pushUserIds: string[] = [];
+    const actorName = actor?.name?.trim() ?? '';
+    const pushEntries: Array<{ userId: string; locale: AppLocale }> = [];
 
     for (const member of members) {
       if (skip.has(member.userId)) continue;
@@ -211,15 +253,18 @@ export class NotificationsService {
         boolean
       >;
       if (settings.itemAdded === false) continue;
-      pushUserIds.push(member.userId);
+      pushEntries.push({
+        userId: member.userId,
+        locale: normalizeLocale(member.user.locale),
+      });
     }
 
-    if (pushUserIds.length === 0) return;
+    if (pushEntries.length === 0) return;
 
-    await this.push.sendToUsers(pushUserIds, {
+    await this.pushByLocale(pushEntries, (locale) => ({
       title: `${family.emoji} ${family.name}`,
-      body: `${actorName} ${message}`,
+      body: activityBody(locale, actorName, activity),
       url,
-    });
+    }));
   }
 }

@@ -49,4 +49,6 @@ Delete account (`DELETE /api/auth/me`) is blocked if the user is the sole OWNER 
 
 Prefs: `FamilyMember.notificationSettings` (`eventReminder`, `itemAssigned`, `invite`, `itemAdded`). `itemAdded` is **Web Push only** (no WhatsApp): other members are notified when someone creates a page, list item, task, or event. The actor and the assignee (if any) are skipped. Missing Twilio/VAPID env disables those channels. Logs: `NotificationLog`.
 
+Push and WhatsApp copy use `User.locale` (`en` / `he`, default `en`). The web app PATCHes `PATCH /api/auth/me` `{ locale }` when the UI language changes (and on protected load if it drifted). Recipients with different locales get different payloads. Invites use the inviter's locale. Event titles and names are not translated.
+
 Apartments: daily 8:00 cron + manual sync; Yad2 via Apify (`APIFY_TOKEN`); mock listings when token missing in non-prod.

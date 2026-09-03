@@ -173,22 +173,22 @@ describe('formatActivity', () => {
 describe('timeAgo', () => {
   it('returns "just now" for very recent timestamps', () => {
     const now = new Date().toISOString();
-    expect(timeAgo(now, t)).toBe('just now');
+    expect(timeAgo(now, t, 'en')).toBe('just now');
   });
 
   it('returns minutes ago for recent timestamps', () => {
     const fiveMinAgo = new Date(Date.now() - 5 * 60_000).toISOString();
-    expect(timeAgo(fiveMinAgo, t)).toBe('5 min ago');
+    expect(timeAgo(fiveMinAgo, t, 'en')).toBe('5 min ago');
   });
 
   it('returns hours ago for timestamps within 24h', () => {
     const twoHoursAgo = new Date(Date.now() - 2 * 3_600_000).toISOString();
-    expect(timeAgo(twoHoursAgo, t)).toBe('2 hours ago');
+    expect(timeAgo(twoHoursAgo, t, 'en')).toBe('2 hours ago');
   });
 
   it('returns formatted date for older timestamps', () => {
     const old = new Date('2026-04-01T12:00:00.000Z').toISOString();
-    const result = timeAgo(old, t);
-    expect(result).toMatch(/Apr 1/);
+    expect(timeAgo(old, t, 'en')).toMatch(/Apr 1/);
+    expect(timeAgo(old, t, 'he')).toMatch(/אפר/);
   });
 });

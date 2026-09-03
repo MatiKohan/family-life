@@ -10,6 +10,7 @@ import { randomUUID } from 'crypto';
 import { PrismaService } from '../../database/prisma.service';
 import { ActivityService } from '../activity/activity.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import type { FamilyActivityKind } from '../notifications/notification-i18n';
 import { RealtimeService } from '../realtime/realtime.service';
 import { CreateItemDto } from './dto/create-item.dto';
 import { CreatePageDto } from './dto/create-page.dto';
@@ -95,7 +96,7 @@ export class PagesService {
   private notifyFamilyActivity(
     familyId: string,
     actorUserId: string,
-    message: string,
+    activity: FamilyActivityKind,
     url: string,
     excludeUserIds: Array<string | null | undefined> = [],
   ): void {
@@ -103,7 +104,7 @@ export class PagesService {
       familyId,
       actorUserId,
       excludeUserIds,
-      message,
+      activity,
       url,
     });
   }
@@ -208,7 +209,7 @@ export class PagesService {
     this.notifyFamilyActivity(
       familyId,
       userId,
-      `created a new page: ${created.title}`,
+      { type: 'page_created', pageTitle: created.title },
       `/family/${familyId}/pages/${created.id}`,
     );
     return created;
@@ -323,7 +324,7 @@ export class PagesService {
     this.notifyFamilyActivity(
       familyId,
       userId,
-      `added "${newItem.text}" to ${page.title}`,
+      { type: 'list_item', itemText: newItem.text, pageTitle: page.title },
       `/family/${familyId}/pages/${pageId}`,
       [newItem.assigneeId],
     );
@@ -465,7 +466,7 @@ export class PagesService {
     this.notifyFamilyActivity(
       familyId,
       userId,
-      `added a task "${newItem.text}" to ${page.title}`,
+      { type: 'task', itemText: newItem.text, pageTitle: page.title },
       `/family/${familyId}/pages/${pageId}`,
       [newItem.assigneeId],
     );
@@ -752,7 +753,7 @@ export class PagesService {
     this.notifyFamilyActivity(
       familyId,
       userId,
-      `added "${newItem.text}" to ${page.title}`,
+      { type: 'list_item', itemText: newItem.text, pageTitle: page.title },
       `/family/${familyId}/pages/${pageId}`,
       [newItem.assigneeId],
     );

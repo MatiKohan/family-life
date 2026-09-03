@@ -165,6 +165,7 @@ describe('InvitesService', () => {
         `http://localhost:5173/join/${INVITE_TOKEN}`,
         'Test Family',
         '🏠',
+        'en',
       );
     });
 

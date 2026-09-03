@@ -41,15 +41,23 @@ describe('NotificationsService', () => {
       });
       mockPrisma.user.findUnique.mockResolvedValue({ name: 'Matias' });
       mockPrisma.familyMember.findMany.mockResolvedValue([
-        { userId: 'actor', notificationSettings: {} },
-        { userId: 'dana', notificationSettings: {} },
-        { userId: 'quiet', notificationSettings: { itemAdded: false } },
+        { userId: 'actor', notificationSettings: {}, user: { locale: 'en' } },
+        { userId: 'dana', notificationSettings: {}, user: { locale: 'en' } },
+        {
+          userId: 'quiet',
+          notificationSettings: { itemAdded: false },
+          user: { locale: 'en' },
+        },
       ]);
 
       await service.sendFamilyActivityNotification({
         familyId: 'family-1',
         actorUserId: 'actor',
-        message: 'added "Milk" to Groceries',
+        activity: {
+          type: 'list_item',
+          itemText: 'Milk',
+          pageTitle: 'Groceries',
+        },
         url: '/family/family-1/pages/p1',
       });
 
@@ -70,16 +78,20 @@ describe('NotificationsService', () => {
       });
       mockPrisma.user.findUnique.mockResolvedValue({ name: 'Matias' });
       mockPrisma.familyMember.findMany.mockResolvedValue([
-        { userId: 'actor', notificationSettings: {} },
-        { userId: 'dana', notificationSettings: {} },
-        { userId: 'lee', notificationSettings: {} },
+        { userId: 'actor', notificationSettings: {}, user: { locale: 'en' } },
+        { userId: 'dana', notificationSettings: {}, user: { locale: 'en' } },
+        { userId: 'lee', notificationSettings: {}, user: { locale: 'en' } },
       ]);
 
       await service.sendFamilyActivityNotification({
         familyId: 'family-1',
         actorUserId: 'actor',
         excludeUserIds: ['dana'],
-        message: 'added "Milk" to Groceries',
+        activity: {
+          type: 'list_item',
+          itemText: 'Milk',
+          pageTitle: 'Groceries',
+        },
         url: '/family/family-1/pages/p1',
       });
 
@@ -87,6 +99,67 @@ describe('NotificationsService', () => {
         ['lee'],
         expect.objectContaining({
           body: 'Matias added "Milk" to Groceries',
+        }),
+      );
+    });
+
+    it('sends Hebrew copy to members whose locale is he', async () => {
+      mockPrisma.family.findUnique.mockResolvedValue({
+        name: 'Smith',
+        emoji: '🏠',
+      });
+      mockPrisma.user.findUnique.mockResolvedValue({ name: 'Matias' });
+      mockPrisma.familyMember.findMany.mockResolvedValue([
+        { userId: 'actor', notificationSettings: {}, user: { locale: 'en' } },
+        { userId: 'dana', notificationSettings: {}, user: { locale: 'he' } },
+      ]);
+
+      await service.sendFamilyActivityNotification({
+        familyId: 'family-1',
+        actorUserId: 'actor',
+        activity: {
+          type: 'list_item',
+          itemText: 'Milk',
+          pageTitle: 'Groceries',
+        },
+        url: '/family/family-1/pages/p1',
+      });
+
+      expect(mockPush.sendToUsers).toHaveBeenCalledWith(
+        ['dana'],
+        expect.objectContaining({
+          body: 'Matias הוסיף "Milk" לGroceries',
+        }),
+      );
+    });
+  });
+
+  describe('sendEventReminderNotification', () => {
+    it('uses Hebrew reminder copy and calendar deep link', async () => {
+      const startAt = new Date('2026-09-03T18:00:00.000Z');
+      mockPrisma.familyMember.findMany.mockResolvedValue([
+        {
+          userId: 'dana',
+          notificationSettings: {},
+          whatsappPhone: null,
+          user: { locale: 'he' },
+        },
+      ]);
+
+      await service.sendEventReminderNotification(
+        'family-1',
+        'event-1',
+        'Dinner',
+        startAt,
+        'Smith',
+        '🏠',
+      );
+
+      expect(mockPush.sendToUsers).toHaveBeenCalledWith(
+        ['dana'],
+        expect.objectContaining({
+          body: expect.stringContaining('תזכורת: Dinner'),
+          url: '/family/family-1/calendar?event=event-1',
         }),
       );
     });

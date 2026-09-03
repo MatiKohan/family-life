@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useCreateInvite } from '../../hooks/useCreateInvite';
 import { useInvites } from '../../hooks/useInvites';
 import { useRevokeInvite } from '../../hooks/useRevokeInvite';
+import { formatLongDate } from '../../lib/date-locale';
 
 interface Props {
   familyId: string;
@@ -10,7 +11,7 @@ interface Props {
 }
 
 export function InviteModal({ familyId, onClose }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [copied, setCopied] = useState(false);
 
   const createInvite = useCreateInvite(familyId);
@@ -44,11 +45,7 @@ export function InviteModal({ familyId, onClose }: Props) {
   }
 
   function formatDate(dateStr: string) {
-    return new Date(dateStr).toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+    return formatLongDate(dateStr, i18n.language);
   }
 
   return (

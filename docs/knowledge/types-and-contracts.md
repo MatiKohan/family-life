@@ -6,7 +6,7 @@ Barrel: `packages/types/src/index.ts`.
 
 | File | Contents |
 |---|---|
-| `auth.types.ts` | `AuthUser`, `JwtPayload` `{ sub, email }`, `TokenResponse` |
+| `auth.types.ts` | `AuthUser` (includes `locale`), `JwtPayload` `{ sub, email }`, `TokenResponse` |
 | `family.types.ts` | Family, member, invite, roles, notification settings, invite request DTOs |
 | `page.types.ts` | `PageType`, `ListItem`, `TaskItem`, `Block`, apartments, `Page`, `CreatePageRequest` |
 | `calendar.types.ts` | `RecurrenceRule`, RSVP/attendees, `FamilyDashboard` |

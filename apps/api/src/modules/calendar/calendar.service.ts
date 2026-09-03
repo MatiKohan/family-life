@@ -164,7 +164,7 @@ export class CalendarService {
       familyId,
       actorUserId: userId,
       excludeUserIds: [event.assigneeId],
-      message: `added an event: ${event.title}`,
+      activity: { type: 'event', eventTitle: event.title },
       url: `/family/${familyId}/calendar`,
     });
     return event;

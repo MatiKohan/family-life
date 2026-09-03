@@ -6,6 +6,7 @@ import { useSyncApartments } from '../../hooks/useSyncApartments';
 import { useMarkApartmentSeen } from '../../hooks/useMarkApartmentSeen';
 import { useAuthStore } from '../../store/auth.store';
 import { ApartmentListing, ApartmentSearchParams, ApartmentDealType } from '../../types/page';
+import { formatDateTime, intlLocale } from '../../lib/date-locale';
 
 interface Props {
   familyId: string;
@@ -46,9 +47,9 @@ function SearchIcon() {
   );
 }
 
-function formatLastSynced(lastSyncedAt: string | null): string {
+function formatLastSynced(lastSyncedAt: string | null, language: string): string {
   if (!lastSyncedAt) return '—';
-  return new Date(lastSyncedAt).toLocaleString();
+  return formatDateTime(lastSyncedAt, language);
 }
 
 function metadataToSearchParams(metadata: Record<string, unknown>): Partial<ApartmentSearchParams> {
@@ -77,7 +78,7 @@ interface ApartmentCardProps {
 }
 
 function ApartmentCard({ listing, currentUserId, onMarkSeen, isMarkingPending }: ApartmentCardProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const isSeen = listing.seenBy.includes(currentUserId);
 
   return (
@@ -94,7 +95,7 @@ function ApartmentCard({ listing, currentUserId, onMarkSeen, isMarkingPending }:
         <p className="text-sm font-semibold text-gray-900 leading-snug line-clamp-2">{listing.title}</p>
 
         {listing.price != null && (
-          <p className="text-base font-bold text-brand-600">₪{listing.price.toLocaleString()}</p>
+          <p className="text-base font-bold text-brand-600">₪{listing.price.toLocaleString(intlLocale(i18n.language))}</p>
         )}
 
         <p className="text-sm text-gray-500">
@@ -137,7 +138,7 @@ function ApartmentCard({ listing, currentUserId, onMarkSeen, isMarkingPending }:
 type SyncStatus = 'idle' | 'saving' | 'syncing' | 'done' | 'error';
 
 export function ApartmentsPageView({ familyId, pageId }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const currentUserId = user?.id ?? '';
 
@@ -298,7 +299,7 @@ export function ApartmentsPageView({ familyId, pageId }: Props) {
           </div>
 
           <span className="text-xs text-gray-400 ms-auto">
-            {t('apartments.lastSynced')}: {formatLastSynced(page?.lastSyncedAt ?? null)}
+            {t('apartments.lastSynced')}: {formatLastSynced(page?.lastSyncedAt ?? null, i18n.language)}
           </span>
 
           <button

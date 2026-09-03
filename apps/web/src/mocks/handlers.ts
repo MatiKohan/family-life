@@ -8,6 +8,7 @@ export const mockUser: AuthUser = {
   email: 'test@example.com',
   name: 'Test User',
   avatarUrl: null,
+  locale: 'en',
 };
 
 export const mockPageSummaries: PageSummary[] = [
@@ -129,6 +130,10 @@ export const mockCalendarEvents: CalendarEvent[] = [
 export const handlers = [
   http.get('/api/health', () => HttpResponse.json({ status: 'ok' })),
   http.get('/api/auth/me', () => HttpResponse.json(mockUser)),
+  http.patch('/api/auth/me', async ({ request }) => {
+    const body = (await request.json()) as { locale?: 'en' | 'he' };
+    return HttpResponse.json({ ...mockUser, locale: body.locale ?? mockUser.locale });
+  }),
   http.post('/api/auth/refresh', () =>
     HttpResponse.json({ accessToken: 'new-mock-token', user: mockUser }),
   ),

@@ -19,6 +19,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { apiRequest } from '../../lib/api-client';
 import { queryKeys } from '../../lib/query-keys';
+import { formatShortDate } from '../../lib/date-locale';
 import { Page, TaskItem, TaskStatus } from '../../types/page';
 import { useFamily } from '../../hooks/useFamily';
 import { FamilyMember } from '../../types/family';
@@ -172,6 +173,7 @@ interface DueDateBadgeProps {
 }
 
 function DueDateBadge({ dueDate, onDateChange }: DueDateBadgeProps) {
+  const { i18n } = useTranslation();
   const [editing, setEditing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -180,9 +182,7 @@ function DueDateBadge({ dueDate, onDateChange }: DueDateBadgeProps) {
   }, [editing]);
 
   const overdue = isOverdue(dueDate);
-  const label = dueDate
-    ? new Date(dueDate + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
-    : null;
+  const label = dueDate ? formatShortDate(dueDate + 'T00:00:00', i18n.language) : null;
 
   return (
     <div className="relative shrink-0">
