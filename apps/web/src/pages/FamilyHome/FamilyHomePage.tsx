@@ -143,9 +143,11 @@ export function FamilyHomePage() {
     setPageToDelete(null);
   }
 
-  const leftoverHref = firstListPage
-    ? `/family/${id}/pages/${firstListPage.id}`
-    : `/family/${id}/assigned`;
+  const leftoverHref = dashboard?.leftoverPageId
+    ? `/family/${id}/pages/${dashboard.leftoverPageId}`
+    : firstListPage
+      ? `/family/${id}/pages/${firstListPage.id}`
+      : `/family/${id}/assigned`;
 
   return (
     <main className="flex-1 bg-gray-50">

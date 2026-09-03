@@ -147,11 +147,17 @@ export class DashboardService {
     const listItems: FamilyDashboard['assigned']['listItems'] = [];
     const tasks: FamilyDashboard['assigned']['tasks'] = [];
     let openListItems = 0;
+    let leftoverPageId: string | null = null;
+    let leftoverPageOpen = 0;
 
     for (const page of pages) {
       if (page.type === 'list') {
+        let pageOpen = 0;
         for (const item of collectListItems(page.items)) {
-          if (!item.checked) openListItems += 1;
+          if (!item.checked) {
+            openListItems += 1;
+            pageOpen += 1;
+          }
           if (item.assigneeId === userId && !item.checked) {
             listItems.push({
               text: item.text,
@@ -160,6 +166,10 @@ export class DashboardService {
               pageEmoji: page.emoji,
             });
           }
+        }
+        if (pageOpen > leftoverPageOpen) {
+          leftoverPageOpen = pageOpen;
+          leftoverPageId = page.id;
         }
       }
       if (page.type === 'tasks') {
@@ -187,6 +197,7 @@ export class DashboardService {
         events: assignedEvents,
       },
       openListItems,
+      leftoverPageId,
     };
   }
 }

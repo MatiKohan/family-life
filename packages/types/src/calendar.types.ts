@@ -46,4 +46,5 @@ export interface FamilyDashboard {
     events: DashboardCalendarEvent[];
   };
   openListItems: number;
+  leftoverPageId: string | null;
 }

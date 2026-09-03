@@ -48,6 +48,14 @@ describe('DashboardService', () => {
     ]);
     prisma.page.findMany.mockResolvedValue([
       {
+        id: 'page-empty',
+        title: 'Notes',
+        emoji: '📝',
+        type: 'list',
+        items: [{ type: 'list', items: [] }],
+        taskItems: [],
+      },
+      {
         id: 'page-1',
         title: 'Groceries',
         emoji: '🛒',
@@ -85,6 +93,7 @@ describe('DashboardService', () => {
     );
 
     expect(result.openListItems).toBe(2);
+    expect(result.leftoverPageId).toBe('page-1');
     expect(result.assigned.listItems).toEqual([
       expect.objectContaining({ text: 'Milk', pageTitle: 'Groceries' }),
     ]);

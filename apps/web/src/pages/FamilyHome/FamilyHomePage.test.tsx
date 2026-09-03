@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useParams } from 'react-router-dom';
 import { http, HttpResponse } from 'msw';
 import { server } from '../../mocks/server';
 import { FamilyHomePage } from './FamilyHomePage';
@@ -12,6 +13,11 @@ afterEach(() => {
   useAuthStore.getState().clearSession();
 });
 afterAll(() => server.close());
+
+function OpenedPage() {
+  const { pageId } = useParams();
+  return <div>Opened {pageId}</div>;
+}
 
 function renderHome() {
   useAuthStore.getState().setSession(
@@ -48,7 +54,14 @@ function renderHome() {
           events: [],
         },
         openListItems: 3,
+        leftoverPageId: 'page-1',
       }),
+    ),
+    http.get('/api/families/family-1/pages', () =>
+      HttpResponse.json([
+        { id: 'page-empty', title: 'Notes', emoji: '📝', type: 'list', folderId: null },
+        { id: 'page-1', title: 'Groceries', emoji: '🛒', type: 'list', folderId: null },
+      ]),
     ),
   );
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -57,6 +70,7 @@ function renderHome() {
       <MemoryRouter initialEntries={['/family/family-1']}>
         <Routes>
           <Route path="/family/:id" element={<FamilyHomePage />} />
+          <Route path="/family/:id/pages/:pageId" element={<OpenedPage />} />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>,
@@ -70,5 +84,13 @@ describe('FamilyHomePage', () => {
     expect(screen.getByRole('heading', { name: 'Today' })).toBeInTheDocument();
     expect(screen.getByText('Milk')).toBeInTheDocument();
     expect(screen.getByText('3 leftover items')).toBeInTheDocument();
+  });
+
+  it('opens the list that actually has leftover items', async () => {
+    const user = userEvent.setup();
+    renderHome();
+    await waitFor(() => expect(screen.getByText('3 leftover items')).toBeInTheDocument());
+    await user.click(screen.getByText('3 leftover items'));
+    expect(screen.getByText('Opened page-1')).toBeInTheDocument();
   });
 });

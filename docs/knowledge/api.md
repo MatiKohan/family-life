@@ -28,7 +28,7 @@ DTOs: `class-validator`. Required fields use `!` for `strictPropertyInitializati
 | `pages` | `/families/:id/pages` + items, task-items, event-refs, blocks | Soft-delete pages; `RecurringTaskScheduler` |
 | `folders` | `/families/:id/folders` | |
 | `calendar` | `/families/:id/calendar`, `PATCH .../calendar/:eventId/rsvp`, ICS token + `.ics` | Recurrence expansion; RSVP on `attendees` Json; ICS emits RRULE |
-| `dashboard` | `GET /families/:familyId/dashboard?start&end` | Today events, assigned items/tasks/events, leftover list count |
+| `dashboard` | `GET /families/:familyId/dashboard?start&end` | Today events, assigned items/tasks/events, leftover count + `leftoverPageId` (list with the most open items) |
 | `search` | `/families/:familyId/search?q=` | `q` length ≥ 2 |
 | `activity` | `/families/:familyId/activity?limit&cursor` | |
 | `push` | `/push/subscribe` POST/DELETE | |
