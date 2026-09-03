@@ -13,7 +13,14 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { IsEmail, IsIn, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsIn,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 import { Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { ThrottlerGuard, Throttle, SkipThrottle } from '@nestjs/throttler';

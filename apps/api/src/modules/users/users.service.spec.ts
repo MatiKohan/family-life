@@ -168,7 +168,9 @@ describe('UsersService', () => {
         ...profile,
         name: 'Mati',
       });
-      const result = await service.updateProfile('user-1', { name: '  Mati  ' });
+      const result = await service.updateProfile('user-1', {
+        name: '  Mati  ',
+      });
       expect(mockPrisma.user.update).toHaveBeenCalledWith({
         where: { id: 'user-1' },
         data: { name: 'Mati' },
