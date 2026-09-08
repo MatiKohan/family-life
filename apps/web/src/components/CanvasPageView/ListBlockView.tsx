@@ -402,12 +402,13 @@ interface ListSummaryBarProps {
 
 function ListSummaryBar({ items, mode, currency, checkedCount, total, onReset }: ListSummaryBarProps) {
   const { t, i18n } = useTranslation();
-  const priceTotal = sumListPrices(items);
-  const qtyTotal = sumListQuantities(items);
-  const byUnit = sumQuantitiesByUnit(items);
-  const unitTotal = LIST_UNITS.filter((unit) => (byUnit[unit] ?? 0) > 0)
-    .map((unit) => `${formatListAmount(byUnit[unit] ?? 0, i18n.language)} ${unit}`)
-    .join(' · ');
+  const priceSums = sumListPrices(items);
+  const qtySums = sumListQuantities(items);
+  const unitTotal = formatUnitTotals(items, i18n.language);
+  const unitChecked = formatUnitTotals(
+    items.filter((item) => item.checked),
+    i18n.language,
+  );
 
   return (
     <div className="flex items-center gap-2 mb-2 flex-wrap">
@@ -420,17 +421,22 @@ function ListSummaryBar({ items, mode, currency, checkedCount, total, onReset }:
       <span className="text-xs text-gray-400 shrink-0">{checkedCount}/{total}</span>
       {mode === 'priced' && (
         <span className="text-xs text-gray-500 shrink-0">
-          {t('list.totalPrice', { amount: formatListMoney(priceTotal, currency, i18n.language) })}
+          {t('list.totalPrice', { amount: formatListMoney(priceSums.all, currency, i18n.language) })}
+          {' · '}
+          {t('list.checkedPrice', { amount: formatListMoney(priceSums.checked, currency, i18n.language) })}
         </span>
       )}
       {mode === 'counted' && (
         <span className="text-xs text-gray-500 shrink-0">
-          {t('list.totalQuantity', { count: qtyTotal })}
+          {t('list.totalQuantity', { count: qtySums.all })}
+          {' · '}
+          {t('list.checkedQuantity', { count: qtySums.checked })}
         </span>
       )}
       {mode === 'ingredients' && unitTotal.length > 0 && (
         <span className="text-xs text-gray-500 shrink-0">
           {t('list.totalIngredients', { amount: unitTotal })}
+          {unitChecked.length > 0 ? ` · ${t('list.checkedIngredients', { amount: unitChecked })}` : ''}
         </span>
       )}
       {checkedCount > 0 && (
@@ -445,6 +451,13 @@ function ListSummaryBar({ items, mode, currency, checkedCount, total, onReset }:
       )}
     </div>
   );
+}
+
+function formatUnitTotals(items: ListItem[], language: string): string {
+  const byUnit = sumQuantitiesByUnit(items);
+  return LIST_UNITS.filter((unit) => (byUnit[unit] ?? 0) > 0)
+    .map((unit) => `${formatListAmount(byUnit[unit] ?? 0, language)} ${unit}`)
+    .join(' · ');
 }
 
 function ExtraNumberInput({

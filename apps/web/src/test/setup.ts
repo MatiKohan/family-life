@@ -198,8 +198,11 @@ i18n.use(initReactI18next).init({
             GBP: '£ GBP',
           },
           totalPrice: 'Total {{amount}}',
+          checkedPrice: 'Checked {{amount}}',
           totalQuantity: '{{count}} items',
+          checkedQuantity: '{{count}} checked',
           totalIngredients: 'Total {{amount}}',
+          checkedIngredients: 'Checked {{amount}}',
         },
         calendar: {
           title: 'Calendar',

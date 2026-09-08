@@ -1,4 +1,4 @@
-import { Block } from '@family-life/types';
+import type { Block, ListUnit } from '@family-life/types';
 
 export type PageType = 'list' | 'events' | 'tasks' | 'apartments';
 export type { Block, ListBlock, TextBlock, ListMode, ListCurrency, ListUnit } from '@family-life/types';

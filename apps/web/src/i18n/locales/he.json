@@ -183,8 +183,11 @@
       "GBP": "£ GBP"
     },
     "totalPrice": "סה״כ {{amount}}",
+    "checkedPrice": "מסומנים {{amount}}",
     "totalQuantity": "{{count}} פריטים",
-    "totalIngredients": "סה״כ {{amount}}"
+    "checkedQuantity": "{{count}} מסומנים",
+    "totalIngredients": "סה״כ {{amount}}",
+    "checkedIngredients": "מסומנים {{amount}}"
   },
   "tasks": {
     "todo": "לביצוע",

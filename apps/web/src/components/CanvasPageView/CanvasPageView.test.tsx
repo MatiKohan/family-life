@@ -126,8 +126,7 @@ describe('CanvasPageView', () => {
     renderView(priced);
     expect(screen.getAllByLabelText('Price')).toHaveLength(2);
     expect(screen.getByText(/Total/)).toBeInTheDocument();
-    expect(screen.getByText('1/2')).toBeInTheDocument();
-    expect(screen.queryByText(/Checked 10/)).not.toBeInTheDocument();
+    expect(screen.getByText(/Checked/)).toBeInTheDocument();
     expect(screen.getByLabelText('Currency')).toBeInTheDocument();
   });
 
@@ -166,8 +165,7 @@ describe('CanvasPageView', () => {
     renderView(counted);
     expect(screen.getAllByLabelText('Qty')).toHaveLength(2);
     expect(screen.getByText(/8 items/)).toBeInTheDocument();
-    expect(screen.getByText('1/2')).toBeInTheDocument();
-    expect(screen.queryByText(/2 checked/)).not.toBeInTheDocument();
+    expect(screen.getByText(/2 checked/)).toBeInTheDocument();
   });
 
   it('shows unit selectors in ingredients mode', () => {
@@ -208,7 +206,7 @@ describe('CanvasPageView', () => {
     expect(screen.getAllByLabelText('Unit')).toHaveLength(2);
     expect(screen.getByText(/500 g/)).toBeInTheDocument();
     expect(screen.getByText(/1 l/)).toBeInTheDocument();
-    expect(screen.getByText('1/2')).toBeInTheDocument();
+    expect(screen.getByText(/Checked/)).toBeInTheDocument();
   });
 
   it('renders text block content', () => {

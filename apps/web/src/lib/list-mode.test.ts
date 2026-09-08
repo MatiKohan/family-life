@@ -25,14 +25,14 @@ describe('resolveListMode', () => {
 });
 
 describe('sumListPrices', () => {
-  it('sums all prices', () => {
+  it('sums all prices and checked prices', () => {
     expect(
       sumListPrices([
         { price: 10, checked: true },
         { price: 2.5, checked: false },
         { price: null, checked: true },
       ]),
-    ).toBe(12.5);
+    ).toEqual({ all: 12.5, checked: 10 });
   });
 });
 
@@ -45,7 +45,7 @@ describe('sumListQuantities', () => {
         { checked: false },
         { quantity: 2, checked: true },
       ]),
-    ).toBe(6);
+    ).toEqual({ all: 6, checked: 5 });
   });
 });
 

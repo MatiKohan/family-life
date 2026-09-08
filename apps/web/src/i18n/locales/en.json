@@ -183,8 +183,11 @@
       "GBP": "£ GBP"
     },
     "totalPrice": "Total {{amount}}",
+    "checkedPrice": "Checked {{amount}}",
     "totalQuantity": "{{count}} items",
-    "totalIngredients": "Total {{amount}}"
+    "checkedQuantity": "{{count}} checked",
+    "totalIngredients": "Total {{amount}}",
+    "checkedIngredients": "Checked {{amount}}"
   },
   "tasks": {
     "todo": "To do",

@@ -20,12 +20,32 @@ export function itemPrice(item: Pick<ListItem, 'price'>): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-export function sumListPrices(items: Pick<ListItem, 'price'>[]): number {
-  return items.reduce((sum, item) => sum + itemPrice(item), 0);
+export function sumListPrices(items: Pick<ListItem, 'price' | 'checked'>[]): {
+  all: number;
+  checked: number;
+} {
+  let all = 0;
+  let checked = 0;
+  for (const item of items) {
+    const n = itemPrice(item);
+    all += n;
+    if (item.checked) checked += n;
+  }
+  return { all, checked };
 }
 
-export function sumListQuantities(items: Pick<ListItem, 'quantity'>[]): number {
-  return items.reduce((sum, item) => sum + itemQuantity(item), 0);
+export function sumListQuantities(items: Pick<ListItem, 'quantity' | 'checked'>[]): {
+  all: number;
+  checked: number;
+} {
+  let all = 0;
+  let checked = 0;
+  for (const item of items) {
+    const n = itemQuantity(item);
+    all += n;
+    if (item.checked) checked += n;
+  }
+  return { all, checked };
 }
 
 export function sumQuantitiesByUnit(
