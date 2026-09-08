@@ -1,11 +1,31 @@
 export type PageType = 'list' | 'tasks' | 'events' | 'apartments';
 
-export const LIST_MODES = ['plain', 'priced', 'counted'] as const;
+export const LIST_MODES = ['plain', 'priced', 'counted', 'ingredients'] as const;
 export type ListMode = (typeof LIST_MODES)[number];
 
+export const LIST_CURRENCIES = ['ILS', 'USD', 'EUR', 'GBP'] as const;
+export type ListCurrency = (typeof LIST_CURRENCIES)[number];
+
+export const LIST_UNITS = ['g', 'kg', 'l'] as const;
+export type ListUnit = (typeof LIST_UNITS)[number];
+
 export function resolveListMode(mode?: string | null): ListMode {
-  if (mode === 'priced' || mode === 'counted') return mode;
+  if (mode === 'priced' || mode === 'counted' || mode === 'ingredients') {
+    return mode;
+  }
   return 'plain';
+}
+
+export function resolveListCurrency(currency?: string | null): ListCurrency {
+  if (currency === 'USD' || currency === 'EUR' || currency === 'GBP') {
+    return currency;
+  }
+  return 'ILS';
+}
+
+export function resolveListUnit(unit?: string | null): ListUnit {
+  if (unit === 'kg' || unit === 'l') return unit;
+  return 'g';
 }
 
 export interface ListItem {
@@ -19,6 +39,7 @@ export interface ListItem {
   category?: string;
   price?: number | null;
   quantity?: number | null;
+  unit?: ListUnit;
 }
 
 export interface TaskItem {
@@ -78,6 +99,8 @@ export interface ListBlock {
   variant?: 'simple' | 'categorized';
   /** Missing or unknown values behave as `plain`. */
   mode?: ListMode;
+  /** Used when `mode` is `priced`. Missing values behave as ILS. */
+  currency?: ListCurrency;
 }
 
 export interface TextBlock {

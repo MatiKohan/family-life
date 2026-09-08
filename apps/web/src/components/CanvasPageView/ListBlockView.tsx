@@ -20,12 +20,20 @@ import { CSS } from '@dnd-kit/utilities';
 import { apiRequest } from '../../lib/api-client';
 import { queryKeys } from '../../lib/query-keys';
 import {
+  currencySymbol,
   formatListAmount,
+  formatListMoney,
+  resolveListCurrency,
   resolveListMode,
+  resolveListUnit,
   sumListPrices,
   sumListQuantities,
+  sumQuantitiesByUnit,
+  type ListCurrency,
   type ListMode,
+  type ListUnit,
 } from '../../lib/list-mode';
+import { LIST_UNITS } from '@family-life/types';
 import type { ListBlock, ListItem } from '../../types/page';
 
 interface Props {
@@ -48,6 +56,7 @@ export function ListBlockView({ block, familyId, pageId, onUpdate }: Props) {
 
   const base = `/families/${familyId}/pages/${pageId}/blocks/${block.id}`;
   const mode = resolveListMode(block.mode);
+  const currency = resolveListCurrency(block.currency);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -57,7 +66,10 @@ export function ListBlockView({ block, familyId, pageId, onUpdate }: Props) {
   const total = block.items.length;
   const checkedCount = block.items.filter((i) => i.checked).length;
 
-  function editItemExtra(item: ListItem, patch: { price?: number | null; quantity?: number | null }) {
+  function editItemExtra(
+    item: ListItem,
+    patch: { price?: number | null; quantity?: number | null; unit?: ListUnit },
+  ) {
     const updated = block.items.map((i) => (i.id === item.id ? { ...i, ...patch } : i));
     onUpdate(updated);
     apiRequest(`${base}/items/${item.id}`, {
@@ -127,7 +139,8 @@ export function ListBlockView({ block, familyId, pageId, onUpdate }: Props) {
       dueDate: null,
       createdAt: new Date().toISOString(),
       category,
-      ...(mode === 'counted' ? { quantity: 1 } : {}),
+      ...(mode === 'counted' || mode === 'ingredients' ? { quantity: 1 } : {}),
+      ...(mode === 'ingredients' ? { unit: 'g' as const } : {}),
     };
     onUpdate([...block.items, optimisticItem]);
     apiRequest<ListItem>(`${base}/items`, {
@@ -135,7 +148,8 @@ export function ListBlockView({ block, familyId, pageId, onUpdate }: Props) {
       body: JSON.stringify({
         text,
         ...(category != null ? { category } : {}),
-        ...(mode === 'counted' ? { quantity: 1 } : {}),
+        ...(mode === 'counted' || mode === 'ingredients' ? { quantity: 1 } : {}),
+        ...(mode === 'ingredients' ? { unit: 'g' } : {}),
       }),
     })
       .then((created) => {
@@ -222,6 +236,7 @@ export function ListBlockView({ block, familyId, pageId, onUpdate }: Props) {
           <ListSummaryBar
             items={block.items}
             mode={mode}
+            currency={currency}
             checkedCount={checkedCount}
             total={total}
             onReset={resetAll}
@@ -255,6 +270,7 @@ export function ListBlockView({ block, familyId, pageId, onUpdate }: Props) {
                         key={item.id}
                         item={item}
                         mode={mode}
+                        currency={currency}
                         onToggle={() => toggleItem(item)}
                         onDelete={() => deleteItem(item.id)}
                         onTextChange={(text) => editItemText(item, text)}
@@ -318,6 +334,7 @@ export function ListBlockView({ block, familyId, pageId, onUpdate }: Props) {
         <ListSummaryBar
           items={block.items}
           mode={mode}
+          currency={currency}
           checkedCount={checkedCount}
           total={total}
           onReset={resetAll}
@@ -332,6 +349,7 @@ export function ListBlockView({ block, familyId, pageId, onUpdate }: Props) {
                 key={item.id}
                 item={item}
                 mode={mode}
+                currency={currency}
                 onToggle={() => toggleItem(item)}
                 onDelete={() => deleteItem(item.id)}
                 onTextChange={(text) => editItemText(item, text)}
@@ -376,15 +394,20 @@ export function ListBlockView({ block, familyId, pageId, onUpdate }: Props) {
 interface ListSummaryBarProps {
   items: ListItem[];
   mode: ListMode;
+  currency: ListCurrency;
   checkedCount: number;
   total: number;
   onReset: () => void;
 }
 
-function ListSummaryBar({ items, mode, checkedCount, total, onReset }: ListSummaryBarProps) {
+function ListSummaryBar({ items, mode, currency, checkedCount, total, onReset }: ListSummaryBarProps) {
   const { t, i18n } = useTranslation();
-  const priceSums = sumListPrices(items);
-  const qtySums = sumListQuantities(items);
+  const priceTotal = sumListPrices(items);
+  const qtyTotal = sumListQuantities(items);
+  const byUnit = sumQuantitiesByUnit(items);
+  const unitTotal = LIST_UNITS.filter((unit) => (byUnit[unit] ?? 0) > 0)
+    .map((unit) => `${formatListAmount(byUnit[unit] ?? 0, i18n.language)} ${unit}`)
+    .join(' · ');
 
   return (
     <div className="flex items-center gap-2 mb-2 flex-wrap">
@@ -397,16 +420,17 @@ function ListSummaryBar({ items, mode, checkedCount, total, onReset }: ListSumma
       <span className="text-xs text-gray-400 shrink-0">{checkedCount}/{total}</span>
       {mode === 'priced' && (
         <span className="text-xs text-gray-500 shrink-0">
-          {t('list.totalPrice', { amount: formatListAmount(priceSums.all, i18n.language) })}
-          {' · '}
-          {t('list.checkedPrice', { amount: formatListAmount(priceSums.checked, i18n.language) })}
+          {t('list.totalPrice', { amount: formatListMoney(priceTotal, currency, i18n.language) })}
         </span>
       )}
       {mode === 'counted' && (
         <span className="text-xs text-gray-500 shrink-0">
-          {t('list.totalQuantity', { count: qtySums.all })}
-          {' · '}
-          {t('list.checkedQuantity', { count: qtySums.checked })}
+          {t('list.totalQuantity', { count: qtyTotal })}
+        </span>
+      )}
+      {mode === 'ingredients' && unitTotal.length > 0 && (
+        <span className="text-xs text-gray-500 shrink-0">
+          {t('list.totalIngredients', { amount: unitTotal })}
         </span>
       )}
       {checkedCount > 0 && (
@@ -476,21 +500,30 @@ function ExtraNumberInput({
 function ItemExtraFields({
   item,
   mode,
+  currency,
   onExtraChange,
 }: {
   item: ListItem;
   mode: ListMode;
-  onExtraChange: (patch: { price?: number | null; quantity?: number | null }) => void;
+  currency: ListCurrency;
+  onExtraChange: (patch: {
+    price?: number | null;
+    quantity?: number | null;
+    unit?: ListUnit;
+  }) => void;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   if (mode === 'priced') {
     return (
-      <ExtraNumberInput
-        value={item.price}
-        ariaLabel={t('list.price')}
-        step="0.01"
-        onCommit={(price) => onExtraChange({ price })}
-      />
+      <div className="flex items-center gap-1 shrink-0">
+        <ExtraNumberInput
+          value={item.price}
+          ariaLabel={t('list.price')}
+          step="0.01"
+          onCommit={(price) => onExtraChange({ price })}
+        />
+        <span className="text-xs text-gray-500">{currencySymbol(currency, i18n.language)}</span>
+      </div>
     );
   }
   if (mode === 'counted') {
@@ -501,6 +534,31 @@ function ItemExtraFields({
         step="1"
         onCommit={(quantity) => onExtraChange({ quantity: quantity == null ? 1 : Math.round(quantity) })}
       />
+    );
+  }
+  if (mode === 'ingredients') {
+    return (
+      <div className="flex items-center gap-1 shrink-0">
+        <ExtraNumberInput
+          value={item.quantity ?? 1}
+          ariaLabel={t('list.quantity')}
+          step="0.1"
+          onCommit={(quantity) => onExtraChange({ quantity: quantity == null ? 1 : quantity })}
+        />
+        <select
+          aria-label={t('list.unit')}
+          value={resolveListUnit(item.unit)}
+          onChange={(e) => onExtraChange({ unit: e.target.value as ListUnit })}
+          onClick={(e) => e.stopPropagation()}
+          className="text-xs text-gray-600 border border-gray-200 rounded-md px-1 py-1 bg-white"
+        >
+          {LIST_UNITS.map((unit) => (
+            <option key={unit} value={unit}>
+              {unit}
+            </option>
+          ))}
+        </select>
+      </div>
     );
   }
   return null;
@@ -557,13 +615,14 @@ function CategoryAddForm({ category, onAdd, placeholder, addLabel }: CategoryAdd
 interface ItemRowProps {
   item: ListItem;
   mode: ListMode;
+  currency: ListCurrency;
   onToggle: () => void;
   onDelete: () => void;
   onTextChange: (text: string) => void;
-  onExtraChange: (patch: { price?: number | null; quantity?: number | null }) => void;
+  onExtraChange: (patch: { price?: number | null; quantity?: number | null; unit?: ListUnit }) => void;
 }
 
-function ItemRow({ item, mode, onToggle, onDelete, onTextChange, onExtraChange }: ItemRowProps) {
+function ItemRow({ item, mode, currency, onToggle, onDelete, onTextChange, onExtraChange }: ItemRowProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(item.text);
 
@@ -625,7 +684,7 @@ function ItemRow({ item, mode, onToggle, onDelete, onTextChange, onExtraChange }
         </span>
       )}
 
-      <ItemExtraFields item={item} mode={mode} onExtraChange={onExtraChange} />
+      <ItemExtraFields item={item} mode={mode} currency={currency} onExtraChange={onExtraChange} />
 
       <button
         type="button"
@@ -646,13 +705,14 @@ function ItemRow({ item, mode, onToggle, onDelete, onTextChange, onExtraChange }
 interface SortableItemRowProps {
   item: ListItem;
   mode: ListMode;
+  currency: ListCurrency;
   onToggle: () => void;
   onDelete: () => void;
   onTextChange: (text: string) => void;
-  onExtraChange: (patch: { price?: number | null; quantity?: number | null }) => void;
+  onExtraChange: (patch: { price?: number | null; quantity?: number | null; unit?: ListUnit }) => void;
 }
 
-function SortableItemRow({ item, mode, onToggle, onDelete, onTextChange, onExtraChange }: SortableItemRowProps) {
+function SortableItemRow({ item, mode, currency, onToggle, onDelete, onTextChange, onExtraChange }: SortableItemRowProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: item.id,
   });
@@ -749,7 +809,7 @@ function SortableItemRow({ item, mode, onToggle, onDelete, onTextChange, onExtra
         </span>
       )}
 
-      <ItemExtraFields item={item} mode={mode} onExtraChange={onExtraChange} />
+      <ItemExtraFields item={item} mode={mode} currency={currency} onExtraChange={onExtraChange} />
 
       {/* Delete button */}
       <button

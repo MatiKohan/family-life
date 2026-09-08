@@ -35,7 +35,7 @@ Soft delete: `Page.deletedAt`; list/task items use `deletedAt` inside JSON. Fold
 
 List pages: `getPage` wraps a legacy flat `items` array in one list `Block` (`normalizeBlocks`).
 
-List blocks: `variant` is layout (`simple` | `categorized`). `mode` is item fields (`plain` | `priced` | `counted`; missing = `plain`). `ListItem` may include `price` and `quantity`. Totals are derived in the UI, not stored.
+List blocks: `variant` is layout (`simple` | `categorized`). `mode` is item fields (`plain` | `priced` | `counted` | `ingredients`; missing = `plain`). Priced lists store `currency` (`ILS` default). `ListItem` may include `price`, `quantity`, and `unit` (`g` | `kg` | `l`). Totals are derived in the UI; checked progress is checked/total distinct items.
 
 ## Recurrence
 

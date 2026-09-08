@@ -829,13 +829,18 @@ describe('PagesService', () => {
 
       await service.updateBlock(FAMILY_ID, PAGE_ID, 'block-1', USER_ID, {
         mode: 'priced',
+        currency: 'USD',
       });
 
       expect(mockPrisma.page.update).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
             items: expect.arrayContaining([
-              expect.objectContaining({ id: 'block-1', mode: 'priced' }),
+              expect.objectContaining({
+                id: 'block-1',
+                mode: 'priced',
+                currency: 'USD',
+              }),
             ]),
           }),
         }),
@@ -997,6 +1002,31 @@ describe('PagesService', () => {
       );
 
       expect(result).toMatchObject({ text: 'Apples', quantity: 1 });
+    });
+
+    it('defaults quantity and unit on ingredient lists', async () => {
+      mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
+      const blocks = [
+        {
+          id: 'block-1',
+          type: 'list' as const,
+          mode: 'ingredients' as const,
+          items: [],
+        },
+      ];
+      const page = makeListPage({ items: blocks });
+      mockPrisma.page.findFirst.mockResolvedValue(page);
+      mockPrisma.page.update.mockResolvedValue(page);
+
+      const result = await service.addBlockItem(
+        FAMILY_ID,
+        PAGE_ID,
+        'block-1',
+        USER_ID,
+        'Flour',
+      );
+
+      expect(result).toMatchObject({ text: 'Flour', quantity: 1, unit: 'g' });
     });
   });
 

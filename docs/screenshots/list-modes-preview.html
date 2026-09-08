@@ -106,6 +106,10 @@
         border-radius: 0.375rem;
         padding: 0.25rem 0.4rem;
       }
+      .sym {
+        font-size: 0.75rem;
+        color: #6b7280;
+      }
     </style>
   </head>
   <body>
@@ -135,21 +139,24 @@
         <div class="header">
           <div class="title">Shopping</div>
           <select><option selected>Prices</option></select>
+          <select><option selected>₪ ILS</option></select>
         </div>
         <div class="summary">
           <div class="bar"><div class="fill" style="width: 50%"></div></div>
           <span class="meta">1/2</span>
-          <span class="meta">Total 15 · Checked 10</span>
+          <span class="meta">Total ₪15</span>
         </div>
         <div class="row">
           <div class="check on"></div>
           <div class="text done">Milk</div>
           <input class="num" value="10" readonly />
+          <span class="sym">₪</span>
         </div>
         <div class="row">
           <div class="check"></div>
           <div class="text">Eggs</div>
           <input class="num" value="5" readonly />
+          <span class="sym">₪</span>
         </div>
       </div>
 
@@ -161,7 +168,7 @@
         <div class="summary">
           <div class="bar"><div class="fill" style="width: 50%"></div></div>
           <span class="meta">1/2</span>
-          <span class="meta">8 items · 2 checked</span>
+          <span class="meta">8 items</span>
         </div>
         <div class="row">
           <div class="check on"></div>
@@ -172,6 +179,30 @@
           <div class="check"></div>
           <div class="text">Eggs</div>
           <input class="num" value="6" readonly />
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="header">
+          <div class="title">Recipe</div>
+          <select><option selected>Ingredients</option></select>
+        </div>
+        <div class="summary">
+          <div class="bar"><div class="fill" style="width: 50%"></div></div>
+          <span class="meta">1/2</span>
+          <span class="meta">Total 500 g · 1 l</span>
+        </div>
+        <div class="row">
+          <div class="check on"></div>
+          <div class="text done">Flour</div>
+          <input class="num" value="500" readonly />
+          <select><option selected>g</option></select>
+        </div>
+        <div class="row">
+          <div class="check"></div>
+          <div class="text">Milk</div>
+          <input class="num" value="1" readonly />
+          <select><option selected>l</option></select>
         </div>
       </div>
     </div>

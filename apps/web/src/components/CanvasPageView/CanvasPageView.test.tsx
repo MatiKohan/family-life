@@ -125,8 +125,10 @@ describe('CanvasPageView', () => {
     };
     renderView(priced);
     expect(screen.getAllByLabelText('Price')).toHaveLength(2);
-    expect(screen.getByText(/Total 15/)).toBeInTheDocument();
-    expect(screen.getByText(/Checked 10/)).toBeInTheDocument();
+    expect(screen.getByText(/Total/)).toBeInTheDocument();
+    expect(screen.getByText('1/2')).toBeInTheDocument();
+    expect(screen.queryByText(/Checked 10/)).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Currency')).toBeInTheDocument();
   });
 
   it('shows quantity inputs and sums in counted mode', () => {
@@ -164,7 +166,49 @@ describe('CanvasPageView', () => {
     renderView(counted);
     expect(screen.getAllByLabelText('Qty')).toHaveLength(2);
     expect(screen.getByText(/8 items/)).toBeInTheDocument();
-    expect(screen.getByText(/2 checked/)).toBeInTheDocument();
+    expect(screen.getByText('1/2')).toBeInTheDocument();
+    expect(screen.queryByText(/2 checked/)).not.toBeInTheDocument();
+  });
+
+  it('shows unit selectors in ingredients mode', () => {
+    const ingredients: Page = {
+      ...basePage,
+      blocks: [
+        {
+          id: 'block-1',
+          type: 'list',
+          title: 'Recipe',
+          mode: 'ingredients',
+          items: [
+            {
+              id: 'item-1',
+              text: 'Flour',
+              checked: true,
+              assigneeId: null,
+              dueDate: null,
+              createdAt: '2026-01-01T00:00:00.000Z',
+              quantity: 500,
+              unit: 'g',
+            },
+            {
+              id: 'item-2',
+              text: 'Milk',
+              checked: false,
+              assigneeId: null,
+              dueDate: null,
+              createdAt: '2026-01-01T00:00:00.000Z',
+              quantity: 1,
+              unit: 'l',
+            },
+          ],
+        },
+      ],
+    };
+    renderView(ingredients);
+    expect(screen.getAllByLabelText('Unit')).toHaveLength(2);
+    expect(screen.getByText(/500 g/)).toBeInTheDocument();
+    expect(screen.getByText(/1 l/)).toBeInTheDocument();
+    expect(screen.getByText('1/2')).toBeInTheDocument();
   });
 
   it('renders text block content', () => {

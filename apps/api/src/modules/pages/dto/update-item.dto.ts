@@ -1,7 +1,7 @@
 import { Type } from 'class-transformer';
 import {
   IsBoolean,
-  IsInt,
+  IsIn,
   IsNumber,
   IsOptional,
   IsString,
@@ -10,6 +10,7 @@ import {
   MinLength,
   ValidateIf,
 } from 'class-validator';
+import { LIST_UNITS } from '@family-life/types';
 
 export class UpdateItemDto {
   @IsOptional() @IsString() @MinLength(1) @MaxLength(500) text?: string;
@@ -27,7 +28,11 @@ export class UpdateItemDto {
   @IsOptional()
   @ValidateIf((_, v) => v !== null)
   @Type(() => Number)
-  @IsInt()
+  @IsNumber({ maxDecimalPlaces: 3 })
   @Min(0)
   quantity?: number | null;
+
+  @IsOptional()
+  @IsIn([...LIST_UNITS])
+  unit?: (typeof LIST_UNITS)[number];
 }

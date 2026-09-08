@@ -309,6 +309,7 @@ export class PagesController {
         category: dto.category,
         price: dto.price,
         quantity: dto.quantity,
+        unit: dto.unit,
       },
     );
   }

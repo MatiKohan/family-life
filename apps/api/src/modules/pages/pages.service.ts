@@ -1,4 +1,9 @@
-import { Block, resolveListMode } from '@family-life/types';
+import {
+  Block,
+  resolveListCurrency,
+  resolveListMode,
+  resolveListUnit,
+} from '@family-life/types';
 import {
   BadRequestException,
   ForbiddenException,
@@ -31,6 +36,7 @@ type ListItemData = {
   category?: string;
   price?: number | null;
   quantity?: number | null;
+  unit?: 'g' | 'kg' | 'l';
 };
 type TaskItemData = {
   id: string;
@@ -694,7 +700,12 @@ export class PagesService {
     pageId: string,
     blockId: string,
     userId: string,
-    patch: { title?: string; content?: string; mode?: string },
+    patch: {
+      title?: string;
+      content?: string;
+      mode?: string;
+      currency?: string;
+    },
   ): Promise<void> {
     await this.requireMember(familyId, userId);
     const page = await this.prisma.page.findFirst({
@@ -717,6 +728,9 @@ export class PagesService {
         ...b,
         ...(patch.title !== undefined ? { title: patch.title } : {}),
         ...(patch.mode != null ? { mode: resolveListMode(patch.mode) } : {}),
+        ...(patch.currency != null
+          ? { currency: resolveListCurrency(patch.currency) }
+          : {}),
       };
     });
     await this.prisma.page.update({
@@ -738,6 +752,7 @@ export class PagesService {
       category?: string;
       price?: number | null;
       quantity?: number | null;
+      unit?: string;
     },
   ): Promise<ListItemData> {
     await this.requireMember(familyId, userId);
@@ -760,10 +775,15 @@ export class PagesService {
     };
     if (extras?.category != null) newItem.category = extras.category;
     if (extras?.price !== undefined) newItem.price = extras.price;
-    if (mode === 'counted') {
+    if (mode === 'counted' || mode === 'ingredients') {
       newItem.quantity = extras?.quantity ?? 1;
     } else if (extras?.quantity !== undefined) {
       newItem.quantity = extras.quantity;
+    }
+    if (mode === 'ingredients') {
+      newItem.unit = resolveListUnit(extras?.unit);
+    } else if (extras?.unit != null) {
+      newItem.unit = resolveListUnit(extras.unit);
     }
     const updated = this.addItemToListBlocks(blocks, blockId, newItem);
     await this.prisma.page.update({
@@ -806,6 +826,7 @@ export class PagesService {
       dueDate?: string | null;
       price?: number | null;
       quantity?: number | null;
+      unit?: string;
     },
   ): Promise<void> {
     await this.requireMember(familyId, userId);

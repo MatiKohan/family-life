@@ -1,8 +1,13 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Block, ListBlock, TextBlock, ListItem } from '../../types/page';
-import { LIST_MODES, type ListMode } from '@family-life/types';
-import { resolveListMode } from '../../lib/list-mode';
+import {
+  LIST_CURRENCIES,
+  LIST_MODES,
+  type ListCurrency,
+  type ListMode,
+} from '@family-life/types';
+import { resolveListCurrency, resolveListMode } from '../../lib/list-mode';
 import { ListBlockView } from './ListBlockView';
 import { TextBlockView } from './TextBlockView';
 import { apiRequest } from '../../lib/api-client';
@@ -49,6 +54,14 @@ export function BlockRenderer({ block, familyId, pageId, dragHandle, onUpdate, o
         : block.content.trim().length > 0;
     if (hasContent && !window.confirm(t('pages.deleteBlockConfirm'))) return;
     onDelete();
+  }
+
+  function patchListBlock(patch: Partial<ListBlock>) {
+    onUpdate(patch);
+    apiRequest(base, {
+      method: 'PATCH',
+      body: JSON.stringify(patch),
+    });
   }
 
   function handleListItemsUpdate(items: ListItem[]) {
@@ -99,25 +112,43 @@ export function BlockRenderer({ block, familyId, pageId, dragHandle, onUpdate, o
         )}
 
         {block.type === 'list' && (
-          <select
-            aria-label={t('list.listType')}
-            value={resolveListMode(block.mode)}
-            onChange={(e) => {
-              const mode = e.target.value as ListMode;
-              onUpdate({ mode } as Partial<ListBlock>);
-              apiRequest(base, {
-                method: 'PATCH',
-                body: JSON.stringify({ mode }),
-              });
-            }}
-            className="text-xs text-gray-600 border border-gray-200 rounded-md px-1.5 py-1 bg-white shrink-0 max-w-[8.5rem]"
-          >
-            {LIST_MODES.map((m) => (
-              <option key={m} value={m}>
-                {t(`list.mode.${m}`)}
-              </option>
-            ))}
-          </select>
+          <>
+            <select
+              aria-label={t('list.listType')}
+              value={resolveListMode(block.mode)}
+              onChange={(e) => {
+                const mode = e.target.value as ListMode;
+                const patch: Partial<ListBlock> = { mode };
+                if (mode === 'priced') {
+                  patch.currency = resolveListCurrency(block.currency);
+                }
+                patchListBlock(patch);
+              }}
+              className="text-xs text-gray-600 border border-gray-200 rounded-md px-1.5 py-1 bg-white shrink-0 max-w-[8.5rem]"
+            >
+              {LIST_MODES.map((m) => (
+                <option key={m} value={m}>
+                  {t(`list.mode.${m}`)}
+                </option>
+              ))}
+            </select>
+            {resolveListMode(block.mode) === 'priced' && (
+              <select
+                aria-label={t('list.currency')}
+                value={resolveListCurrency(block.currency)}
+                onChange={(e) => {
+                  patchListBlock({ currency: e.target.value as ListCurrency });
+                }}
+                className="text-xs text-gray-600 border border-gray-200 rounded-md px-1.5 py-1 bg-white shrink-0"
+              >
+                {LIST_CURRENCIES.map((code) => (
+                  <option key={code} value={code}>
+                    {t(`list.currencyCode.${code}`)}
+                  </option>
+                ))}
+              </select>
+            )}
+          </>
         )}
 
         {/* Delete block button — visible on hover */}
