@@ -819,6 +819,33 @@ describe('PagesService', () => {
         }),
       ).rejects.toThrow(NotFoundException);
     });
+
+    it('sets list mode on a list block', async () => {
+      mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
+      const blocks = [{ id: 'block-1', type: 'list' as const, items: [] }];
+      const page = makeListPage({ items: blocks });
+      mockPrisma.page.findFirst.mockResolvedValue(page);
+      mockPrisma.page.update.mockResolvedValue(page);
+
+      await service.updateBlock(FAMILY_ID, PAGE_ID, 'block-1', USER_ID, {
+        mode: 'priced',
+        currency: 'USD',
+      });
+
+      expect(mockPrisma.page.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            items: expect.arrayContaining([
+              expect.objectContaining({
+                id: 'block-1',
+                mode: 'priced',
+                currency: 'USD',
+              }),
+            ]),
+          }),
+        }),
+      );
+    });
   });
 
   // --- addBlockItem ---
@@ -951,6 +978,56 @@ describe('PagesService', () => {
         service.addBlockItem(FAMILY_ID, PAGE_ID, 'block-1', USER_ID, 'Text'),
       ).rejects.toThrow(NotFoundException);
     });
+
+    it('defaults quantity to 1 on counted lists', async () => {
+      mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
+      const blocks = [
+        {
+          id: 'block-1',
+          type: 'list' as const,
+          mode: 'counted' as const,
+          items: [],
+        },
+      ];
+      const page = makeListPage({ items: blocks });
+      mockPrisma.page.findFirst.mockResolvedValue(page);
+      mockPrisma.page.update.mockResolvedValue(page);
+
+      const result = await service.addBlockItem(
+        FAMILY_ID,
+        PAGE_ID,
+        'block-1',
+        USER_ID,
+        'Apples',
+      );
+
+      expect(result).toMatchObject({ text: 'Apples', quantity: 1 });
+    });
+
+    it('defaults quantity and unit on ingredient lists', async () => {
+      mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
+      const blocks = [
+        {
+          id: 'block-1',
+          type: 'list' as const,
+          mode: 'ingredients' as const,
+          items: [],
+        },
+      ];
+      const page = makeListPage({ items: blocks });
+      mockPrisma.page.findFirst.mockResolvedValue(page);
+      mockPrisma.page.update.mockResolvedValue(page);
+
+      const result = await service.addBlockItem(
+        FAMILY_ID,
+        PAGE_ID,
+        'block-1',
+        USER_ID,
+        'Flour',
+      );
+
+      expect(result).toMatchObject({ text: 'Flour', quantity: 1, unit: 'g' });
+    });
   });
 
   // --- updateBlockItem ---
@@ -999,6 +1076,52 @@ describe('PagesService', () => {
       );
       expect(mockActivityService.log).toHaveBeenCalledWith(
         expect.objectContaining({ type: 'item_checked' }),
+      );
+    });
+
+    it('patches price on a block item', async () => {
+      mockPrisma.familyMember.findUnique.mockResolvedValue(mockMember);
+      const blockItem = {
+        id: ITEM_ID,
+        text: 'Milk',
+        checked: false,
+        assigneeId: null,
+        dueDate: null,
+        createdAt: '',
+      };
+      const blocks = [
+        {
+          id: 'block-1',
+          type: 'list' as const,
+          mode: 'priced' as const,
+          items: [blockItem],
+        },
+      ];
+      const page = makeListPage({ items: blocks });
+      mockPrisma.page.findFirst.mockResolvedValue(page);
+      mockPrisma.page.update.mockResolvedValue(page);
+
+      await service.updateBlockItem(
+        FAMILY_ID,
+        PAGE_ID,
+        'block-1',
+        ITEM_ID,
+        USER_ID,
+        { price: 12.5 },
+      );
+
+      expect(mockPrisma.page.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            items: expect.arrayContaining([
+              expect.objectContaining({
+                items: expect.arrayContaining([
+                  expect.objectContaining({ id: ITEM_ID, price: 12.5 }),
+                ]),
+              }),
+            ]),
+          }),
+        }),
       );
     });
 

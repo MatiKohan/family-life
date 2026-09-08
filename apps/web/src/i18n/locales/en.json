@@ -164,7 +164,30 @@
     "categoryPlaceholder": "Category name...",
     "uncategorized": "General",
     "simpleList": "Simple list",
-    "categorizedList": "List by categories"
+    "categorizedList": "List by categories",
+    "listType": "List type",
+    "mode": {
+      "plain": "Plain",
+      "priced": "Prices",
+      "counted": "Quantity",
+      "ingredients": "Ingredients"
+    },
+    "price": "Price",
+    "quantity": "Qty",
+    "unit": "Unit",
+    "currency": "Currency",
+    "currencyCode": {
+      "ILS": "₪ ILS",
+      "USD": "$ USD",
+      "EUR": "€ EUR",
+      "GBP": "£ GBP"
+    },
+    "totalPrice": "Total {{amount}}",
+    "checkedPrice": "Checked {{amount}}",
+    "totalQuantity": "{{count}} items",
+    "checkedQuantity": "{{count}} checked",
+    "totalIngredients": "Total {{amount}}",
+    "checkedIngredients": "Checked {{amount}}"
   },
   "tasks": {
     "todo": "To do",

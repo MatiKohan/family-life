@@ -28,7 +28,7 @@ React 19 + Vite, Tailwind, TanStack Query, Zustand, React Router, i18n (`en` / `
 
 | type | Component |
 |---|---|
-| `list` | `CanvasPageView` (blocks) |
+| `list` | `CanvasPageView` (blocks). List blocks have a type control: **plain**, **priced** (price + currency, sum of all / checked prices), **counted** (quantity, sum of all / checked quantities), **ingredients** (quantity + `g`/`kg`/`l`). Layout `variant` (simple / categorized) is independent. |
 | `tasks` | `TasksPageView` |
 | `events` | `EventsPageView` |
 | `apartments` | `ApartmentsPageView` |

@@ -164,7 +164,30 @@
     "categoryPlaceholder": "שם קטגוריה...",
     "uncategorized": "כללי",
     "simpleList": "רשימה פשוטה",
-    "categorizedList": "רשימה לפי קטגוריות"
+    "categorizedList": "רשימה לפי קטגוריות",
+    "listType": "סוג רשימה",
+    "mode": {
+      "plain": "רגילה",
+      "priced": "מחירים",
+      "counted": "כמות",
+      "ingredients": "מצרכים"
+    },
+    "price": "מחיר",
+    "quantity": "כמות",
+    "unit": "יחידה",
+    "currency": "מטבע",
+    "currencyCode": {
+      "ILS": "₪ ILS",
+      "USD": "$ USD",
+      "EUR": "€ EUR",
+      "GBP": "£ GBP"
+    },
+    "totalPrice": "סה״כ {{amount}}",
+    "checkedPrice": "מסומנים {{amount}}",
+    "totalQuantity": "{{count}} פריטים",
+    "checkedQuantity": "{{count}} מסומנים",
+    "totalIngredients": "סה״כ {{amount}}",
+    "checkedIngredients": "מסומנים {{amount}}"
   },
   "tasks": {
     "todo": "לביצוע",

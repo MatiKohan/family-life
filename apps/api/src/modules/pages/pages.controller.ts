@@ -305,6 +305,12 @@ export class PagesController {
       dto.text,
       dto.assigneeId,
       dto.dueDate,
+      {
+        category: dto.category,
+        price: dto.price,
+        quantity: dto.quantity,
+        unit: dto.unit,
+      },
     );
   }
 

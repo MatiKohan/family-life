@@ -1,6 +1,13 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Block, ListBlock, TextBlock, ListItem } from '../../types/page';
+import {
+  LIST_CURRENCIES,
+  LIST_MODES,
+  type ListCurrency,
+  type ListMode,
+} from '@family-life/types';
+import { resolveListCurrency, resolveListMode } from '../../lib/list-mode';
 import { ListBlockView } from './ListBlockView';
 import { TextBlockView } from './TextBlockView';
 import { apiRequest } from '../../lib/api-client';
@@ -18,7 +25,6 @@ export function BlockRenderer({ block, familyId, pageId, dragHandle, onUpdate, o
   const { t } = useTranslation();
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState(block.title ?? '');
-  const [hovered, setHovered] = useState(false);
 
   const base = `/families/${familyId}/pages/${pageId}/blocks/${block.id}`;
 
@@ -49,6 +55,14 @@ export function BlockRenderer({ block, familyId, pageId, dragHandle, onUpdate, o
     onDelete();
   }
 
+  function patchListBlock(patch: Partial<ListBlock>) {
+    onUpdate(patch);
+    apiRequest(base, {
+      method: 'PATCH',
+      body: JSON.stringify(patch),
+    });
+  }
+
   function handleListItemsUpdate(items: ListItem[]) {
     onUpdate({ items } as Partial<ListBlock>);
   }
@@ -58,13 +72,9 @@ export function BlockRenderer({ block, familyId, pageId, dragHandle, onUpdate, o
   }
 
   return (
-    <div
-      className="group relative"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
+    <div className="group relative">
       {/* Block header */}
-      <div className="flex items-center gap-1 mb-1">
+      <div className="flex items-center gap-1.5 mb-1 flex-wrap">
         {/* Drag handle */}
         {dragHandle}
 
@@ -88,7 +98,7 @@ export function BlockRenderer({ block, familyId, pageId, dragHandle, onUpdate, o
               setTitleDraft(block.title ?? '');
               setEditingTitle(true);
             }}
-            className={`flex-1 text-sm font-semibold text-start text-gray-600 hover:text-gray-900 transition-colors truncate ${
+            className={`flex-1 min-w-0 text-sm font-semibold text-start text-gray-600 hover:text-gray-900 transition-colors truncate ${
               block.title ? '' : 'text-gray-300 italic'
             }`}
           >
@@ -96,19 +106,57 @@ export function BlockRenderer({ block, familyId, pageId, dragHandle, onUpdate, o
           </button>
         )}
 
-        {/* Delete block button — visible on hover */}
-        {hovered && (
-          <button
-            type="button"
-            onClick={handleDeleteBlock}
-            className="text-gray-300 hover:text-red-500 transition-colors shrink-0 w-5 h-5 flex items-center justify-center rounded"
-            aria-label="Delete block"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-          </button>
+        {block.type === 'list' && (
+          <>
+            <select
+              aria-label={t('list.listType')}
+              value={resolveListMode(block.mode)}
+              onChange={(e) => {
+                const mode = e.target.value as ListMode;
+                const patch: Partial<ListBlock> = { mode };
+                if (mode === 'priced') {
+                  patch.currency = resolveListCurrency(block.currency);
+                }
+                patchListBlock(patch);
+              }}
+              className="text-base md:text-xs text-gray-600 border border-gray-200 rounded-md px-2 py-1.5 bg-white shrink-0 min-h-9 max-w-[9.5rem]"
+            >
+              {LIST_MODES.map((m) => (
+                <option key={m} value={m}>
+                  {t(`list.mode.${m}`)}
+                </option>
+              ))}
+            </select>
+            {resolveListMode(block.mode) === 'priced' && (
+              <select
+                aria-label={t('list.currency')}
+                value={resolveListCurrency(block.currency)}
+                onChange={(e) => {
+                  patchListBlock({ currency: e.target.value as ListCurrency });
+                }}
+                className="text-base md:text-xs text-gray-600 border border-gray-200 rounded-md px-2 py-1.5 bg-white shrink-0 min-h-9"
+              >
+                {LIST_CURRENCIES.map((code) => (
+                  <option key={code} value={code}>
+                    {t(`list.currencyCode.${code}`)}
+                  </option>
+                ))}
+              </select>
+            )}
+          </>
         )}
+
+        {/* Delete block — always tappable on mobile, hover on desktop */}
+        <button
+          type="button"
+          onClick={handleDeleteBlock}
+          className="text-gray-300 hover:text-red-500 transition-colors shrink-0 w-8 h-8 flex items-center justify-center rounded md:opacity-0 md:pointer-events-none md:group-hover:opacity-100 md:group-hover:pointer-events-auto"
+          aria-label="Delete block"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>
       </div>
 
       {/* Block content */}
