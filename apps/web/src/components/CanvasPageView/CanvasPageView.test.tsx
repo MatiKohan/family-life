@@ -91,6 +91,82 @@ describe('CanvasPageView', () => {
     expect(screen.getByText('Eggs')).toBeInTheDocument();
   });
 
+  it('shows price inputs and sums in priced mode', () => {
+    const priced: Page = {
+      ...basePage,
+      blocks: [
+        {
+          id: 'block-1',
+          type: 'list',
+          title: 'Shopping',
+          mode: 'priced',
+          items: [
+            {
+              id: 'item-1',
+              text: 'Milk',
+              checked: true,
+              assigneeId: null,
+              dueDate: null,
+              createdAt: '2026-01-01T00:00:00.000Z',
+              price: 10,
+            },
+            {
+              id: 'item-2',
+              text: 'Eggs',
+              checked: false,
+              assigneeId: null,
+              dueDate: null,
+              createdAt: '2026-01-01T00:00:00.000Z',
+              price: 5,
+            },
+          ],
+        },
+      ],
+    };
+    renderView(priced);
+    expect(screen.getAllByLabelText('Price')).toHaveLength(2);
+    expect(screen.getByText(/Total 15/)).toBeInTheDocument();
+    expect(screen.getByText(/Checked 10/)).toBeInTheDocument();
+  });
+
+  it('shows quantity inputs and sums in counted mode', () => {
+    const counted: Page = {
+      ...basePage,
+      blocks: [
+        {
+          id: 'block-1',
+          type: 'list',
+          title: 'Market',
+          mode: 'counted',
+          items: [
+            {
+              id: 'item-1',
+              text: 'Milk',
+              checked: true,
+              assigneeId: null,
+              dueDate: null,
+              createdAt: '2026-01-01T00:00:00.000Z',
+              quantity: 2,
+            },
+            {
+              id: 'item-2',
+              text: 'Eggs',
+              checked: false,
+              assigneeId: null,
+              dueDate: null,
+              createdAt: '2026-01-01T00:00:00.000Z',
+              quantity: 6,
+            },
+          ],
+        },
+      ],
+    };
+    renderView(counted);
+    expect(screen.getAllByLabelText('Qty')).toHaveLength(2);
+    expect(screen.getByText(/8 items/)).toBeInTheDocument();
+    expect(screen.getByText(/2 checked/)).toBeInTheDocument();
+  });
+
   it('renders text block content', () => {
     renderView();
     const textarea = screen.getByDisplayValue('Some notes here');

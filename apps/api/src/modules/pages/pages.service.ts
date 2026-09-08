@@ -1,4 +1,4 @@
-import { Block } from '@family-life/types';
+import { Block, resolveListMode } from '@family-life/types';
 import {
   BadRequestException,
   ForbiddenException,
@@ -28,6 +28,9 @@ type ListItemData = {
   dueDate: string | null;
   createdAt: string;
   deletedAt?: string | null;
+  category?: string;
+  price?: number | null;
+  quantity?: number | null;
 };
 type TaskItemData = {
   id: string;
@@ -691,7 +694,7 @@ export class PagesService {
     pageId: string,
     blockId: string,
     userId: string,
-    patch: { title?: string; content?: string },
+    patch: { title?: string; content?: string; mode?: string },
   ): Promise<void> {
     await this.requireMember(familyId, userId);
     const page = await this.prisma.page.findFirst({
@@ -699,9 +702,23 @@ export class PagesService {
     });
     if (!page) throw new NotFoundException('Page not found');
     const blocks = this.normalizeBlocks(page.items as unknown[]);
-    const updated = blocks.map((b) =>
-      b.id === blockId ? { ...b, ...patch } : b,
-    );
+    const updated = blocks.map((b) => {
+      if (b.id !== blockId) return b;
+      if (b.type !== 'list') {
+        return {
+          ...b,
+          ...(patch.title !== undefined ? { title: patch.title } : {}),
+          ...(patch.content !== undefined && b.type === 'text'
+            ? { content: patch.content }
+            : {}),
+        };
+      }
+      return {
+        ...b,
+        ...(patch.title !== undefined ? { title: patch.title } : {}),
+        ...(patch.mode != null ? { mode: resolveListMode(patch.mode) } : {}),
+      };
+    });
     await this.prisma.page.update({
       where: { id: pageId },
       data: { items: updated as unknown as Prisma.InputJsonValue },
@@ -717,6 +734,11 @@ export class PagesService {
     text: string,
     assigneeId?: string,
     dueDate?: string,
+    extras?: {
+      category?: string;
+      price?: number | null;
+      quantity?: number | null;
+    },
   ): Promise<ListItemData> {
     await this.requireMember(familyId, userId);
     const page = await this.prisma.page.findFirst({
@@ -724,6 +746,10 @@ export class PagesService {
     });
     if (!page) throw new NotFoundException('Page not found');
     const blocks = this.normalizeBlocks(page.items as unknown[]);
+    const target = blocks.find((b) => b.id === blockId && b.type === 'list');
+    const mode = resolveListMode(
+      target?.type === 'list' ? target.mode : undefined,
+    );
     const newItem: ListItemData = {
       id: randomUUID(),
       text,
@@ -732,6 +758,13 @@ export class PagesService {
       dueDate: dueDate ?? null,
       createdAt: new Date().toISOString(),
     };
+    if (extras?.category != null) newItem.category = extras.category;
+    if (extras?.price !== undefined) newItem.price = extras.price;
+    if (mode === 'counted') {
+      newItem.quantity = extras?.quantity ?? 1;
+    } else if (extras?.quantity !== undefined) {
+      newItem.quantity = extras.quantity;
+    }
     const updated = this.addItemToListBlocks(blocks, blockId, newItem);
     await this.prisma.page.update({
       where: { id: pageId },
@@ -771,6 +804,8 @@ export class PagesService {
       checked?: boolean;
       assigneeId?: string | null;
       dueDate?: string | null;
+      price?: number | null;
+      quantity?: number | null;
     },
   ): Promise<void> {
     await this.requireMember(familyId, userId);
@@ -792,7 +827,16 @@ export class PagesService {
       if (b.id !== blockId || b.type !== 'list') return b;
       return {
         ...b,
-        items: b.items.map((i) => (i.id === itemId ? { ...i, ...patch } : i)),
+        items: b.items.map((i) =>
+          i.id === itemId
+            ? {
+                ...i,
+                ...Object.fromEntries(
+                  Object.entries(patch).filter(([, v]) => v !== undefined),
+                ),
+              }
+            : i,
+        ),
       };
     });
     await this.prisma.page.update({

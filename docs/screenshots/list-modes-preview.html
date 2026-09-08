@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>List types preview</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+        background: #f3f4f6;
+        color: #111827;
+      }
+      .page {
+        max-width: 42rem;
+        margin: 0 auto;
+        padding: 2rem 1rem 3rem;
+      }
+      h1 {
+        font-size: 1.875rem;
+        margin: 0 0 1.5rem;
+      }
+      .block {
+        background: #fff;
+        border: 1px solid #f3f4f6;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+        margin-bottom: 1rem;
+      }
+      .header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+      .title {
+        flex: 1;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #4b5563;
+      }
+      select {
+        font-size: 0.75rem;
+        color: #4b5563;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.375rem;
+        padding: 0.25rem 0.4rem;
+        background: #fff;
+      }
+      .summary {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        flex-wrap: wrap;
+      }
+      .bar {
+        flex: 1;
+        height: 6px;
+        background: #f3f4f6;
+        border-radius: 999px;
+        overflow: hidden;
+        min-width: 4rem;
+      }
+      .fill {
+        height: 100%;
+        background: #3b82f6;
+      }
+      .meta {
+        font-size: 0.75rem;
+        color: #6b7280;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f3f4f6;
+      }
+      .check {
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid #d1d5db;
+        border-radius: 0.25rem;
+        flex-shrink: 0;
+      }
+      .check.on {
+        background: #3b82f6;
+        border-color: #3b82f6;
+      }
+      .text {
+        flex: 1;
+        font-size: 0.875rem;
+      }
+      .text.done {
+        text-decoration: line-through;
+        color: #9ca3af;
+      }
+      .num {
+        width: 4.75rem;
+        font-size: 0.875rem;
+        text-align: right;
+        color: #374151;
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.375rem;
+        padding: 0.25rem 0.4rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <h1>🛒 Groceries</h1>
+
+      <div class="block">
+        <div class="header">
+          <div class="title">Notes</div>
+          <select><option selected>Plain</option></select>
+        </div>
+        <div class="summary">
+          <div class="bar"><div class="fill" style="width: 50%"></div></div>
+          <span class="meta">1/2</span>
+        </div>
+        <div class="row">
+          <div class="check"></div>
+          <div class="text">Milk</div>
+        </div>
+        <div class="row">
+          <div class="check on"></div>
+          <div class="text done">Eggs</div>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="header">
+          <div class="title">Shopping</div>
+          <select><option selected>Prices</option></select>
+        </div>
+        <div class="summary">
+          <div class="bar"><div class="fill" style="width: 50%"></div></div>
+          <span class="meta">1/2</span>
+          <span class="meta">Total 15 · Checked 10</span>
+        </div>
+        <div class="row">
+          <div class="check on"></div>
+          <div class="text done">Milk</div>
+          <input class="num" value="10" readonly />
+        </div>
+        <div class="row">
+          <div class="check"></div>
+          <div class="text">Eggs</div>
+          <input class="num" value="5" readonly />
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="header">
+          <div class="title">Market</div>
+          <select><option selected>Quantity</option></select>
+        </div>
+        <div class="summary">
+          <div class="bar"><div class="fill" style="width: 50%"></div></div>
+          <span class="meta">1/2</span>
+          <span class="meta">8 items · 2 checked</span>
+        </div>
+        <div class="row">
+          <div class="check on"></div>
+          <div class="text done">Milk</div>
+          <input class="num" value="2" readonly />
+        </div>
+        <div class="row">
+          <div class="check"></div>
+          <div class="text">Eggs</div>
+          <input class="num" value="6" readonly />
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

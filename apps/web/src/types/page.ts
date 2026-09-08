@@ -1,7 +1,7 @@
 import { Block } from '@family-life/types';
 
 export type PageType = 'list' | 'events' | 'tasks' | 'apartments';
-export type { Block, ListBlock, TextBlock } from '@family-life/types';
+export type { Block, ListBlock, TextBlock, ListMode } from '@family-life/types';
 
 export type TaskStatus = 'todo' | 'in-progress' | 'done';
 
@@ -25,6 +25,8 @@ export interface ListItem {
   dueDate: string | null;
   createdAt: string;
   category?: string;
+  price?: number | null;
+  quantity?: number | null;
 }
 
 export interface ApartmentSearchParams {

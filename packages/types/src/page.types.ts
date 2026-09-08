@@ -1,5 +1,13 @@
 export type PageType = 'list' | 'tasks' | 'events' | 'apartments';
 
+export const LIST_MODES = ['plain', 'priced', 'counted'] as const;
+export type ListMode = (typeof LIST_MODES)[number];
+
+export function resolveListMode(mode?: string | null): ListMode {
+  if (mode === 'priced' || mode === 'counted') return mode;
+  return 'plain';
+}
+
 export interface ListItem {
   id: string;
   text: string;
@@ -9,6 +17,8 @@ export interface ListItem {
   createdAt: string;
   deletedAt?: string | null;
   category?: string;
+  price?: number | null;
+  quantity?: number | null;
 }
 
 export interface TaskItem {
@@ -66,6 +76,8 @@ export interface ListBlock {
   title?: string;
   items: ListItem[];
   variant?: 'simple' | 'categorized';
+  /** Missing or unknown values behave as `plain`. */
+  mode?: ListMode;
 }
 
 export interface TextBlock {

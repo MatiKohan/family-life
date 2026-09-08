@@ -180,6 +180,18 @@ i18n.use(initReactI18next).init({
           uncategorized: 'General',
           simpleList: 'Simple list',
           categorizedList: 'List by categories',
+          listType: 'List type',
+          mode: {
+            plain: 'Plain',
+            priced: 'Prices',
+            counted: 'Quantity',
+          },
+          price: 'Price',
+          quantity: 'Qty',
+          totalPrice: 'Total {{amount}}',
+          checkedPrice: 'Checked {{amount}}',
+          totalQuantity: '{{count}} items',
+          checkedQuantity: '{{count}} checked',
         },
         calendar: {
           title: 'Calendar',

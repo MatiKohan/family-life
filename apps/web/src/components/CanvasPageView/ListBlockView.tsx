@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
@@ -19,6 +19,13 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { apiRequest } from '../../lib/api-client';
 import { queryKeys } from '../../lib/query-keys';
+import {
+  formatListAmount,
+  resolveListMode,
+  sumListPrices,
+  sumListQuantities,
+  type ListMode,
+} from '../../lib/list-mode';
 import type { ListBlock, ListItem } from '../../types/page';
 
 interface Props {
@@ -40,6 +47,7 @@ export function ListBlockView({ block, familyId, pageId, onUpdate }: Props) {
   const [newCategoryDraft, setNewCategoryDraft] = useState('');
 
   const base = `/families/${familyId}/pages/${pageId}/blocks/${block.id}`;
+  const mode = resolveListMode(block.mode);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -48,6 +56,15 @@ export function ListBlockView({ block, familyId, pageId, onUpdate }: Props) {
 
   const total = block.items.length;
   const checkedCount = block.items.filter((i) => i.checked).length;
+
+  function editItemExtra(item: ListItem, patch: { price?: number | null; quantity?: number | null }) {
+    const updated = block.items.map((i) => (i.id === item.id ? { ...i, ...patch } : i));
+    onUpdate(updated);
+    apiRequest(`${base}/items/${item.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(patch),
+    });
+  }
 
   function resetAll() {
     const updated = block.items.map((i) => (i.checked ? { ...i, checked: false } : i));
@@ -110,11 +127,16 @@ export function ListBlockView({ block, familyId, pageId, onUpdate }: Props) {
       dueDate: null,
       createdAt: new Date().toISOString(),
       category,
+      ...(mode === 'counted' ? { quantity: 1 } : {}),
     };
     onUpdate([...block.items, optimisticItem]);
     apiRequest<ListItem>(`${base}/items`, {
       method: 'POST',
-      body: JSON.stringify({ text, ...(category != null ? { category } : {}) }),
+      body: JSON.stringify({
+        text,
+        ...(category != null ? { category } : {}),
+        ...(mode === 'counted' ? { quantity: 1 } : {}),
+      }),
     })
       .then((created) => {
         onUpdate(
@@ -197,25 +219,13 @@ export function ListBlockView({ block, familyId, pageId, onUpdate }: Props) {
       <div className="space-y-1">
         {/* Progress bar */}
         {total > 0 && (
-          <div className="flex items-center gap-2 mb-3">
-            <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-brand-500 rounded-full transition-all duration-300"
-                style={{ width: `${total > 0 ? (checkedCount / total) * 100 : 0}%` }}
-              />
-            </div>
-            <span className="text-xs text-gray-400 shrink-0">{checkedCount}/{total}</span>
-            {checkedCount > 0 && (
-              <button
-                type="button"
-                onClick={resetAll}
-                className="text-xs text-gray-400 hover:text-gray-600 transition-colors shrink-0"
-                title={t('list.resetAll')}
-              >
-                ↺
-              </button>
-            )}
-          </div>
+          <ListSummaryBar
+            items={block.items}
+            mode={mode}
+            checkedCount={checkedCount}
+            total={total}
+            onReset={resetAll}
+          />
         )}
 
         {groups.map(({ key, label, items: groupItems }) => {
@@ -244,9 +254,11 @@ export function ListBlockView({ block, familyId, pageId, onUpdate }: Props) {
                       <ItemRow
                         key={item.id}
                         item={item}
+                        mode={mode}
                         onToggle={() => toggleItem(item)}
                         onDelete={() => deleteItem(item.id)}
                         onTextChange={(text) => editItemText(item, text)}
+                        onExtraChange={(patch) => editItemExtra(item, patch)}
                       />
                     ))}
                   </div>
@@ -303,25 +315,13 @@ export function ListBlockView({ block, familyId, pageId, onUpdate }: Props) {
     <div className="space-y-0.5">
       {/* Progress bar */}
       {total > 0 && (
-        <div className="flex items-center gap-2 mb-2">
-          <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-brand-500 rounded-full transition-all duration-300"
-              style={{ width: `${(checkedCount / total) * 100}%` }}
-            />
-          </div>
-          <span className="text-xs text-gray-400 shrink-0">{checkedCount}/{total}</span>
-          {checkedCount > 0 && (
-            <button
-              type="button"
-              onClick={resetAll}
-              className="text-xs text-gray-400 hover:text-gray-600 transition-colors shrink-0"
-              title={t('list.resetAll')}
-            >
-              ↺
-            </button>
-          )}
-        </div>
+        <ListSummaryBar
+          items={block.items}
+          mode={mode}
+          checkedCount={checkedCount}
+          total={total}
+          onReset={resetAll}
+        />
       )}
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -331,9 +331,11 @@ export function ListBlockView({ block, familyId, pageId, onUpdate }: Props) {
               <SortableItemRow
                 key={item.id}
                 item={item}
+                mode={mode}
                 onToggle={() => toggleItem(item)}
                 onDelete={() => deleteItem(item.id)}
                 onTextChange={(text) => editItemText(item, text)}
+                onExtraChange={(patch) => editItemExtra(item, patch)}
               />
             ))}
           </div>
@@ -367,6 +369,141 @@ export function ListBlockView({ block, familyId, pageId, onUpdate }: Props) {
       </form>
     </div>
   );
+}
+
+// ---- ListSummaryBar ----------------------------------------------------------
+
+interface ListSummaryBarProps {
+  items: ListItem[];
+  mode: ListMode;
+  checkedCount: number;
+  total: number;
+  onReset: () => void;
+}
+
+function ListSummaryBar({ items, mode, checkedCount, total, onReset }: ListSummaryBarProps) {
+  const { t, i18n } = useTranslation();
+  const priceSums = sumListPrices(items);
+  const qtySums = sumListQuantities(items);
+
+  return (
+    <div className="flex items-center gap-2 mb-2 flex-wrap">
+      <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden min-w-[4rem]">
+        <div
+          className="h-full bg-brand-500 rounded-full transition-all duration-300"
+          style={{ width: `${total > 0 ? (checkedCount / total) * 100 : 0}%` }}
+        />
+      </div>
+      <span className="text-xs text-gray-400 shrink-0">{checkedCount}/{total}</span>
+      {mode === 'priced' && (
+        <span className="text-xs text-gray-500 shrink-0">
+          {t('list.totalPrice', { amount: formatListAmount(priceSums.all, i18n.language) })}
+          {' · '}
+          {t('list.checkedPrice', { amount: formatListAmount(priceSums.checked, i18n.language) })}
+        </span>
+      )}
+      {mode === 'counted' && (
+        <span className="text-xs text-gray-500 shrink-0">
+          {t('list.totalQuantity', { count: qtySums.all })}
+          {' · '}
+          {t('list.checkedQuantity', { count: qtySums.checked })}
+        </span>
+      )}
+      {checkedCount > 0 && (
+        <button
+          type="button"
+          onClick={onReset}
+          className="text-xs text-gray-400 hover:text-gray-600 transition-colors shrink-0"
+          title={t('list.resetAll')}
+        >
+          ↺
+        </button>
+      )}
+    </div>
+  );
+}
+
+function ExtraNumberInput({
+  value,
+  ariaLabel,
+  step,
+  onCommit,
+}: {
+  value: number | null | undefined;
+  ariaLabel: string;
+  step: string;
+  onCommit: (value: number | null) => void;
+}) {
+  const [draft, setDraft] = useState(value == null ? '' : String(value));
+
+  useEffect(() => {
+    setDraft(value == null ? '' : String(value));
+  }, [value]);
+
+  function commit() {
+    const trimmed = draft.trim();
+    if (trimmed === '') {
+      if (value != null) onCommit(null);
+      return;
+    }
+    const n = Number(trimmed);
+    if (Number.isNaN(n) || n < 0) {
+      setDraft(value == null ? '' : String(value));
+      return;
+    }
+    if (n !== value) onCommit(n);
+  }
+
+  return (
+    <input
+      type="number"
+      inputMode="decimal"
+      min={0}
+      step={step}
+      value={draft}
+      aria-label={ariaLabel}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={commit}
+      onClick={(e) => e.stopPropagation()}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') e.currentTarget.blur();
+      }}
+      className="w-[4.75rem] shrink-0 text-sm text-end text-gray-700 bg-gray-50 border border-gray-200 rounded-md px-1.5 py-1 focus:outline-none focus:border-brand-400"
+    />
+  );
+}
+
+function ItemExtraFields({
+  item,
+  mode,
+  onExtraChange,
+}: {
+  item: ListItem;
+  mode: ListMode;
+  onExtraChange: (patch: { price?: number | null; quantity?: number | null }) => void;
+}) {
+  const { t } = useTranslation();
+  if (mode === 'priced') {
+    return (
+      <ExtraNumberInput
+        value={item.price}
+        ariaLabel={t('list.price')}
+        step="0.01"
+        onCommit={(price) => onExtraChange({ price })}
+      />
+    );
+  }
+  if (mode === 'counted') {
+    return (
+      <ExtraNumberInput
+        value={item.quantity ?? 1}
+        ariaLabel={t('list.quantity')}
+        step="1"
+        onCommit={(quantity) => onExtraChange({ quantity: quantity == null ? 1 : Math.round(quantity) })}
+      />
+    );
+  }
+  return null;
 }
 
 // ---- CategoryAddForm --------------------------------------------------------
@@ -419,12 +556,14 @@ function CategoryAddForm({ category, onAdd, placeholder, addLabel }: CategoryAdd
 
 interface ItemRowProps {
   item: ListItem;
+  mode: ListMode;
   onToggle: () => void;
   onDelete: () => void;
   onTextChange: (text: string) => void;
+  onExtraChange: (patch: { price?: number | null; quantity?: number | null }) => void;
 }
 
-function ItemRow({ item, onToggle, onDelete, onTextChange }: ItemRowProps) {
+function ItemRow({ item, mode, onToggle, onDelete, onTextChange, onExtraChange }: ItemRowProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(item.text);
 
@@ -486,6 +625,8 @@ function ItemRow({ item, onToggle, onDelete, onTextChange }: ItemRowProps) {
         </span>
       )}
 
+      <ItemExtraFields item={item} mode={mode} onExtraChange={onExtraChange} />
+
       <button
         type="button"
         onClick={onDelete}
@@ -504,12 +645,14 @@ function ItemRow({ item, onToggle, onDelete, onTextChange }: ItemRowProps) {
 
 interface SortableItemRowProps {
   item: ListItem;
+  mode: ListMode;
   onToggle: () => void;
   onDelete: () => void;
   onTextChange: (text: string) => void;
+  onExtraChange: (patch: { price?: number | null; quantity?: number | null }) => void;
 }
 
-function SortableItemRow({ item, onToggle, onDelete, onTextChange }: SortableItemRowProps) {
+function SortableItemRow({ item, mode, onToggle, onDelete, onTextChange, onExtraChange }: SortableItemRowProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: item.id,
   });
@@ -605,6 +748,8 @@ function SortableItemRow({ item, onToggle, onDelete, onTextChange }: SortableIte
           {item.text}
         </span>
       )}
+
+      <ItemExtraFields item={item} mode={mode} onExtraChange={onExtraChange} />
 
       {/* Delete button */}
       <button

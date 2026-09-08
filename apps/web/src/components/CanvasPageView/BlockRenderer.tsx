@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Block, ListBlock, TextBlock, ListItem } from '../../types/page';
+import { LIST_MODES, type ListMode } from '@family-life/types';
+import { resolveListMode } from '../../lib/list-mode';
 import { ListBlockView } from './ListBlockView';
 import { TextBlockView } from './TextBlockView';
 import { apiRequest } from '../../lib/api-client';
@@ -94,6 +96,28 @@ export function BlockRenderer({ block, familyId, pageId, dragHandle, onUpdate, o
           >
             {block.title ?? t('pages.blockTitlePlaceholder')}
           </button>
+        )}
+
+        {block.type === 'list' && (
+          <select
+            aria-label={t('list.listType')}
+            value={resolveListMode(block.mode)}
+            onChange={(e) => {
+              const mode = e.target.value as ListMode;
+              onUpdate({ mode } as Partial<ListBlock>);
+              apiRequest(base, {
+                method: 'PATCH',
+                body: JSON.stringify({ mode }),
+              });
+            }}
+            className="text-xs text-gray-600 border border-gray-200 rounded-md px-1.5 py-1 bg-white shrink-0 max-w-[8.5rem]"
+          >
+            {LIST_MODES.map((m) => (
+              <option key={m} value={m}>
+                {t(`list.mode.${m}`)}
+              </option>
+            ))}
+          </select>
         )}
 
         {/* Delete block button — visible on hover */}

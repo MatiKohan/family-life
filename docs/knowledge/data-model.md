@@ -35,6 +35,8 @@ Soft delete: `Page.deletedAt`; list/task items use `deletedAt` inside JSON. Fold
 
 List pages: `getPage` wraps a legacy flat `items` array in one list `Block` (`normalizeBlocks`).
 
+List blocks: `variant` is layout (`simple` | `categorized`). `mode` is item fields (`plain` | `priced` | `counted`; missing = `plain`). `ListItem` may include `price` and `quantity`. Totals are derived in the UI, not stored.
+
 ## Recurrence
 
 - **Calendar:** `CalendarEvent.recurrence` (`freq`, `until`, `exceptions`). Expanded at **read** time in `listEvents` using **UTC** date arithmetic. Edit modes: `this` / `future` / `all`. Recurring reminders track sent instance dates in `reminderSentDates`.
