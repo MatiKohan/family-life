@@ -420,21 +420,21 @@ function ListSummaryBar({ items, mode, currency, checkedCount, total, onReset }:
       </div>
       <span className="text-xs text-gray-400 shrink-0">{checkedCount}/{total}</span>
       {mode === 'priced' && (
-        <span className="text-xs text-gray-500 shrink-0">
+      <span className="text-xs text-gray-500 min-w-0">
           {t('list.totalPrice', { amount: formatListMoney(priceSums.all, currency, i18n.language) })}
           {' · '}
           {t('list.checkedPrice', { amount: formatListMoney(priceSums.checked, currency, i18n.language) })}
         </span>
       )}
       {mode === 'counted' && (
-        <span className="text-xs text-gray-500 shrink-0">
+      <span className="text-xs text-gray-500 min-w-0">
           {t('list.totalQuantity', { count: qtySums.all })}
           {' · '}
           {t('list.checkedQuantity', { count: qtySums.checked })}
         </span>
       )}
       {mode === 'ingredients' && unitTotal.length > 0 && (
-        <span className="text-xs text-gray-500 shrink-0">
+      <span className="text-xs text-gray-500 min-w-0">
           {t('list.totalIngredients', { amount: unitTotal })}
           {unitChecked.length > 0 ? ` · ${t('list.checkedIngredients', { amount: unitChecked })}` : ''}
         </span>
@@ -505,7 +505,8 @@ function ExtraNumberInput({
       onKeyDown={(e) => {
         if (e.key === 'Enter') e.currentTarget.blur();
       }}
-      className="w-[4.75rem] shrink-0 text-sm text-end text-gray-700 bg-gray-50 border border-gray-200 rounded-md px-1.5 py-1 focus:outline-none focus:border-brand-400"
+      className="w-[4.25rem] sm:w-[4.75rem] shrink-0 text-gray-700 bg-gray-50 border border-gray-200 rounded-md px-1.5 py-1.5 min-h-9 focus:outline-none focus:border-brand-400 text-end"
+      style={{ fontSize: '16px' }}
     />
   );
 }
@@ -563,7 +564,7 @@ function ItemExtraFields({
           value={resolveListUnit(item.unit)}
           onChange={(e) => onExtraChange({ unit: e.target.value as ListUnit })}
           onClick={(e) => e.stopPropagation()}
-          className="text-xs text-gray-600 border border-gray-200 rounded-md px-1 py-1 bg-white"
+          className="text-base md:text-xs text-gray-600 border border-gray-200 rounded-md px-1.5 py-1.5 bg-white min-h-9"
         >
           {LIST_UNITS.map((unit) => (
             <option key={unit} value={unit}>
